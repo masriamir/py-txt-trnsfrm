@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-4">
+            <h1 class="display-4 retro-text">Text Transformer</h1>
+            <p class="lead">Transform your text in creative ways inspired by the golden age of the internet!</p>
+        </div>
+
+        <div class="card retro-card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="inputText" class="form-label">Enter your text:</label>
+                    <textarea class="form-control" id="inputText" rows="4" 
+                              placeholder="Type something awesome here..."></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Choose a transformation:</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="btn-group-vertical d-grid gap-2">
+                                <button class="btn btn-outline-primary transform-btn" data-transform="alternate_case">
+                                    🔄 AlTeRnAtE cAsE
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="rainbow_html">
+                                    🌈 Rainbow HTML
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="l33t_speak">
+                                    💾 L33t Sp34k
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="backwards">
+                                    ↩️ Backwards Text
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="upside_down">
+                                    🙃 Upside Down
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="stutter">
+                                    🗣️ St-St-Stutter
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="btn-group-vertical d-grid gap-2">
+                                <button class="btn btn-outline-primary transform-btn" data-transform="zalgo">
+                                    👹 Z̃ãl̃g̃õ̃ T̃ẽx̃t̃
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="morse_code">
+                                    📡 Morse Code
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="binary">
+                                    🤖 Binary
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="rot13">
+                                    🔐 ROT13
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="spongebob_case">
+                                    🧽 SpOnGeBob CaSe
+                                </button>
+                                <button class="btn btn-outline-primary transform-btn" data-transform="wave_text">
+                                    🌊 ~Wave~ Text
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="outputText" class="form-label">Transformed text:</label>
+                    <div id="outputContainer">
+                        <textarea class="form-control" id="outputText" rows="4" readonly 
+                                  placeholder="Your transformed text will appear here..."></textarea>
+                        <div id="htmlOutput" class="border p-3 mt-2" style="display: none; min-height: 100px; background-color: #f8f9fa;"></div>
+                    </div>
+                    <button class="btn btn-secondary mt-2" id="copyBtn" style="display: none;">
+                        📋 Copy to Clipboard
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <button class="btn btn-danger" id="clearBtn">
+                        🗑️ Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast for notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="notification" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Text Transformer</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody">
+            <!-- Notification message will be inserted here -->
+        </div>
+    </div>
+</div>
+{% endblock %}

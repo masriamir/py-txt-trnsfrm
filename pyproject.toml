@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "py-txt-trnsfrm"
+version = "0.1.0"
+description = "A Flask web application for creative text transformations inspired by 90s internet culture"
+authors = [
+    {name = "Amir Masri", email = "masriamir@users.noreply.github.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.13"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: Flask",
+]
+dependencies = [
+    "flask>=3.0.0",
+    "gunicorn>=21.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-flask>=1.3.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "coverage>=7.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/masriamir/py-txt-trnsfrm"
+Repository = "https://github.com/masriamir/py-txt-trnsfrm"
+
+[project.scripts]
+py-txt-trnsfrm = "app:main"
+
+# Configure hatchling to include the app package
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+# Include additional files
+[tool.hatch.build.targets.wheel.sources]
+"app" = "app"
+"app.py" = "app.py"
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
