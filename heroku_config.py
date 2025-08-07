@@ -1,7 +1,19 @@
 """Heroku-specific configuration overrides."""
 import os
-from app.config import ProductionConfig
 
+try:
+    from app.config import ProductionConfig
+except ImportError as e:
+    print(f"Warning: Could not import ProductionConfig: {e}")
+    # Fallback base config
+    class ProductionConfig:
+        DEBUG = False
+        TESTING = False
+        SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
+
+        @classmethod
+        def init_app(cls, app):
+            pass
 
 class HerokuConfig(ProductionConfig):
     """Configuration for Heroku deployment."""
@@ -18,27 +30,43 @@ class HerokuConfig(ProductionConfig):
     @classmethod
     def init_app(cls, app):
         """Initialize Heroku-specific settings."""
-        ProductionConfig.init_app(app)
+        try:
+            ProductionConfig.init_app(app)
+        except Exception as e:
+            print(f"Warning: ProductionConfig.init_app failed: {e}")
+
+        # Validate SECRET_KEY
+        secret_key = os.environ.get('SECRET_KEY')
+        if not secret_key:
+            raise ValueError("No SECRET_KEY set for Heroku production environment")
+        app.config['SECRET_KEY'] = secret_key
 
         # Trust the proxy headers from Heroku
         try:
             from werkzeug.middleware.proxy_fix import ProxyFix
             app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-        except ImportError:
-            # If werkzeug version doesn't have ProxyFix, that's okay
-            pass
+            print("✓ ProxyFix middleware applied")
+        except ImportError as e:
+            print(f"Warning: Could not apply ProxyFix: {e}")
 
         # Configure logging for Heroku
-        import logging
-        from logging import StreamHandler
+        try:
+            import logging
+            from logging import StreamHandler
 
-        # Set up logging to stdout for Heroku logs
-        stream_handler = StreamHandler()
-        stream_handler.setLevel(logging.INFO)
-        app.logger.addHandler(stream_handler)
-        app.logger.setLevel(logging.INFO)
-        app.logger.info('Heroku deployment startup complete')
+            # Set up logging to stdout for Heroku logs
+            if not app.logger.handlers:  # Avoid duplicate handlers
+                stream_handler = StreamHandler()
+                stream_handler.setLevel(logging.INFO)
+                app.logger.addHandler(stream_handler)
+                app.logger.setLevel(logging.INFO)
 
-        print(f"Heroku config initialized successfully")
-        print(f"SECRET_KEY set: {'Yes' if app.config.get('SECRET_KEY') else 'No'}")
-        print(f"DEBUG mode: {app.config.get('DEBUG')}")
+            app.logger.info('Heroku deployment startup complete')
+            print("✓ Logging configured for Heroku")
+
+        except Exception as e:
+            print(f"Warning: Logging setup failed: {e}")
+
+        print(f"✓ Heroku config initialized")
+        print(f"  SECRET_KEY: {'Set' if app.config.get('SECRET_KEY') else 'Not set'}")
+        print(f"  DEBUG: {app.config.get('DEBUG', 'Not set')}")
