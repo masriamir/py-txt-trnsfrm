@@ -146,11 +146,13 @@ heroku logs --tail
 The app includes several Heroku-specific configurations:
 
 - **Procfile**: Defines how to run the app with Gunicorn
-- **runtime.txt**: Specifies Python 3.13
+- **.python-version**: Specifies Python 3.13 for uv package manager
 - **heroku_config.py**: Heroku-optimized settings
 - **Automatic SSL**: Forces HTTPS in production
 - **Proxy handling**: Properly handles Heroku's load balancer
 - **Logging**: Configured for Heroku's log aggregation
+
+**Note**: This project uses `uv` as the package manager, so Heroku requires a `.python-version` file instead of `runtime.txt`.
 
 ### Docker Development
 
@@ -190,7 +192,7 @@ py-txt-trnsfrm/
 ├── app.py                       # Application entry point
 ├── heroku_config.py            # Heroku-specific configuration
 ├── Procfile                    # Heroku process definition
-├── runtime.txt                 # Python version for Heroku
+├── .python-version             # Python version for Heroku (uv)
 ├── deploy.sh                   # Deployment script
 ├── pyproject.toml              # Project configuration
 ├── Dockerfile                  # Container definition
@@ -341,13 +343,13 @@ If you encounter any issues or have questions:
 
 ## 🚀 Live Demo
 
-Visit the live application: [https://your-app-name.herokuapp.com](https://your-app-name.herokuapp.com)
+Visit the live application: [https://py-txt-trnsfrm.herokuapp.com](https://py-txt-trnsfrm.herokuapp.com)
 
 ## 🌐 Deployment Status
 
 - ✅ Local Development
 - ✅ Docker Support
-- ✅ Heroku Ready
+- ✅ Heroku Ready (with uv support)
 - ⏳ AWS/GCP Support (Coming Soon)
 - ⏳ Kubernetes Manifests (Coming Soon)
 

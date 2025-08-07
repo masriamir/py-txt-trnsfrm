@@ -81,7 +81,8 @@ profile_default/
 ipython_config.py
 
 # pyenv
-.python-version
+# NOTE: We want to keep .python-version for Heroku deployment
+# .python-version
 
 # pipenv
 Pipfile.lock

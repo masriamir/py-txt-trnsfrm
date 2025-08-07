@@ -17,6 +17,12 @@ if [ ! -d ".git" ]; then
     exit 1
 fi
 
+# Check if .python-version exists
+if [ ! -f ".python-version" ]; then
+    echo "📝 Creating .python-version file for Python 3.13..."
+    echo "3.13" > .python-version
+fi
+
 # Get app name from user or use default
 read -p "Enter Heroku app name (or press Enter for auto-generated): " APP_NAME
 
