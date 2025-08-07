@@ -24,6 +24,7 @@ A Flask web application for creative text transformations inspired by early 90s 
 - **Bootstrap 5** responsive UI with retro 90s styling
 - **uv** for fast Python package management
 - **Docker** containerization with multi-stage builds
+- **Heroku** ready for cloud deployment
 - **Type hints** throughout the codebase
 - **Comprehensive testing** setup with pytest
 - **Production-ready** with Gunicorn and optional Nginx
@@ -34,13 +35,14 @@ A Flask web application for creative text transformations inspired by early 90s 
 - Python 3.13+
 - uv (recommended) or pip
 - Docker and Docker Compose (for containerized deployment)
+- Heroku CLI (for Heroku deployment)
 
 ### Local Development Setup
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/masriamir/text-transformer-web.git
-cd text-transformer-web
+git clone https://github.com/masriamir/py-txt-trnsfrm.git
+cd py-txt-trnsfrm
 ```
 
 2. **Set up virtual environment with uv**
@@ -48,37 +50,107 @@ cd text-transformer-web
 # Install uv if you haven't already
 pip install uv
 
-# Create and activate virtual environment
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Sync dependencies (creates venv automatically)
+uv sync
 ```
 
-3. **Install dependencies**
+3. **Activate virtual environment**
 ```bash
-# Install main dependencies
-uv pip install -e .
+# On Windows PowerShell
+.venv\Scripts\Activate.ps1
 
-# Install development dependencies
-uv pip install -e ".[dev]"
+# On Windows Command Prompt
+.venv\Scripts\activate.bat
+
+# On macOS/Linux
+source .venv/bin/activate
 ```
 
-4. **Set environment variables**
+4. **Run the application**
 ```bash
-# Create .env file (optional)
-echo "FLASK_DEBUG=True" > .env
-echo "SECRET_KEY=your-secret-key-here" >> .env
-```
+# Using the main script
+uv run app.py
 
-5. **Run the application**
-```bash
-# Using Flask development server
-python app.py
-
-# Or using the module
-python -m flask run
+# Or using Flask development server
+uv run flask run
 
 # The app will be available at http://localhost:5000
 ```
+
+## ☁️ Heroku Deployment
+
+### Quick Deploy
+
+1. **Install Heroku CLI**
+    - Download from: https://devcenter.heroku.com/articles/heroku-cli
+
+2. **Login to Heroku**
+```bash
+heroku login
+```
+
+3. **Deploy using the provided script**
+```bash
+# Make script executable (macOS/Linux)
+chmod +x deploy.sh
+./deploy.sh
+
+# Or run commands manually (see Manual Deploy section)
+```
+
+### Manual Heroku Deployment
+
+1. **Initialize git repository** (if not already done)
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+```
+
+2. **Create Heroku app**
+```bash
+# Create with auto-generated name
+heroku create
+
+# Or create with specific name
+heroku create your-app-name
+```
+
+3. **Set environment variables**
+```bash
+heroku config:set FLASK_CONFIG=production
+heroku config:set SECRET_KEY="$(openssl rand -base64 32)"
+
+# On Windows PowerShell, generate SECRET_KEY separately:
+# $secret = [Convert]::ToBase64String([System.Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes(32))
+# heroku config:set SECRET_KEY="$secret"
+```
+
+4. **Deploy**
+```bash
+git push heroku main
+```
+
+5. **Open your app**
+```bash
+heroku open
+```
+
+6. **View logs**
+```bash
+heroku logs --tail
+```
+
+### Heroku Configuration
+
+The app includes several Heroku-specific configurations:
+
+- **Procfile**: Defines how to run the app with Gunicorn
+- **runtime.txt**: Specifies Python 3.13
+- **heroku_config.py**: Heroku-optimized settings
+- **Automatic SSL**: Forces HTTPS in production
+- **Proxy handling**: Properly handles Heroku's load balancer
+- **Logging**: Configured for Heroku's log aggregation
 
 ### Docker Development
 
@@ -99,7 +171,7 @@ docker-compose --profile production up --build
 
 ### Project Structure
 ```
-text-transformer-web/
+py-txt-trnsfrm/
 ├── app/
 │   ├── __init__.py              # Application factory
 │   ├── config.py                # Configuration settings
@@ -116,6 +188,10 @@ text-transformer-web/
 │       └── text_transformers.py # Text transformation logic
 ├── tests/                       # Test suite
 ├── app.py                       # Application entry point
+├── heroku_config.py            # Heroku-specific configuration
+├── Procfile                    # Heroku process definition
+├── runtime.txt                 # Python version for Heroku
+├── deploy.sh                   # Deployment script
 ├── pyproject.toml              # Project configuration
 ├── Dockerfile                  # Container definition
 ├── docker-compose.yml          # Multi-container setup
@@ -127,33 +203,43 @@ text-transformer-web/
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage
-pytest --cov=app --cov-report=html
+uv run pytest --cov=app --cov-report=html
 
 # Run specific test file
-pytest tests/test_transformers.py
+uv run pytest tests/test_transformers.py
 
 # Run with verbose output
-pytest -v
+uv run pytest -v
 ```
 
 ### Code Quality
 
 ```bash
 # Format code with Black
-black .
+uv run black .
 
 # Lint with flake8
-flake8 app tests
+uv run flake8 app tests
 
 # Type checking with mypy
-mypy app
+uv run mypy app
 
 # Run all quality checks
-black . && flake8 app tests && mypy app && pytest
+uv run black . && uv run flake8 app tests && uv run mypy app && uv run pytest
 ```
+
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `FLASK_CONFIG` | Configuration mode | `development` | No |
+| `SECRET_KEY` | Flask secret key | Auto-generated | Yes (Production) |
+| `FLASK_DEBUG` | Enable debug mode | `False` | No |
+| `PORT` | Port to run on | `5000` | No |
+| `DYNO` | Heroku dyno indicator | N/A | Auto (Heroku) |
 
 ### Adding New Transformations
 
@@ -184,126 +270,47 @@ self.transformations['my_transformation'] = self.my_transformation
 'my_transformation': '🎯 My Transformation',
 ```
 
-## 🐳 Production Deployment
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FLASK_CONFIG` | Configuration mode | `development` |
-| `SECRET_KEY` | Flask secret key | Generated |
-| `FLASK_DEBUG` | Enable debug mode | `False` |
-| `PORT` | Port to run on | `5000` |
-
-### Docker Production Deployment
-
-1. **Set production environment variables**:
-```bash
-export SECRET_KEY="your-very-secure-secret-key-here"
-export FLASK_CONFIG="production"
-```
-
-2. **Deploy with Docker Compose**:
-```bash
-# With Nginx reverse proxy
-docker-compose --profile production up -d
-
-# Simple single container
-docker-compose up -d web
-```
-
-3. **View logs**:
-```bash
-docker-compose logs -f
-```
-
-### Manual Production Setup
-
-1. **Install production dependencies**:
-```bash
-uv pip install -e . --no-dev
-```
-
-2. **Set environment variables**:
-```bash
-export FLASK_CONFIG=production
-export SECRET_KEY="your-secret-key"
-```
-
-3. **Run with Gunicorn**:
-```bash
-gunicorn --bind 0.0.0.0:5000 --workers 4 app:app
-```
-
-## 🧪 Testing
-
-### Test Structure
-- `tests/test_app.py` - Application and route tests
-- `tests/test_transformers.py` - Text transformation logic tests
-- `tests/conftest.py` - Pytest fixtures and configuration
-
-### Running Specific Tests
-
-```bash
-# Test transformations only
-pytest tests/test_transformers.py::TestTextTransformer
-
-# Test specific transformation
-pytest tests/test_transformers.py::TestTextTransformer::test_alternate_case
-
-# Test with specific markers
-pytest -m "not slow"
-```
-
 ## 🐛 Debugging
 
-### Debug Mode
+### Local Debugging
 ```bash
-export FLASK_DEBUG=True
-python app.py
+export FLASK_DEBUG=True  # macOS/Linux
+$env:FLASK_DEBUG="True"  # Windows PowerShell
+uv run app.py
 ```
 
-### Using Python Debugger
-```python
-import pdb; pdb.set_trace()  # Add breakpoint anywhere in code
-```
-
-### Docker Debugging
+### Heroku Debugging
 ```bash
-# Run container with bash
-docker-compose run web bash
+# View application logs
+heroku logs --tail
 
-# View container logs
-docker-compose logs web
+# Run commands on Heroku
+heroku run python -c "from app import create_app; print('App created successfully')"
 
-# Execute commands in running container
-docker-compose exec web python -c "from app import create_app; print(create_app())"
+# Access Heroku bash
+heroku run bash
 ```
 
-## 📊 Performance
+## 📊 Performance & Monitoring
 
-### Optimization Tips
-- Static files are served with long cache headers
-- Gunicorn uses multiple workers for better concurrency
-- Docker images use multi-stage builds for smaller size
-- CSS/JS minification in production (configure as needed)
+### Heroku Monitoring
+- Use `heroku logs --tail` for real-time logs
+- Monitor dyno usage with `heroku ps`
+- Scale dynos with `heroku ps:scale web=2`
 
-### Monitoring
-```bash
-# Check application health
-curl http://localhost:5000/
-
-# Docker health check
-docker-compose ps
-```
+### Performance Tips
+- Static files cached with CDN headers
+- Gunicorn uses multiple workers
+- Gzip compression enabled
+- Database connection pooling ready
 
 ## 🤝 Contributing
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature-name`
 3. **Make changes and add tests**
-4. **Ensure all tests pass**: `pytest`
-5. **Format code**: `black .`
+4. **Ensure all tests pass**: `uv run pytest`
+5. **Format code**: `uv run black .`
 6. **Submit a pull request**
 
 ### Development Guidelines
@@ -317,6 +324,8 @@ docker-compose ps
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+Copyright (c) 2025 Amir Masri
+
 ## 🎨 Inspiration
 
 This project draws inspiration from early 1990s internet culture, particularly text transformation utilities that were popular on BBSs and early web communities. The aesthetic and functionality pay homage to tools like "methodist toolz" and similar utilities from that era.
@@ -325,21 +334,25 @@ This project draws inspiration from early 1990s internet culture, particularly t
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/masriamir/text-transformer-web/issues) page
+1. Check the [Issues](https://github.com/masriamir/py-txt-trnsfrm/issues) page
 2. Create a new issue with detailed information
-3. Include steps to reproduce any bugs
+3. For Heroku-specific issues, include `heroku logs --tail` output
 4. Provide your environment details (Python version, OS, etc.)
 
-## 🚀 Future Enhancements
+## 🚀 Live Demo
 
-- [ ] Save/load text transformations
-- [ ] User accounts and favorites
-- [ ] More transformation options
-- [ ] Batch processing
-- [ ] API endpoints
-- [ ] Mobile app version
-- [ ] Plugin system for custom transformations
+Visit the live application: [https://your-app-name.herokuapp.com](https://your-app-name.herokuapp.com)
+
+## 🌐 Deployment Status
+
+- ✅ Local Development
+- ✅ Docker Support
+- ✅ Heroku Ready
+- ⏳ AWS/GCP Support (Coming Soon)
+- ⏳ Kubernetes Manifests (Coming Soon)
 
 ---
 
 **Built with ❤️ and nostalgia for the early days of the internet**
+
+**Deploy to Heroku with one click:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/masriamir/py-txt-trnsfrm)
