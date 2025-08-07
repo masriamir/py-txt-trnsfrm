@@ -4,22 +4,10 @@ from app.config import config
 
 
 def main():
-    """Entry point for the application."""
-    # Get configuration from environment variable, default to 'development'
-    config_name = os.environ.get('FLASK_CONFIG', 'development')
-
-    # Special handling for Heroku
-    if os.environ.get('DYNO'):  # DYNO env var indicates Heroku
-        config_name = 'heroku'
-        # Import Heroku config
-        from heroku_config import HerokuConfig
-        config['heroku'] = HerokuConfig
-
+    """Entry point for the application when run directly."""
     print(f"Starting application with config: {config_name}")
 
     try:
-        app = create_app(config[config_name])
-
         port = int(os.environ.get('PORT', 5000))
         debug = config_name == 'development'
 
@@ -39,13 +27,17 @@ def main():
         exit(1)
 
 
-# For Heroku and WSGI servers
+# Determine configuration - this needs to happen at module level
 config_name = os.environ.get('FLASK_CONFIG', 'development')
-if os.environ.get('DYNO'):  # Running on Heroku
+
+# Special handling for Heroku
+if os.environ.get('DYNO'):  # DYNO env var indicates Heroku
+    config_name = 'heroku'
+    # Import and register Heroku config
     from heroku_config import HerokuConfig
     config['heroku'] = HerokuConfig
-    config_name = 'heroku'
 
+# Create the Flask app instance at module level (required for Gunicorn)
 app = create_app(config[config_name])
 
 if __name__ == '__main__':

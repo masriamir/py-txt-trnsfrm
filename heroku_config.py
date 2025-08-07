@@ -21,8 +21,12 @@ class HerokuConfig(ProductionConfig):
         ProductionConfig.init_app(app)
 
         # Trust the proxy headers from Heroku
-        from werkzeug.middleware.proxy_fix import ProxyFix
-        app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+        try:
+            from werkzeug.middleware.proxy_fix import ProxyFix
+            app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+        except ImportError:
+            # If werkzeug version doesn't have ProxyFix, that's okay
+            pass
 
         # Configure logging for Heroku
         import logging
@@ -33,4 +37,8 @@ class HerokuConfig(ProductionConfig):
         stream_handler.setLevel(logging.INFO)
         app.logger.addHandler(stream_handler)
         app.logger.setLevel(logging.INFO)
-        app.logger.info('Heroku deployment startup')
+        app.logger.info('Heroku deployment startup complete')
+
+        print(f"Heroku config initialized successfully")
+        print(f"SECRET_KEY set: {'Yes' if app.config.get('SECRET_KEY') else 'No'}")
+        print(f"DEBUG mode: {app.config.get('DEBUG')}")
