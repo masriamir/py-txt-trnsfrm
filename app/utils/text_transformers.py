@@ -51,6 +51,7 @@ class TextTransformer:
             'reverse_words': self.reverse_words,
             'spongebob_case': self.spongebob_case,
             'wave_text': self.wave_text,
+            'shizzle': self.shizzle,
         }
         logger.debug(f"TextTransformer initialized with {len(self.transformations)} transformations")
 
@@ -462,3 +463,50 @@ class TextTransformer:
                 wave_index += 1
 
         return ''.join(result)
+
+    def shizzle(self, text: str) -> str:
+        """Transform text to a 'shizzle' style (izzle speak).
+
+        Adds the suffix 'izzle' to words, popularized by 90s hip-hop culture
+        and Snoop Dogg. Handles words with leading/trailing punctuation by preserving
+        the punctuation and only transforming the alphabetic portions.
+
+        Args:
+            text: Input text to transform to shizzle style.
+
+        Returns:
+            str: Text with 'shizzle' style applied.
+
+        Example:
+            >>> transformer = TextTransformer()
+            >>> result = transformer.shizzle("hello world!")
+            >>> print(result)  # "helloizzle worldizzle!"
+        """
+        import re
+
+        # Handle empty or whitespace-only strings
+        if not text or text.isspace():
+            return text
+
+        def transform_word(word):
+            # Extract leading non-alphabetic, alphabetic part, and trailing non-alphabetic
+            match = re.match(r'^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$', word)
+            if match:
+                leading_punct = match.group(1)
+                alphabetic_part = match.group(2)
+                trailing_punct = match.group(3)
+                return leading_punct + alphabetic_part + 'izzle' + trailing_punct
+            else:
+                # If no alphabetic characters found, return unchanged
+                return word
+
+        words = text.split()
+        result = []
+
+        for word in words:
+            if word:  # Skip empty words
+                result.append(transform_word(word))
+            else:
+                result.append(word)
+
+        return ' '.join(result)

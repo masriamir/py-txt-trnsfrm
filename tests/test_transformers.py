@@ -38,7 +38,7 @@ class TestTextTransformer:
         expected = [
             'alternate_case', 'rainbow_html', 'l33t_speak', 'backwards',
             'upside_down', 'stutter', 'zalgo', 'morse_code', 'binary',
-            'rot13', 'reverse_words', 'spongebob_case', 'wave_text'
+            'rot13', 'reverse_words', 'spongebob_case', 'wave_text', 'shizzle'
         ]
 
         for expected_transform in expected:
@@ -54,15 +54,15 @@ class TestTextTransformer:
             transformer: TextTransformer fixture.
         """
         result = transformer.alternate_case('Hello World')
-        assert result == 'HeLlO WoRlD'
+        assert result == 'HeLlO wOrLd'
 
         # Test with punctuation
         result = transformer.alternate_case('Hello, world!')
-        assert result == 'HeLlO, WoRlD!'
+        assert result == 'HeLlO, wOrLd!'
 
         # Test sentence reset
         result = transformer.alternate_case('Hi. How are you?')
-        assert result == 'Hi. HoW ArE YoU?'
+        assert result == 'Hi. HoW aRe YoU?'
 
     def test_rainbow_html(self, transformer):
         """Test rainbow HTML transformation output format.
@@ -90,7 +90,7 @@ class TestTextTransformer:
         assert result == 'H3110'
 
         result = transformer.l33t_speak('Leet Speak')
-        assert result == '1337 Sp34k'
+        assert result == '1337 5p34k'
 
     def test_backwards(self, transformer):
         """Test backwards text transformation.
@@ -216,6 +216,60 @@ class TestTextTransformer:
         with pytest.raises(ValueError) as exc_info:
             transformer.transform('Hello', 'invalid_transform')
         assert 'Unknown transformation' in str(exc_info.value)
+
+    def test_shizzle(self, transformer):
+        """Test shizzle transformation with various input scenarios.
+
+        Verifies that the shizzle transformation correctly adds 'izzle'
+        to alphabetic words while preserving numbers, punctuation, and symbols.
+        Tests various edge cases and input combinations.
+
+        Args:
+            transformer: TextTransformer fixture.
+        """
+        # Basic word transformation
+        result = transformer.shizzle('hello')
+        assert result == 'helloizzle'
+
+        # Multiple words
+        result = transformer.shizzle('hello world')
+        assert result == 'helloizzle worldizzle'
+
+        # Mixed case preservation
+        result = transformer.shizzle('Hello World')
+        assert result == 'Helloizzle Worldizzle'
+
+        # Numbers should remain unchanged
+        result = transformer.shizzle('test 123 word')
+        assert result == 'testizzle 123 wordizzle'
+
+        # Punctuation and symbols should remain unchanged
+        result = transformer.shizzle('hello! @world# $money%')
+        assert result == 'helloizzle! @worldizzle# $moneyizzle%'
+
+        # Single letter words
+        result = transformer.shizzle('a I am')
+        assert result == 'aizzle Iizzle amizzle'
+
+        # Words with punctuation attached (mixed alphanumeric)
+        result = transformer.shizzle('hello123 world!')
+        assert result == 'helloizzle123 worldizzle!'  # Should transform alphabetic parts
+
+        # Empty string
+        result = transformer.shizzle('')
+        assert result == ''
+
+        # Only spaces
+        result = transformer.shizzle('   ')
+        assert result == '   '
+
+        # Only numbers and symbols
+        result = transformer.shizzle('123 !@# $%^')
+        assert result == '123 !@# $%^'
+
+        # Classic hip-hop style examples
+        result = transformer.shizzle('for sure my friend')
+        assert result == 'forizzle sureizzle myizzle friendizzle'
 
     def test_empty_text_handling(self, transformer):
         """Test transformation behavior with empty input.

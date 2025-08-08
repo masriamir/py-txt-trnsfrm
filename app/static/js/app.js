@@ -139,10 +139,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function showNotification(message, type = 'info') {
         const toast = new bootstrap.Toast(notification);
         toastBody.textContent = message;
-        
+
         // Remove existing type classes
         notification.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info');
-        
+
         // Add appropriate class based on type
         switch(type) {
             case 'success':
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
             default:
                 notification.classList.add('bg-info', 'text-white');
         }
-        
+
         toast.show();
     }
 
@@ -174,7 +174,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'binary': 'Binary',
             'rot13': 'ROT13',
             'spongebob_case': 'SpongeBob Case',
-            'wave_text': 'Wave Text'
+            'wave_text': 'Wave Text',
+            'shizzle': 'Shizzle Speak'
         };
         return names[transformation] || transformation;
     }
@@ -192,7 +193,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'binary': '🤖 Binary',
             'rot13': '🔐 ROT13',
             'spongebob_case': '🧽 SpOnGeBob CaSe',
-            'wave_text': '🌊 ~Wave~ Text'
+            'wave_text': '🌊 ~Wave~ Text',
+            'shizzle': '🎤 Shizzle Speak'
         };
         return texts[transformation] || transformation;
     }
