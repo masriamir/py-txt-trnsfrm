@@ -34,11 +34,16 @@ class ProductionConfig(Config):
         """Initialize production app and validate required settings."""
         Config.init_app(app)
 
+        from app.logging_config import get_logger
+        logger = get_logger('config')
+
         # Validate that SECRET_KEY is set in production
         if not os.environ.get('SECRET_KEY'):
+            logger.critical("No SECRET_KEY set for production environment")
             raise ValueError("No SECRET_KEY set for production environment")
 
         app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+        logger.info("Production configuration initialized successfully")
 
 
 config: dict[str, Type[Config]] = {

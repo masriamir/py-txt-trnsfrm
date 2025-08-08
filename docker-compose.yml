@@ -8,8 +8,10 @@ services:
     environment:
       - FLASK_CONFIG=production
       - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
+      - CONTAINER_ENV=true
+      - PYTHONIOENCODING=utf-8
     volumes:
-      - ./logs:/app/logs
+      - logs:/app/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
@@ -17,6 +19,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=web"
 
   # Optional: Add nginx reverse proxy for production
   nginx:
@@ -30,6 +38,12 @@ services:
     restart: unless-stopped
     profiles:
       - production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=nginx"
 
 volumes:
   logs:
