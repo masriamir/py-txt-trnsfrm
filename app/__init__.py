@@ -1,3 +1,9 @@
+"""Flask application factory module.
+
+This module contains the Flask application factory function that creates and configures
+the Flask application instance with all necessary components including logging,
+middleware, and blueprints.
+"""
 from flask import Flask
 
 from app.config import Config
@@ -5,7 +11,23 @@ from app.logging_config import get_logger, setup_logging
 
 
 def create_app(config_class=None):
-    """Application factory pattern."""
+    """Create and configure Flask application instance.
+
+    This function implements the application factory pattern, creating a Flask
+    application with all necessary configuration, logging, middleware, and blueprints.
+
+    Args:
+        config_class: Configuration class to use. If None, determines config from
+            FLASK_CONFIG environment variable (defaults to 'development').
+
+    Returns:
+        Flask: Configured Flask application instance.
+
+    Example:
+        >>> from app import create_app
+        >>> app = create_app()
+        >>> app.run()
+    """
     app = Flask(__name__)
 
     # Use default config if none provided

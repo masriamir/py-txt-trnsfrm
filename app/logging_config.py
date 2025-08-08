@@ -1,3 +1,10 @@
+"""Centralized logging configuration module.
+
+This module provides centralized logging setup and configuration for the Flask
+application. It supports different logging levels, output formats, and deployment
+environments including development, production, and containerized deployments.
+"""
+
 import logging
 import logging.config
 import os
@@ -5,11 +12,15 @@ from typing import Any
 
 
 def setup_logging(debug: bool = False) -> None:
-    """
-    Setup centralized logging configuration for the application.
+    """Setup centralized logging configuration for the application.
+
+    Configures logging with appropriate handlers, formatters, and log levels
+    based on the deployment environment and debug setting. Supports both
+    console and file logging with automatic detection of container environments.
 
     Args:
-        debug: If True, enables DEBUG level logging. Otherwise uses INFO level.
+        debug: If True, enables DEBUG level logging with detailed formatting.
+            If False, uses INFO level with standard formatting.
     """
     log_level = 'DEBUG' if debug else 'INFO'
 
@@ -92,14 +103,22 @@ def setup_logging(debug: bool = False) -> None:
 
 
 def get_logger(name: str) -> logging.Logger:
-    """
-    Get a logger instance with the app's logging configuration.
+    """Get a logger instance with the application's logging configuration.
+
+    Creates and returns a logger instance that follows the application's
+    centralized logging configuration. Automatically ensures all loggers
+    are under the 'app' namespace for consistent logging hierarchy.
 
     Args:
-        name: Logger name, typically __name__ of the calling module
+        name: Logger name, typically __name__ of the calling module.
 
     Returns:
-        Configured logger instance
+        logging.Logger: Configured logger instance ready for use.
+
+    Example:
+        >>> logger = get_logger(__name__)
+        >>> logger.info("Application started")
+        >>> logger.debug("Debug information")
     """
     # Ensure all app loggers are under the 'app' namespace
     if not name.startswith('app.'):

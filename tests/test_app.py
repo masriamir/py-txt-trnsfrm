@@ -1,8 +1,21 @@
+"""Application integration tests module.
+
+This module contains integration tests for the Flask text transformation
+application, testing the main routes, API endpoints, and overall application
+behavior through HTTP requests.
+"""
 import json
 
 
 def test_index_page(client):
-    """Test that the index page loads successfully."""
+    """Test that the index page loads successfully.
+
+    Verifies that the main page returns a successful response and contains
+    the expected content elements.
+
+    Args:
+        client: Flask test client fixture.
+    """
     response = client.get('/')
     assert response.status_code == 200
     assert b'Text Transformer' in response.data
@@ -10,7 +23,14 @@ def test_index_page(client):
 
 
 def test_transform_text_success(client):
-    """Test successful text transformation."""
+    """Test successful text transformation via API.
+
+    Tests the /transform endpoint with valid input data to ensure
+    successful text transformation and proper JSON response format.
+
+    Args:
+        client: Flask test client fixture.
+    """
     data = {
         'text': 'Hello World',
         'transformation': 'alternate_case'
@@ -27,7 +47,14 @@ def test_transform_text_success(client):
 
 
 def test_transform_text_missing_data(client):
-    """Test transformation with missing data."""
+    """Test transformation API with missing required data.
+
+    Verifies that the API properly handles requests with missing
+    text or transformation parameters.
+
+    Args:
+        client: Flask test client fixture.
+    """
     response = client.post('/transform',
                           data=json.dumps({}),
                           content_type='application/json')
@@ -38,7 +65,14 @@ def test_transform_text_missing_data(client):
 
 
 def test_transform_text_invalid_transformation(client):
-    """Test transformation with invalid transformation type."""
+    """Test transformation API with invalid transformation type.
+
+    Verifies that the API properly handles requests with unknown
+    transformation types and returns appropriate error messages.
+
+    Args:
+        client: Flask test client fixture.
+    """
     data = {
         'text': 'Hello World',
         'transformation': 'nonexistent_transform'

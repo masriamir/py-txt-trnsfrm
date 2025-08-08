@@ -1,3 +1,8 @@
+"""Main application routes module.
+
+This module contains the primary Flask routes for the text transformation web
+application, including the main page and the text transformation API endpoint.
+"""
 from flask import jsonify, render_template, request
 
 from app.logging_config import get_logger
@@ -9,12 +14,45 @@ logger = get_logger(__name__)
 
 @bp.route('/')
 def index():
+    """Render the main application page.
+
+    Serves the main HTML page containing the text transformation interface.
+    Logs the page request for monitoring purposes.
+
+    Returns:
+        str: Rendered HTML template for the main page.
+    """
     logger.info("Index page requested")
     return render_template('index.html')
 
 
 @bp.route('/transform', methods=['POST'])
 def transform_text():
+    """Handle text transformation requests via JSON API.
+
+    Processes POST requests containing text and transformation type,
+    applies the requested transformation, and returns the result as JSON.
+    Validates input data and provides detailed error messages for invalid requests.
+
+    Expected JSON payload:
+        {
+            "text": "Text to transform",
+            "transformation": "transformation_type"
+        }
+
+    Returns:
+        tuple: JSON response and HTTP status code. Success responses include:
+            - success: True
+            - original_text: Input text
+            - transformed_text: Transformed result
+            - transformation: Applied transformation type
+
+        Error responses include:
+            - error: Error description
+
+    Raises:
+        400: If request data is invalid or transformation fails.
+    """
     logger.info("Text transformation request received")
 
     data = request.get_json()

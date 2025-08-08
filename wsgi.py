@@ -1,6 +1,16 @@
 """
-WSGI entry point for Heroku deployment.
-This file is separate from app.py to avoid any conflicts.
+WSGI entry point module for production deployment.
+
+This module serves as the WSGI entry point for production deployments,
+particularly for Heroku and other WSGI-compatible hosting platforms.
+It handles environment detection, configuration loading, and provides
+a fallback application in case of initialization failures.
+
+This file is separate from app.py to avoid conflicts between development
+and production entry points.
+
+Module Variables:
+    app: The Flask application instance exposed for WSGI servers.
 """
 import logging
 import os

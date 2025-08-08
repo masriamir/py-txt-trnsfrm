@@ -1,3 +1,9 @@
+"""Main blueprint module for the Flask application.
+
+This module initializes the main blueprint for the Flask application,
+which contains the primary routes for the text transformation functionality.
+"""
+
 from flask import Blueprint
 
 from app.logging_config import get_logger

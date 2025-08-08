@@ -1,5 +1,9 @@
 """
 Request logging middleware for capturing web request details.
+
+This module provides comprehensive request and response logging middleware
+for Flask applications. It captures detailed information about incoming
+requests including timing, client information, headers, and response details.
 """
 import time
 
@@ -11,11 +15,24 @@ logger = get_logger(__name__)
 
 
 def setup_request_logging(app):
-    """Set up request logging middleware for the Flask app."""
+    """Set up comprehensive request logging middleware for the Flask application.
+
+    Configures before_request and after_request handlers to log detailed
+    information about all HTTP requests and responses. Includes timing
+    information, client details, and error handling.
+
+    Args:
+        app: Flask application instance to configure with request logging.
+    """
 
     @app.before_request
     def log_request_start():
-        """Log the start of each request with details."""
+        """Log the start of each request with detailed information.
+
+        Captures and logs request initiation details including client IP,
+        HTTP method, path, headers, and query parameters. Stores start
+        time for duration calculation.
+        """
         g.start_time = time.time()
 
         # Get client IP (handling proxies)
@@ -41,7 +58,17 @@ def setup_request_logging(app):
 
     @app.after_request
     def log_request_end(response):
-        """Log the end of each request with response details."""
+        """Log the completion of each request with response details.
+
+        Captures and logs request completion information including response
+        status code, duration, and response headers in debug mode.
+
+        Args:
+            response: Flask response object.
+
+        Returns:
+            Flask response object (unchanged).
+        """
         duration = time.time() - g.get('start_time', time.time())
 
         # Get client IP again for consistency
@@ -73,7 +100,17 @@ def setup_request_logging(app):
 
     @app.errorhandler(404)
     def log_not_found(error):
-        """Log 404 errors with additional context."""
+        """Log 404 Not Found errors with additional context.
+
+        Captures and logs detailed information about 404 errors including
+        client IP, user agent, and requested path for debugging purposes.
+
+        Args:
+            error: Flask error object for the 404 error.
+
+        Returns:
+            tuple: JSON error response and 404 status code.
+        """
         client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         if client_ip:
             client_ip = client_ip.split(',')[0].strip()
@@ -85,7 +122,17 @@ def setup_request_logging(app):
 
     @app.errorhandler(500)
     def log_server_error(error):
-        """Log 500 errors with additional context."""
+        """Log 500 Internal Server errors with additional context.
+
+        Captures and logs detailed information about server errors including
+        client IP and error details for debugging and monitoring.
+
+        Args:
+            error: Flask error object for the 500 error.
+
+        Returns:
+            tuple: JSON error response and 500 status code.
+        """
         client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
         if client_ip:
             client_ip = client_ip.split(',')[0].strip()

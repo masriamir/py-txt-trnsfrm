@@ -1,4 +1,10 @@
-"""Heroku-specific configuration overrides."""
+"""Heroku-specific configuration module.
+
+This module provides configuration overrides specifically tailored for
+Heroku deployment environments. It extends the base ProductionConfig
+with Heroku-specific settings including proxy configuration, SSL settings,
+and environment validation.
+"""
 import os
 
 try:
@@ -8,16 +14,32 @@ except ImportError as e:
     logging.warning(f"Could not import ProductionConfig: {e}")
     # Fallback base config
     class ProductionConfig:
+        """Fallback configuration class if main config cannot be imported."""
         DEBUG = False
         TESTING = False
         SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
 
         @classmethod
         def init_app(cls, app):
+            """Initialize fallback configuration.
+
+            Args:
+                app: Flask application instance.
+            """
             pass
 
 class HerokuConfig(ProductionConfig):
-    """Configuration for Heroku deployment."""
+    """Configuration class optimized for Heroku deployment.
+
+    This configuration extends ProductionConfig with Heroku-specific
+    settings including proxy trust configuration, SSL settings, and
+    enhanced logging for the Heroku environment.
+
+    Attributes:
+        DATABASE_URL: Database connection URL (for future use).
+        SSL_REDIRECT: Whether to force SSL redirects in production.
+        PROXY_FIX: Whether to apply proxy fix middleware.
+    """
 
     # Use DATABASE_URL if provided (for future database integration)
     DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -30,7 +52,17 @@ class HerokuConfig(ProductionConfig):
 
     @classmethod
     def init_app(cls, app):
-        """Initialize Heroku-specific settings."""
+        """Initialize Heroku-specific application settings.
+
+        Configures the Flask application for Heroku deployment including
+        proxy header handling, SSL configuration, and environment validation.
+
+        Args:
+            app: Flask application instance to configure.
+
+        Raises:
+            ValueError: If required environment variables are not set.
+        """
         # Import logger after app initialization to avoid circular imports
         try:
             from app.logging_config import get_logger

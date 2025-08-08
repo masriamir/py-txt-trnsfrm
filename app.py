@@ -1,4 +1,9 @@
-"""Main application entry point."""
+"""Main application entry point module.
+
+This module serves as the primary entry point for running the Flask text
+transformation application directly (not through a WSGI server). It handles
+configuration detection, environment setup, and server startup.
+"""
 # Set up basic logging for main entry point
 import logging
 import os
@@ -14,7 +19,27 @@ logging.basicConfig(
 logger = logging.getLogger('main')
 
 def main():
-    """Entry point for running the application directly."""
+    """Entry point for running the Flask application directly.
+
+    Detects the appropriate configuration based on environment variables,
+    handles Heroku-specific setup if needed, creates the Flask application
+    instance, and starts the development server.
+
+    Environment Variables:
+        FLASK_CONFIG: Configuration environment ('development', 'production', etc.)
+        PORT: Port number to run the server on (defaults to 5000)
+        DYNO: Heroku environment indicator
+
+    Raises:
+        SystemExit: If configuration fails or an unhandled exception occurs.
+
+    Example:
+        Run the application directly:
+            $ python app.py
+
+        Run with specific configuration:
+            $ FLASK_CONFIG=production python app.py
+    """
     config_name = os.environ.get('FLASK_CONFIG', 'development')
     logger.info(f"Starting application with config: {config_name}")
 
