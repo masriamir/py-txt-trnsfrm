@@ -1,11 +1,11 @@
 """Main application entry point."""
-import os
-from app import create_app
-from app.config import config
-from app.logging_config import get_logger
-
 # Set up basic logging for main entry point
 import logging
+import os
+
+from app import create_app
+from app.config import config
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',

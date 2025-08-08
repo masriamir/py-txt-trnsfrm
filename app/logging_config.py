@@ -1,7 +1,7 @@
 import logging
 import logging.config
 import os
-from typing import Dict, Any
+from typing import Any
 
 
 def setup_logging(debug: bool = False) -> None:
@@ -17,7 +17,7 @@ def setup_logging(debug: bool = False) -> None:
     log_dir = '/app/logs' if os.path.exists('/app/logs') else '.'
     log_file_path = os.path.join(log_dir, 'app.log')
 
-    logging_config: Dict[str, Any] = {
+    logging_config: dict[str, Any] = {
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {

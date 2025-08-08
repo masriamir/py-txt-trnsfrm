@@ -1,6 +1,4 @@
 import json
-import pytest
-from flask import url_for
 
 
 def test_index_page(client):
@@ -17,10 +15,10 @@ def test_transform_text_success(client):
         'text': 'Hello World',
         'transformation': 'alternate_case'
     }
-    response = client.post('/transform', 
+    response = client.post('/transform',
                           data=json.dumps(data),
                           content_type='application/json')
-    
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result['success'] is True
@@ -30,10 +28,10 @@ def test_transform_text_success(client):
 
 def test_transform_text_missing_data(client):
     """Test transformation with missing data."""
-    response = client.post('/transform', 
+    response = client.post('/transform',
                           data=json.dumps({}),
                           content_type='application/json')
-    
+
     assert response.status_code == 400
     result = json.loads(response.data)
     assert 'error' in result
@@ -45,10 +43,10 @@ def test_transform_text_invalid_transformation(client):
         'text': 'Hello World',
         'transformation': 'nonexistent_transform'
     }
-    response = client.post('/transform', 
+    response = client.post('/transform',
                           data=json.dumps(data),
                           content_type='application/json')
-    
+
     assert response.status_code == 400
     result = json.loads(response.data)
     assert 'error' in result
@@ -60,10 +58,10 @@ def test_transform_text_empty_text(client):
         'text': '',
         'transformation': 'alternate_case'
     }
-    response = client.post('/transform', 
+    response = client.post('/transform',
                           data=json.dumps(data),
                           content_type='application/json')
-    
+
     assert response.status_code == 200
     result = json.loads(response.data)
     assert result['success'] is True
@@ -72,13 +70,13 @@ def test_transform_text_empty_text(client):
 
 class TestStaticFiles:
     """Test static file serving."""
-    
+
     def test_css_loads(self, client):
         """Test that CSS file is accessible."""
         response = client.get('/static/css/style.css')
         assert response.status_code == 200
         assert b'retro-text' in response.data
-    
+
     def test_js_loads(self, client):
         """Test that JavaScript file is accessible."""
         response = client.get('/static/js/app.js')

@@ -1,6 +1,7 @@
 from flask import Flask
+
 from app.config import Config
-from app.logging_config import setup_logging, get_logger
+from app.logging_config import get_logger, setup_logging
 
 
 def create_app(config_class=None):
@@ -9,8 +10,9 @@ def create_app(config_class=None):
 
     # Use default config if none provided
     if config_class is None:
-        from app.config import config
         import os
+
+        from app.config import config
         config_name = os.environ.get('FLASK_CONFIG', 'development')
         config_class = config[config_name]
 

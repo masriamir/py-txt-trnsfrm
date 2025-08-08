@@ -1,5 +1,4 @@
 import os
-from typing import Type
 
 
 class Config:
@@ -46,7 +45,7 @@ class ProductionConfig(Config):
         logger.info("Production configuration initialized successfully")
 
 
-config: dict[str, Type[Config]] = {
+config: dict[str, type[Config]] = {
     'development': DevelopmentConfig,
     'testing': TestConfig,
     'production': ProductionConfig,

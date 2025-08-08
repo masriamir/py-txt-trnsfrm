@@ -1,5 +1,6 @@
 import random
-from typing import Dict, Callable
+from collections.abc import Callable
+
 from app.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -10,7 +11,7 @@ class TextTransformer:
 
     def __init__(self):
         logger.debug("Initializing TextTransformer with available transformations")
-        self.transformations: Dict[str, Callable[[str], str]] = {
+        self.transformations: dict[str, Callable[[str], str]] = {
             'alternate_case': self.alternate_case,
             'rainbow_html': self.rainbow_html,
             'l33t_speak': self.l33t_speak,

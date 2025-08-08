@@ -2,9 +2,9 @@
 WSGI entry point for Heroku deployment.
 This file is separate from app.py to avoid any conflicts.
 """
+import logging
 import os
 import sys
-import logging
 
 # Add current directory to Python path
 sys.path.insert(0, os.path.dirname(__file__))

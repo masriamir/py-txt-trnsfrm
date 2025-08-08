@@ -2,7 +2,9 @@
 Request logging middleware for capturing web request details.
 """
 import time
-from flask import request, g
+
+from flask import g, request
+
 from app.logging_config import get_logger
 
 logger = get_logger(__name__)

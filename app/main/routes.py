@@ -1,7 +1,8 @@
-from flask import render_template, request, jsonify
+from flask import jsonify, render_template, request
+
+from app.logging_config import get_logger
 from app.main import bp
 from app.utils.text_transformers import TextTransformer
-from app.logging_config import get_logger
 
 logger = get_logger(__name__)
 
