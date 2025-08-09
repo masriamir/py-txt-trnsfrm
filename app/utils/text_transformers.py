@@ -468,19 +468,21 @@ class TextTransformer:
         """Transform text to a 'shizzle' style (izzle speak).
 
         Adds the suffix 'izzle' to words, popularized by 90s hip-hop culture
-        and Snoop Dogg. Handles words with leading/trailing punctuation by preserving
-        the punctuation and only transforming the alphabetic portions.
+        and Snoop Dogg. Uses sophisticated rules for authentic izzle speak:
+        - For words ending in vowels, replaces the vowel: "money" → "monizzle"
+        - For plurals, moves the plural suffix: "snitches" → "snitchizzles"
+        - Handles leading/trailing punctuation by preserving it.
 
         Args:
             text: Input text to transform to shizzle style.
 
         Returns:
-            str: Text with 'shizzle' style applied.
+            str: Text with 'shizzle' style applied using authentic rules.
 
         Example:
             >>> transformer = TextTransformer()
-            >>> result = transformer.shizzle("hello world!")
-            >>> print(result)  # "helloizzle worldizzle!"
+            >>> result = transformer.shizzle("hello money snitches world!")
+            >>> print(result)  # "helloizzle monizzle snitchizzles worldizzle!"
         """
         import re
 
@@ -495,10 +497,84 @@ class TextTransformer:
                 leading_punct = match.group(1)
                 alphabetic_part = match.group(2)
                 trailing_punct = match.group(3)
-                return leading_punct + alphabetic_part + 'izzle' + trailing_punct
+
+                # Apply izzle transformation to the alphabetic part
+                transformed_word = apply_izzle_rules(alphabetic_part)
+                return leading_punct + transformed_word + trailing_punct
             else:
                 # If no alphabetic characters found, return unchanged
                 return word
+
+        def apply_izzle_rules(word):
+            """Apply sophisticated izzle transformation rules."""
+            if len(word) <= 1:
+                return word + 'izzle'
+
+            word_lower = word.lower()
+
+            # Handle plural words (ending in 's', 'es', 'ies')
+            plural_suffix = ""
+            base_word = word
+
+            # Check for common plural patterns
+            if word_lower.endswith('ies') and len(word) > 3:
+                # "ladies" → "lad" + "ies"
+                base_word = word[:-3]
+                plural_suffix = "ies"
+            elif word_lower.endswith('es') and len(word) > 2:
+                # Check if it's a real plural (not just words ending in 'es')
+                # Common patterns: -ches, -shes, -xes, -zes, -ses
+                if word_lower.endswith(('ches', 'shes', 'xes', 'zes', 'ses')):
+                    base_word = word[:-2]
+                    plural_suffix = "es"
+                elif word_lower.endswith('es'):
+                    # For other -es endings, treat as plural if word > 3 chars
+                    if len(word) > 3:
+                        base_word = word[:-2]
+                        plural_suffix = "es"
+            elif word_lower.endswith('s') and len(word) > 2:
+                # Simple plural: "cats" → "cat" + "s"
+                # But avoid words that naturally end in 's' like "bus", "gas"
+                penultimate = word_lower[-2]
+                if penultimate not in 'aeiou':  # Consonant before 's' suggests plural
+                    base_word = word[:-1]
+                    plural_suffix = "s"
+
+            # Now apply izzle rules to the base word
+            base_lower = base_word.lower()
+
+            # Handle words ending in vowels - replace the vowel with 'izzle'
+            if len(base_word) > 1 and base_lower[-1] in 'aeiouy':
+                # For words ending in vowels, we want to replace the final vowel(s)
+                # with 'izzle' but keep the consonant structure
+
+                # Find the position where the final vowel sequence starts
+                final_vowel_start = len(base_word)
+                # Go backwards from the end to find where vowels start
+                for i in range(len(base_word) - 1, -1, -1):
+                    if base_lower[i] in 'aeiouy':
+                        final_vowel_start = i
+                    else:
+                        break
+
+                # Replace the final vowel sequence with 'izzle'
+                transformed = base_word[:final_vowel_start] + 'izzle'
+            else:
+                # Word ends in consonant or is single letter, just add 'izzle'
+                transformed = base_word + 'izzle'
+
+            # Add back the plural suffix to 'izzle'
+            if plural_suffix:
+                if plural_suffix == 'ies':
+                    # For 'ies' endings, just add 's' to izzle (izzle + s = izzles)
+                    return transformed + 's'
+                elif plural_suffix == 'es':
+                    # For 'es' endings, just add 's' to izzle (izzle + s = izzles)
+                    return transformed + 's'
+                else:
+                    return transformed + plural_suffix
+            else:
+                return transformed
 
         words = text.split()
         result = []

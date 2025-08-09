@@ -218,58 +218,99 @@ class TestTextTransformer:
         assert 'Unknown transformation' in str(exc_info.value)
 
     def test_shizzle(self, transformer):
-        """Test shizzle transformation with various input scenarios.
+        """Test shizzle transformation with sophisticated izzle speak rules.
 
-        Verifies that the shizzle transformation correctly adds 'izzle'
-        to alphabetic words while preserving numbers, punctuation, and symbols.
-        Tests various edge cases and input combinations.
+        Verifies that the shizzle transformation correctly applies authentic izzle speak
+        rules including vowel replacement, plural handling, and punctuation preservation.
+        Tests various edge cases and linguistic patterns.
 
         Args:
             transformer: TextTransformer fixture.
         """
-        # Basic word transformation
-        result = transformer.shizzle('hello')
-        assert result == 'helloizzle'
+        # Basic consonant-ending words - just add 'izzle'
+        result = transformer.shizzle('world')
+        assert result == 'worldizzle'
 
-        # Multiple words
-        result = transformer.shizzle('hello world')
-        assert result == 'helloizzle worldizzle'
+        # Words ending in vowels - replace vowel with 'izzle'
+        result = transformer.shizzle('money')
+        assert result == 'monizzle'
+
+        result = transformer.shizzle('home')
+        assert result == 'homizzle'
+
+        result = transformer.shizzle('baby')
+        assert result == 'babizzle'
+
+        # Plural words ending in 's' - move plural to izzle
+        result = transformer.shizzle('cats')
+        assert result == 'catizzles'
+
+        result = transformer.shizzle('dogs')
+        assert result == 'dogizzles'
+
+        # Plural words ending in 'es' - move plural to izzle
+        result = transformer.shizzle('snitches')
+        assert result == 'snitchizzles'
+
+        result = transformer.shizzle('dishes')
+        assert result == 'dishizzles'
+
+        result = transformer.shizzle('boxes')
+        assert result == 'boxizzles'
+
+        # Plural words ending in 'ies' - move plural to izzle
+        result = transformer.shizzle('ladies')
+        assert result == 'ladizzles'
+
+        result = transformer.shizzle('babies')
+        assert result == 'babizzles'
 
         # Mixed case preservation
-        result = transformer.shizzle('Hello World')
-        assert result == 'Helloizzle Worldizzle'
+        result = transformer.shizzle('Money')
+        assert result == 'Monizzle'
 
-        # Numbers should remain unchanged
-        result = transformer.shizzle('test 123 word')
-        assert result == 'testizzle 123 wordizzle'
+        result = transformer.shizzle('Ladies')
+        assert result == 'Ladizzles'
 
-        # Punctuation and symbols should remain unchanged
-        result = transformer.shizzle('hello! @world# $money%')
-        assert result == 'helloizzle! @worldizzle# $moneyizzle%'
+        # Complex sentence with multiple rule types
+        result = transformer.shizzle('hello money snitches world')
+        assert result == 'hellizzle monizzle snitchizzles worldizzle'
+
+        # Punctuation handling
+        result = transformer.shizzle('money!')
+        assert result == 'monizzle!'
+
+        result = transformer.shizzle('@ladies#')
+        assert result == '@ladizzles#'
+
+        # Words that naturally end in 's' but aren't plurals
+        result = transformer.shizzle('bus')
+        assert result == 'busizzle'  # 'bus' is not treated as plural
+
+        result = transformer.shizzle('gas')
+        assert result == 'gasizzle'  # 'gas' is not treated as plural
 
         # Single letter words
-        result = transformer.shizzle('a I am')
-        assert result == 'aizzle Iizzle amizzle'
+        result = transformer.shizzle('a')
+        assert result == 'aizzle'
 
-        # Words with punctuation attached (mixed alphanumeric)
-        result = transformer.shizzle('hello123 world!')
-        assert result == 'helloizzle123 worldizzle!'  # Should transform alphabetic parts
+        result = transformer.shizzle('I')
+        assert result == 'Iizzle'
 
-        # Empty string
+        # Edge cases
         result = transformer.shizzle('')
         assert result == ''
 
-        # Only spaces
         result = transformer.shizzle('   ')
         assert result == '   '
 
-        # Only numbers and symbols
+        # Numbers and symbols should remain unchanged
         result = transformer.shizzle('123 !@# $%^')
         assert result == '123 !@# $%^'
 
-        # Classic hip-hop style examples
-        result = transformer.shizzle('for sure my friend')
-        assert result == 'forizzle sureizzle myizzle friendizzle'
+        # Mixed alphanumeric - should still transform alphabetic parts
+        result = transformer.shizzle('hello123 money!')
+        assert result == 'hellizzle123 monizzle!'
 
     def test_empty_text_handling(self, transformer):
         """Test transformation behavior with empty input.
