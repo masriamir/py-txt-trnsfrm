@@ -157,6 +157,7 @@ Desktop.ini
 logs/
 *.db
 config.py.local
+tmp/
 
 # uv
 .uv/
