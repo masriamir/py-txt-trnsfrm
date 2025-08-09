@@ -17,6 +17,10 @@ A Flask web application for creative text transformations inspired by early 90s 
 - **ROT13**: Classic Caesar cipher
 - **SpongeBob Case**: rAnDoM cApItAlIzAtIoN
 - **Wave Text**: ~Create~ wave ~effects~
+- **Shizzle Speak**: Authentic izzle transformation with sophisticated rules
+  - Vowel replacement: "money" → "monizzle"
+  - Plural handling: "snitches" → "snitchizzles"
+  - Punctuation preservation: "hello!" → "hellizzle!"
 
 ### Technical Features
 - **Python 3.13** with modern async support
