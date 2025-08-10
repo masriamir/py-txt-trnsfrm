@@ -3,6 +3,7 @@ import subprocess
 import json
 import sys
 from pathlib import Path
+from datetime import datetime, timezone
 
 
 def run_bandit_security_scan():
@@ -59,7 +60,7 @@ def generate_security_report():
     safety_results = run_safety_check()
 
     report = {
-        "timestamp": "2024-01-01T00:00:00Z",  # Would use actual timestamp
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "bandit": bandit_results,
         "safety": safety_results
     }
