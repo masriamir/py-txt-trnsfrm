@@ -204,4 +204,95 @@ document.addEventListener('DOMContentLoaded', function() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';
     });
+
+    // Theme picker functionality
+    initializeThemePicker();
+
+    function initializeThemePicker() {
+        // Create theme picker HTML
+        const themePickerHTML = `
+            <div class="theme-picker">
+                <button class="theme-picker-toggle" title="Choose Theme" aria-label="Choose Theme">
+                    🎨
+                </button>
+                <div class="theme-options">
+                    <button class="theme-option active" data-theme="default" title="Pastel Sunset" aria-label="Pastel Sunset Theme"></button>
+                    <button class="theme-option" data-theme="mint" title="Mint Fresh" aria-label="Mint Fresh Theme"></button>
+                    <button class="theme-option" data-theme="lavender" title="Lavender Dreams" aria-label="Lavender Dreams Theme"></button>
+                    <button class="theme-option" data-theme="peach" title="Peach Vibes" aria-label="Peach Vibes Theme"></button>
+                    <button class="theme-option" data-theme="ocean" title="Ocean Breeze" aria-label="Ocean Breeze Theme"></button>
+                </div>
+            </div>
+        `;
+
+        // Add theme picker to body
+        document.body.insertAdjacentHTML('beforeend', themePickerHTML);
+
+        // Get theme picker elements
+        const themePicker = document.querySelector('.theme-picker');
+        const themeToggle = document.querySelector('.theme-picker-toggle');
+        const themeOptions = document.querySelector('.theme-options');
+        const themeButtons = document.querySelectorAll('.theme-option');
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+        applyTheme(savedTheme);
+
+        // Toggle theme options
+        themeToggle.addEventListener('click', function() {
+            themeOptions.classList.toggle('show');
+        });
+
+        // Close theme picker when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!themePicker.contains(e.target)) {
+                themeOptions.classList.remove('show');
+            }
+        });
+
+        // Theme selection
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const theme = this.dataset.theme;
+                applyTheme(theme);
+                localStorage.setItem('selectedTheme', theme);
+                themeOptions.classList.remove('show');
+            });
+        });
+
+        // Keyboard navigation for theme picker
+        themeToggle.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                themeOptions.classList.toggle('show');
+            }
+        });
+
+        themeButtons.forEach(btn => {
+            btn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+        });
+    }
+
+    function applyTheme(themeName) {
+        // Remove existing theme classes
+        document.documentElement.removeAttribute('data-theme');
+
+        // Apply new theme
+        if (themeName !== 'default') {
+            document.documentElement.setAttribute('data-theme', themeName);
+        }
+
+        // Update active theme button
+        document.querySelectorAll('.theme-option').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.theme === themeName) {
+                btn.classList.add('active');
+            }
+        });
+    }
 });
