@@ -165,7 +165,7 @@ Dependencies are logically organized into groups:
 dependencies = [
     "flask>=3.0.0",
     "gunicorn>=21.2.0", 
-    "werkzeug>=3.0.0",
+    "werkzeug>=3.1.3",
 ]
 ```
 
