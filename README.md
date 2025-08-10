@@ -1,8 +1,15 @@
-# 📡 Text Transformer Web 📡
+# 📡 Retro Text Transformer 📡
 
-A Flask web application for creative text transformations inspired by early 90s internet culture. Transform your text with various fun effects like alternate case, l33t speak, rainbow HTML, and more!
+A Flask web application for creative text transformations inspired by early 90s internet culture. Transform your text with various fun effects like alternate case, l33t speak, rainbow HTML, and more! Now featuring an accessible pastel color theme system and comprehensive testing infrastructure.
 
 ## 🌟 Features
+
+### 🎨 Color Theme System
+- **Five Beautiful Pastel Themes**: Pastel Sunset, Mint Fresh, Lavender Dreams, Peach Vibes, Ocean Breeze
+- **Theme Picker**: Interactive floating theme selector with visual previews
+- **Accessibility-First Design**: WCAG compliant color contrasts and keyboard navigation
+- **Persistent Preferences**: Remembers your theme choice across sessions
+- **Motion-Sensitive**: Respects user's reduced motion preferences
 
 ### Text Transformations
 - **Alternate Case**: AlTeRnAtE cAsE while maintaining sentence structure
@@ -22,16 +29,31 @@ A Flask web application for creative text transformations inspired by early 90s 
   - Plural handling: "snitches" → "snitchizzles"
   - Punctuation preservation: "hello!" → "hellizzle!"
 
+### 🧪 Testing & Quality Assurance
+- **Comprehensive Test Suite**: Unit, integration, API, and security tests
+- **Property-Based Testing**: Automated edge case discovery with Hypothesis
+- **Parallel Test Execution**: Fast test runs with pytest-xdist
+- **Coverage Reporting**: HTML, XML, and terminal coverage reports (80% minimum)
+- **Security Analysis**: Bandit code scanning and Safety dependency vulnerability checks
+- **Organized Test Data**: Centralized test data management with faker and pytest-datadir
+- **Test Markers**: Organized test categorization (unit, integration, api, smoke, slow, security)
+
+### 🔒 Security Features
+- **Automated Security Scanning**: Modern safety scan integration with timeout handling
+- **Code Security Analysis**: Bandit static analysis with organized reporting
+- **Dependency Vulnerability Scanning**: Safety CLI integration for known vulnerabilities
+- **Comprehensive Security Reports**: JSON, HTML, and text formats in organized structure
+
 ### Technical Features
 - **Python 3.13** with modern async support
 - **Flask** web framework with modular structure
-- **Bootstrap 5** responsive UI with retro 90s styling
-- **uv** for fast Python package management
+- **Bootstrap 5** responsive UI with 90s-inspired accessible design
+- **uv** for fast Python package management with organized dependency groups
 - **Docker** containerization with multi-stage builds
 - **Heroku** ready for cloud deployment
 - **Type hints** throughout the codebase
-- **Comprehensive testing** setup with pytest
 - **Production-ready** with Gunicorn and optional Nginx
+- **Modern Testing Stack**: pytest 8.4.1+ with comprehensive plugin ecosystem
 
 ## 🚀 Quick Start
 
@@ -49,316 +71,281 @@ git clone https://github.com/masriamir/py-txt-trnsfrm.git
 cd py-txt-trnsfrm
 ```
 
-2. **Set up virtual environment with uv**
+2. **Install dependencies using uv (recommended)**
 ```bash
-# Install uv if you haven't already
-pip install uv
-
-# Sync dependencies (creates venv automatically)
+# Install runtime dependencies
 uv sync
+
+# Install all development dependencies
+uv sync --group dev --group test --group security
+
+# Or install specific groups
+uv sync --group dev          # Development tools (black, ruff, mypy)
+uv sync --group test         # Testing framework (pytest, coverage, etc.)
+uv sync --group security     # Security analysis tools (bandit, safety)
 ```
 
-3. **Activate virtual environment**
+3. **Alternative: Install with pip**
 ```bash
-# On Windows PowerShell
-.venv\Scripts\Activate.ps1
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# On Windows Command Prompt
-.venv\Scripts\activate.bat
-
-# On macOS/Linux
-source .venv/bin/activate
+# Install dependencies
+pip install -e .
 ```
 
 4. **Run the application**
 ```bash
-# Using the main script
-uv run app.py
+# Development server
+uv run flask --app app run --debug
 
-# Or using Flask development server
-uv run flask run
+# Or with Python
+python app.py
+```
 
-# The app will be available at http://localhost:5000
+5. **Open in browser**
+Navigate to `http://localhost:5000`
+
+## 🧪 Testing & Quality
+
+### Running Tests
+```bash
+# Run all tests with coverage
+uv run pytest
+
+# Run specific test categories
+uv run pytest -m unit          # Unit tests only
+uv run pytest -m integration   # Integration tests
+uv run pytest -m api           # API endpoint tests
+uv run pytest -m smoke         # Critical functionality tests
+uv run pytest -m "not slow"    # Skip long-running tests
+
+# Run tests with specific output
+uv run pytest --tb=short       # Short traceback format
+uv run pytest -v               # Verbose output
+uv run pytest --lf             # Run only failed tests from last run
+```
+
+### Security Analysis
+```bash
+# Run comprehensive security analysis
+./run_security_analysis.sh
+
+# Check specific security aspects
+uv run bandit -r app/          # Code security analysis
+uv run safety scan             # Dependency vulnerability scan
+```
+
+### Code Quality
+```bash
+# Format code
+uv run black .
+
+# Lint code
+uv run ruff check .
+uv run ruff format .
+
+# Type checking
+uv run mypy app/
+```
+
+### Reports
+All reports are organized in the `reports/` directory:
+- `reports/coverage/html/` - HTML coverage reports
+- `reports/coverage/coverage.xml` - XML coverage for CI/CD
+- `reports/security/` - Security analysis reports (JSON, HTML, text)
+
+## 📁 Dependency Organization
+
+Dependencies are logically organized into groups:
+
+### Essential Runtime Dependencies
+```toml
+dependencies = [
+    "flask>=3.0.0",
+    "gunicorn>=21.2.0", 
+    "werkzeug>=3.0.0",
+]
+```
+
+### Development Tools (`--group dev`)
+```toml
+dev = [
+    "black>=23.0.0",    # Code formatting
+    "ruff>=0.1.0",      # Linting and code analysis
+    "mypy>=1.5.0",      # Type checking
+]
+```
+
+### Testing Framework (`--group test`)
+```toml
+test = [
+    "pytest>=8.4.1",              # Testing framework
+    "pytest-flask>=1.3.0",        # Flask testing utilities
+    "pytest-cov>=6.2.1",          # Coverage reporting
+    "pytest-mock>=3.14.1",        # Mocking support
+    "pytest-timeout>=2.4.0",      # Timeout handling
+    "pytest-xdist>=3.8.0",        # Parallel execution
+    "coverage>=7.3.0",            # Coverage analysis
+    "faker>=37.5.3",              # Test data generation
+    "hypothesis>=6.137.1",        # Property-based testing
+    "pytest-datadir>=1.8.0",      # Test data management
+    "pytest-httpserver>=1.1.3",   # HTTP server mocking
+    "responses>=0.25.8",          # HTTP response mocking
+]
+```
+
+### Security Analysis (`--group security`)
+```toml
+security = [
+    "bandit>=1.8.6",    # Code security analysis
+    "safety>=3.6.0",    # Dependency vulnerability scanning
+]
+```
+
+## 🎨 Theme System
+
+The application features a comprehensive color theme system:
+
+### Available Themes
+- **Pastel Sunset** (default): Warm peachy-pink gradients
+- **Mint Fresh**: Cool mint green tones  
+- **Lavender Dreams**: Soft purple/violet hues
+- **Peach Vibes**: Coral and peach colors
+- **Ocean Breeze**: Light blue gradients
+
+### Theme Features
+- **Visual Theme Picker**: Click the 🎨 button in the top-right corner
+- **Persistent Selection**: Your theme choice is saved and remembered
+- **Accessibility**: All themes meet WCAG contrast requirements
+- **Keyboard Navigation**: Full keyboard accessibility support
+- **Responsive Design**: Adapts to mobile and tablet screens
+
+### Accessibility Features
+- High contrast text on all themes
+- Support for `prefers-contrast: high` media query
+- Respect for `prefers-reduced-motion` settings
+- Focus indicators for all interactive elements
+- Screen reader friendly with proper ARIA labels
+
+## 🐳 Docker Deployment
+
+### Development with Docker Compose
+```bash
+# Start development environment
+docker-compose up --build
+
+# Run in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+```
+
+### Production Docker Build
+```bash
+# Build production image
+docker build -t py-txt-trnsfrm:latest .
+
+# Run production container
+docker run -p 5000:5000 py-txt-trnsfrm:latest
 ```
 
 ## ☁️ Heroku Deployment
 
 ### Quick Deploy
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/masriamir/py-txt-trnsfrm)
 
-1. **Install Heroku CLI**
-    - Download from: https://devcenter.heroku.com/articles/heroku-cli
-
-2. **Login to Heroku**
+### Manual Deployment
 ```bash
+# Login to Heroku
 heroku login
-```
 
-3. **Deploy using the provided script**
-```bash
-# Make script executable (macOS/Linux)
-chmod +x deploy.sh
-./deploy.sh
-
-# Or run commands manually (see Manual Deploy section)
-```
-
-### Manual Heroku Deployment
-
-1. **Initialize git repository** (if not already done)
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-```
-
-2. **Create Heroku app**
-```bash
-# Create with auto-generated name
-heroku create
-
-# Or create with specific name
+# Create Heroku app
 heroku create your-app-name
-```
 
-3. **Set environment variables**
-```bash
-heroku config:set FLASK_CONFIG=production
-heroku config:set SECRET_KEY="$(openssl rand -base64 32)"
-
-# On Windows PowerShell, generate SECRET_KEY separately:
-# $secret = [Convert]::ToBase64String([System.Security.Cryptography.RNGCryptoServiceProvider]::Create().GetBytes(32))
-# heroku config:set SECRET_KEY="$secret"
-```
-
-4. **Deploy**
-```bash
+# Deploy
 git push heroku main
-```
 
-5. **Open your app**
-```bash
+# Open in browser
 heroku open
 ```
 
-6. **View logs**
-```bash
-heroku logs --tail
-```
-
-### Heroku Configuration
-
-The app includes several Heroku-specific configurations:
-
-- **Procfile**: Defines how to run the app with Gunicorn
-- **.python-version**: Specifies Python 3.13 for uv package manager
-- **heroku_config.py**: Heroku-optimized settings
-- **Automatic SSL**: Forces HTTPS in production
-- **Proxy handling**: Properly handles Heroku's load balancer
-- **Logging**: Configured for Heroku's log aggregation
-
-**Note**: This project uses `uv` as the package manager, so Heroku requires a `.python-version` file instead of `runtime.txt`.
-
-### Docker Development
-
-1. **Build and run with Docker Compose**
-```bash
-# Development mode
-docker-compose up --build
-
-# Production mode with Nginx
-docker-compose --profile production up --build
-```
-
-2. **Access the application**
-- Development: http://localhost:5000
-- Production: http://localhost:80
-
-## 🛠️ Development
-
-### Project Structure
+## 📊 Project Structure
 ```
 py-txt-trnsfrm/
-├── app/
-│   ├── __init__.py              # Application factory
-│   ├── config.py                # Configuration settings
-│   ├── main/                    # Main blueprint
-│   │   ├── __init__.py
-│   │   └── routes.py            # URL routes
-│   ├── static/                  # Static files
-│   │   ├── css/style.css        # Retro 90s styling
-│   │   └── js/app.js            # Frontend JavaScript
-│   ├── templates/               # Jinja2 templates
-│   │   ├── base.html            # Base template
-│   │   └── index.html           # Main page
-│   └── utils/                   # Utility modules
-│       └── text_transformers.py # Text transformation logic
-├── tests/                       # Test suite
-├── app.py                       # Application entry point
-├── heroku_config.py            # Heroku-specific configuration
-├── Procfile                    # Heroku process definition
-├── .python-version             # Python version for Heroku (uv)
-├── deploy.sh                   # Deployment script
-├── pyproject.toml              # Project configuration
-├── Dockerfile                  # Container definition
-├── docker-compose.yml          # Multi-container setup
-├── nginx.conf                  # Nginx configuration
-└── README.md                   # This file
+├── app/                      # Flask application
+│   ├── main/                 # Main blueprint
+│   ├── static/               # Static assets (CSS, JS)
+│   ├── templates/            # Jinja2 templates
+│   └── utils/                # Utility modules
+├── tests/                    # Comprehensive test suite
+│   ├── data/                 # Test data management
+│   ├── test_*.py             # Test modules
+│   └── security_utils.py     # Security testing utilities
+├── reports/                  # Generated reports
+│   ├── coverage/             # Coverage reports
+│   └── security/             # Security analysis reports
+├── pyproject.toml            # Project configuration
+├── pytest.ini                # Pytest configuration
+├── run_security_analysis.sh  # Security analysis script
+└── README.md                 # This file
 ```
 
-### Running Tests
+## 🛠️ Development Configuration
 
-```bash
-# Run all tests
-uv run pytest
+### pytest Configuration
+- **Minimum Version**: pytest 8.0+
+- **Parallel Testing**: Automatic CPU core detection
+- **Coverage**: 80% minimum threshold
+- **Test Organization**: Comprehensive marker system
+- **Report Generation**: HTML, XML, and terminal formats
 
-# Run with coverage
-uv run pytest --cov=app --cov-report=html
-
-# Run specific test file
-uv run pytest tests/test_transformers.py
-
-# Run with verbose output
-uv run pytest -v
-```
-
-### Code Quality
-
-```bash
-# Format code with Black
-uv run black .
-
-# Lint with flake8
-uv run flake8 app tests
-
-# Type checking with mypy
-uv run mypy app
-
-# Run all quality checks
-uv run black . && uv run flake8 app tests && uv run mypy app && uv run pytest
-```
-
-### Environment Variables
-
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `FLASK_CONFIG` | Configuration mode | `development` | No |
-| `SECRET_KEY` | Flask secret key | Auto-generated | Yes (Production) |
-| `FLASK_DEBUG` | Enable debug mode | `False` | No |
-| `PORT` | Port to run on | `5000` | No |
-| `DYNO` | Heroku dyno indicator | N/A | Auto (Heroku) |
-
-### Adding New Transformations
-
-1. **Add transformation method** to `app/utils/text_transformers.py`:
-```python
-def my_transformation(self, text: str) -> str:
-    """Description of what this transformation does."""
-    # Your transformation logic here
-    return transformed_text
-```
-
-2. **Register in the transformations dictionary**:
-```python
-self.transformations['my_transformation'] = self.my_transformation
-```
-
-3. **Add button to template** in `app/templates/index.html`:
-```html
-<button class="btn btn-outline-primary transform-btn" data-transform="my_transformation">
-    🎯 My Transformation
-</button>
-```
-
-4. **Update JavaScript mapping** in `app/static/js/app.js`:
-```javascript
-// Add to getTransformationName and getButtonText functions
-'my_transformation': 'My Transformation',
-'my_transformation': '🎯 My Transformation',
-```
-
-## 🐛 Debugging
-
-### Local Debugging
-```bash
-export FLASK_DEBUG=True  # macOS/Linux
-$env:FLASK_DEBUG="True"  # Windows PowerShell
-uv run app.py
-```
-
-### Heroku Debugging
-```bash
-# View application logs
-heroku logs --tail
-
-# Run commands on Heroku
-heroku run python -c "from app import create_app; print('App created successfully')"
-
-# Access Heroku bash
-heroku run bash
-```
-
-## 📊 Performance & Monitoring
-
-### Heroku Monitoring
-- Use `heroku logs --tail` for real-time logs
-- Monitor dyno usage with `heroku ps`
-- Scale dynos with `heroku ps:scale web=2`
-
-### Performance Tips
-- Static files cached with CDN headers
-- Gunicorn uses multiple workers
-- Gzip compression enabled
-- Database connection pooling ready
+### Code Quality Standards
+- **Black**: Code formatting with 88-character line length
+- **Ruff**: Fast Python linter with comprehensive rule set
+- **MyPy**: Static type checking for Python 3.13
+- **Bandit**: Security-focused static analysis
 
 ## 🤝 Contributing
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature-name`
-3. **Make changes and add tests**
-4. **Ensure all tests pass**: `uv run pytest`
-5. **Format code**: `uv run black .`
-6. **Submit a pull request**
-
-### Development Guidelines
-- Follow PEP 8 style guidelines
-- Add type hints to all functions
-- Write tests for new features
-- Update documentation as needed
-- Use descriptive commit messages
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Install development dependencies (`uv sync --group dev --group test --group security`)
+4. Make your changes
+5. Run tests (`uv run pytest`)
+6. Run security analysis (`./run_security_analysis.sh`)
+7. Format code (`uv run black .` and `uv run ruff format .`)
+8. Commit your changes (`git commit -m 'Add amazing feature'`)
+9. Push to the branch (`git push origin feature/amazing-feature`)
+10. Open a Pull Request
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Copyright (c) 2025 Amir Masri
+## 🎯 Roadmap
 
-## 🎨 Inspiration
+### Current Features ✅
+- ✅ 14 text transformation algorithms
+- ✅ Responsive Bootstrap 5 UI
+- ✅ Accessible pastel theme system
+- ✅ Comprehensive testing infrastructure
+- ✅ Security analysis automation
+- ✅ Docker containerization
+- ✅ Heroku deployment ready
 
-This project draws inspiration from early 1990s internet culture, particularly text transformation utilities that were popular on BBSs and early web communities. The aesthetic and functionality pay homage to tools like "methodist toolz" and similar utilities from that era.
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/masriamir/py-txt-trnsfrm/issues) page
-2. Create a new issue with detailed information
-3. For Heroku-specific issues, include `heroku logs --tail` output
-4. Provide your environment details (Python version, OS, etc.)
-
-## 🚀 Live Demo
-
-Visit the live application: [https://py-txt-trnsfrm.herokuapp.com](https://py-txt-trnsfrm.herokuapp.com)
-
-## 🌐 Deployment Status
-
-- ✅ Local Development
-- ✅ Docker Support
-- ✅ Heroku Ready (with uv support)
-- ⏳ AWS/GCP Support (Coming Soon)
-- ⏳ Kubernetes Manifests (Coming Soon)
+### Planned Features 🚧
+- 🚧 Additional text transformations
+- 🚧 User preferences persistence
+- 🚧 Batch text processing
+- 🚧 API rate limiting
+- 🚧 Text history/favorites
+- 🚧 Export functionality (PDF, etc.)
 
 ---
 
-**Built with ❤️ and nostalgia for the early days of the internet**
-
-**Deploy to Heroku with one click:** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/masriamir/py-txt-trnsfrm)
+<div align="center">
+Made with ❤️ and inspired by the golden age of the internet 🌐
+</div>
