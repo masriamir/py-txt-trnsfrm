@@ -5,8 +5,10 @@ application, testing the main routes, API endpoints, and overall application
 behavior through HTTP requests.
 """
 import json
+import pytest
 
 
+@pytest.mark.smoke
 def test_index_page(client):
     """Test that the index page loads successfully.
 
@@ -22,6 +24,7 @@ def test_index_page(client):
     assert b'Transform your text' in response.data
 
 
+@pytest.mark.api
 def test_transform_text_success(client):
     """Test successful text transformation via API.
 
@@ -46,6 +49,7 @@ def test_transform_text_success(client):
     assert result['original_text'] == 'Hello World'
 
 
+@pytest.mark.api
 def test_transform_text_missing_data(client):
     """Test transformation API with missing required data.
 
@@ -64,6 +68,7 @@ def test_transform_text_missing_data(client):
     assert 'error' in result
 
 
+@pytest.mark.api
 def test_transform_text_invalid_transformation(client):
     """Test transformation API with invalid transformation type.
 
@@ -86,6 +91,7 @@ def test_transform_text_invalid_transformation(client):
     assert 'error' in result
 
 
+@pytest.mark.api
 def test_transform_text_empty_text(client):
     """Test transformation with empty text."""
     data = {
@@ -102,6 +108,7 @@ def test_transform_text_empty_text(client):
     assert result['transformed_text'] == ''
 
 
+@pytest.mark.integration
 class TestStaticFiles:
     """Test static file serving."""
 

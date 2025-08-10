@@ -5,10 +5,13 @@ testing all available text transformation methods to ensure correct behavior
 and output formatting for various input scenarios.
 """
 import pytest
+from hypothesis import given, strategies as st
 
 from app.utils.text_transformers import TextTransformer
+from tests.data.test_data import sample_texts, expected_results, edge_cases
 
 
+@pytest.mark.unit
 class TestTextTransformer:
     """Test suite for the TextTransformer class.
 
@@ -323,3 +326,69 @@ class TestTextTransformer:
         for transform_name in transformer.get_available_transformations():
             result = transformer.transform('', transform_name)
             assert isinstance(result, str)  # Should return string, even if empty
+
+    @pytest.mark.unit
+    def test_with_test_data_samples(self, transformer):
+        """Test transformations using predefined test data."""
+        for text_key, text_value in sample_texts.items():
+            if text_key in ["empty", "multiline"]:  # Skip problematic cases
+                continue
+
+            # Test that all transformations work with sample data
+            for transform_name in ["alternate_case", "backwards", "rot13"]:
+                result = transformer.transform(text_value, transform_name)
+                assert isinstance(result, str)
+                # Non-empty input should generally produce non-empty output
+                if text_value.strip():
+                    assert len(result) > 0
+
+    @pytest.mark.unit
+    def test_edge_cases_comprehensive(self, transformer):
+        """Test transformations with edge case inputs."""
+        for case_name, case_text in edge_cases.items():
+            for transform_name in ["alternate_case", "backwards", "rot13"]:
+                result = transformer.transform(case_text, transform_name)
+                assert isinstance(result, str)
+                # Should not crash on any edge case
+
+    @pytest.mark.slow
+    @given(text=st.text(min_size=0, max_size=100))
+    def test_alternate_case_property_based(self, transformer, text):
+        """Property-based testing for alternate case transformation."""
+        result = transformer.alternate_case(text)
+
+        # Properties that should always hold:
+        # 1. Result should be same length as input
+        assert len(result) == len(text)
+
+        # 2. Should not crash with any input
+        assert isinstance(result, str)
+
+        # 3. Non-alphabetic characters should remain unchanged
+        for i, (original_char, result_char) in enumerate(zip(text, result)):
+            if not original_char.isalpha():
+                assert original_char == result_char
+
+    @pytest.mark.slow
+    @given(text=st.text(alphabet=st.characters(whitelist_categories=('Lu', 'Ll')), min_size=1, max_size=50))
+    def test_rot13_property_based(self, transformer, text):
+        """Property-based testing for ROT13 - should be reversible."""
+        result = transformer.rot13(text)
+        double_result = transformer.rot13(result)
+
+        # ROT13 applied twice should return original text
+        assert double_result == text
+
+    @pytest.mark.slow
+    @given(text=st.text(min_size=1, max_size=100))
+    def test_backwards_property_based(self, transformer, text):
+        """Property-based testing for backwards transformation."""
+        result = transformer.backwards(text)
+
+        # Properties:
+        # 1. Should be same length
+        assert len(result) == len(text)
+
+        # 2. Reversing twice should give original
+        double_reverse = transformer.backwards(result)
+        assert double_reverse == text
