@@ -5,10 +5,11 @@ testing all available text transformation methods to ensure correct behavior
 and output formatting for various input scenarios.
 """
 import pytest
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 
 from app.utils.text_transformers import TextTransformer
-from tests.data.test_data import sample_texts, expected_results, edge_cases
+from tests.data.test_data import edge_cases, sample_texts
 
 
 @pytest.mark.unit
@@ -365,7 +366,7 @@ class TestTextTransformer:
         assert isinstance(result, str)
 
         # 3. Non-alphabetic characters should remain unchanged
-        for i, (original_char, result_char) in enumerate(zip(text, result)):
+        for i, (original_char, result_char) in enumerate(zip(text, result, strict=False)):
             if not original_char.isalpha():
                 assert original_char == result_char
 

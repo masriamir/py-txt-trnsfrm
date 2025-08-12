@@ -1,13 +1,14 @@
 """Enhanced API tests with mocking and HTTP service testing."""
 import json
+from unittest.mock import patch
+
 import pytest
 import responses
-from unittest.mock import patch, MagicMock
 from faker import Faker
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 
-from tests.data.test_data import sample_texts, expected_results, edge_cases
-
+from tests.data.test_data import edge_cases, sample_texts
 
 fake = Faker()
 

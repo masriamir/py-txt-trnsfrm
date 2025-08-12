@@ -3,51 +3,48 @@ FROM python:3.13-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    FLASK_APP=app.py \
-    FLASK_CONFIG=production \
-    PYTHONIOENCODING=utf-8
+    PYTHONPATH=/app \
+    PORT=5000 \
+    WEB_CONCURRENCY=4 \
+    LOG_LEVEL=info \
+    FLASK_ENV=production
 
-# Set work directory
+# Create app directory
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        build-essential \
-        curl \
+RUN apt-get update && apt-get install -y \
+    --no-install-recommends \
+    build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
-RUN pip install uv
+# Install UV for faster package installation
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-# Copy pyproject.toml and install dependencies
-COPY pyproject.toml ./
-RUN uv pip install --system --no-cache-dir -e .
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install Python dependencies
+RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY . .
 
-# Create logs directory and set permissions
-RUN mkdir -p /app/logs && \
-    chmod 755 /app/logs
+# Create reports and logs directories for security, coverage, and application logs
+RUN mkdir -p reports/security reports/coverage logs
 
-# Create non-root user
-RUN addgroup --system --gid 1001 flask \
-    && adduser --system --uid 1001 --ingroup flask flask
-
-# Change ownership of the app directory (including logs)
-RUN chown -R flask:flask /app
-USER flask
-
-# Create a volume mount point for logs
-VOLUME ["/app/logs"]
-
-# Expose port
-EXPOSE 5000
+# Create non-root user for security
+RUN adduser --disabled-password --gecos '' appuser && \
+    chown -R appuser:appuser /app
+USER appuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/ || exit 1
+    CMD curl -f http://localhost:$PORT/health || exit 1
 
-# Run the application
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "wsgi:app"]
+# Expose port
+EXPOSE $PORT
+
+# Run the application with Gunicorn
+CMD ["uv", "run", "gunicorn", "--config", "gunicorn.conf.py", "wsgi:application"]

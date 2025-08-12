@@ -1,7 +1,7 @@
 """Security-focused tests for the Flask application."""
-import pytest
 import json
-from unittest.mock import patch
+
+import pytest
 
 from tests.security_utils import run_bandit_security_scan, run_safety_check
 

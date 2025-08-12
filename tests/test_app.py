@@ -5,6 +5,7 @@ application, testing the main routes, API endpoints, and overall application
 behavior through HTTP requests.
 """
 import json
+
 import pytest
 
 

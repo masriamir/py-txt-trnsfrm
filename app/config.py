@@ -93,6 +93,5 @@ class ProductionConfig(Config):
 config: dict[str, type[Config]] = {
     'development': DevelopmentConfig,
     'testing': TestConfig,
-    'production': ProductionConfig,
-    'default': DevelopmentConfig  # Changed default to DevelopmentConfig
+    'production': ProductionConfig
 }

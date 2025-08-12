@@ -8,10 +8,11 @@ environments including development, production, and containerized deployments.
 import logging
 import logging.config
 import os
+from pathlib import Path
 from typing import Any
 
 
-def setup_logging(debug: bool = False) -> None:
+def setup_logging(debug: bool = False, log_level: str = 'INFO') -> None:
     """Setup centralized logging configuration for the application.
 
     Configures logging with appropriate handlers, formatters, and log levels
@@ -19,14 +20,24 @@ def setup_logging(debug: bool = False) -> None:
     console and file logging with automatic detection of container environments.
 
     Args:
-        debug: If True, enables DEBUG level logging with detailed formatting.
-            If False, uses INFO level with standard formatting.
+        debug: If True, enables DEBUG level logging with detailed formatting
+            and forces log_level to 'DEBUG'.
+        log_level: Logging level to use ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL').
+            Defaults to 'INFO'. Ignored if debug=True.
     """
-    log_level = 'DEBUG' if debug else 'INFO'
+    # Force DEBUG level if debug mode is enabled
+    if debug:
+        log_level = 'DEBUG'
+    else:
+        # Ensure log_level is valid and uppercase
+        log_level = log_level.upper()
+        valid_levels = {'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'}
+        if log_level not in valid_levels:
+            log_level = 'INFO'
 
     # Determine log file path - use logs directory in container, current directory otherwise
-    log_dir = '/app/logs' if os.path.exists('/app/logs') else '.'
-    log_file_path = os.path.join(log_dir, 'app.log')
+    logs_dir = Path('/app/logs') if Path('/app/logs').exists() else Path.cwd()
+    log_file_path = logs_dir / 'app.log'
 
     logging_config: dict[str, Any] = {
         'version': 1,
@@ -81,19 +92,23 @@ def setup_logging(debug: bool = False) -> None:
         }
     }
 
-    # Add file handler only if not in container or if logs directory is writable
-    if not os.environ.get('DYNO') and os.access(log_dir, os.W_OK):
-        logging_config['handlers']['file'] = {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'level': log_level,
-            'formatter': 'detailed',
-            'filename': log_file_path,
-            'maxBytes': 10485760,  # 10MB
-            'backupCount': 5,
-            'encoding': 'utf8'
-        }
-        # Add file handler to app logger
-        logging_config['loggers']['app']['handlers'].append('file')
+    # Add file handler only if not in container or if the logs directory is writable
+    try:
+        if not os.environ.get('DYNO') and logs_dir.exists() and os.access(logs_dir, os.W_OK):
+            logging_config['handlers']['file'] = {
+                'class': 'logging.handlers.RotatingFileHandler',
+                'level': log_level,
+                'formatter': 'detailed',
+                'filename': str(log_file_path),
+                'maxBytes': 10485760,  # 10MB
+                'backupCount': 5,
+                'encoding': 'utf8'
+            }
+            # Add file handler to app logger
+            logging_config['loggers']['app']['handlers'].append('file')
+    except (OSError, PermissionError):
+        # Silently skip file logging if the directory is not accessible
+        pass
 
     # In production containers, use structured logging for better log aggregation
     if os.environ.get('FLASK_CONFIG') == 'production' and os.environ.get('CONTAINER_ENV'):

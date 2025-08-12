@@ -1,9 +1,8 @@
 """Security testing utilities and configuration."""
-import subprocess
 import json
-import sys
+import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone
 
 
 def run_bandit_security_scan():
@@ -60,7 +59,7 @@ def generate_security_report():
     safety_results = run_safety_check()
 
     report = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "bandit": bandit_results,
         "safety": safety_results
     }

@@ -26,7 +26,8 @@ def main():
     instance, and starts the development server.
 
     Environment Variables:
-        FLASK_CONFIG: Configuration environment ('development', 'production', etc.)
+        FLASK_ENV: Configuration environment ('development', 'production', etc.)
+        LOG_LEVEL: Logging level ('debug', 'info', 'warning', 'error', 'critical')
         PORT: Port number to run the server on (defaults to 5000)
         DYNO: Heroku environment indicator
 
@@ -38,10 +39,11 @@ def main():
             $ python app.py
 
         Run with specific configuration:
-            $ FLASK_CONFIG=production python app.py
+            $ FLASK_ENV=production LOG_LEVEL=info python app.py
     """
-    config_name = os.environ.get('FLASK_CONFIG', 'development')
+    config_name = os.environ.get('FLASK_ENV', 'development')
     logger.info(f"Starting application with config: {config_name}")
+    logger.info(f"Log level: {os.environ.get('LOG_LEVEL', 'default')}")
 
     try:
         if os.environ.get('DYNO'):  # Running on Heroku
