@@ -1,5 +1,42 @@
 # 📡 Retro Text Transformer 📡
 
+<!-- Project Status & Info Badges -->
+[![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/v/release/masriamir/py-txt-trnsfrm?style=flat&logo=github)](https://github.com/masriamir/py-txt-trnsfrm/releases)
+[![GitHub commits](https://img.shields.io/github/commit-activity/t/masriamir/py-txt-trnsfrm?style=flat&logo=git)](https://github.com/masriamir/py-txt-trnsfrm/commits)
+
+<!-- Framework & Technology Stack -->
+[![Flask](https://img.shields.io/badge/Flask-3.0+-green?style=flat&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-blue?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+
+<!-- Development Tools -->
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat)](https://github.com/psf/black)
+[![MyPy](https://img.shields.io/badge/mypy-checked-blue?style=flat)](https://mypy-lang.org/)
+
+<!-- Code Quality & Testing Badges -->
+[![Tests](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/tests.yml?style=flat&logo=github-actions&label=tests)](https://github.com/masriamir/py-txt-trnsfrm/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/ci.yml?style=flat&logo=github-actions&label=build)](https://github.com/masriamir/py-txt-trnsfrm/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/masriamir/py-txt-trnsfrm?style=flat&logo=codecov)](https://codecov.io/gh/masriamir/py-txt-trnsfrm)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=masriamir_py-txt-trnsfrm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=masriamir_py-txt-trnsfrm)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=masriamir_py-txt-trnsfrm&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=masriamir_py-txt-trnsfrm)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=masriamir_py-txt-trnsfrm&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=masriamir_py-txt-trnsfrm)
+
+<!-- Dependencies & Maintenance -->
+[![Dependencies](https://img.shields.io/librariesio/github/masriamir/py-txt-trnsfrm?style=flat&logo=libraries.io)](https://libraries.io/github/masriamir/py-txt-trnsfrm)
+[![Maintenance](https://img.shields.io/maintenance/yes/2025?style=flat)](https://github.com/masriamir/py-txt-trnsfrm)
+[![Last Commit](https://img.shields.io/github/last-commit/masriamir/py-txt-trnsfrm?style=flat&logo=git)](https://github.com/masriamir/py-txt-trnsfrm/commits)
+
+<!-- Deployment & Usage -->
+[![Heroku](https://img.shields.io/badge/deploy-heroku-purple?style=flat&logo=heroku)](https://heroku.com/deploy?template=https://github.com/masriamir/py-txt-trnsfrm)
+[![Deploy Status](https://img.shields.io/github/deployments/masriamir/py-txt-trnsfrm/production?style=flat&logo=heroku&label=deploy)](https://github.com/masriamir/py-txt-trnsfrm/deployments)
+[![Docker Size](https://img.shields.io/docker/image-size/masriamir/py-txt-trnsfrm?style=flat&logo=docker)](https://hub.docker.com/r/masriamir/py-txt-trnsfrm)
+[![GitHub stars](https://img.shields.io/github/stars/masriamir/py-txt-trnsfrm?style=flat&logo=github)](https://github.com/masriamir/py-txt-trnsfrm/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/masriamir/py-txt-trnsfrm?style=flat&logo=github)](https://github.com/masriamir/py-txt-trnsfrm/network)
+
 A Flask web application for creative text transformations inspired by early 90s internet culture. Transform your text with various fun effects like alternate case, l33t speak, rainbow HTML, and more! Now featuring an accessible pastel color theme system and comprehensive testing infrastructure.
 
 ## 🌟 Features

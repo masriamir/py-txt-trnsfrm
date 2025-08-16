@@ -1,0 +1,69 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: "3.13"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: [unit, integration, api, network, slow]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: uv sync --group dev --group test --group security
+
+    - name: Run ${{ matrix.test-type }} tests
+      run: uv run pytest -m ${{ matrix.test-type }} --tb=short
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.test-type }}
+        path: reports/
+
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: uv sync --group test
+
+    - name: Run smoke tests
+      run: uv run pytest -m smoke --tb=short
