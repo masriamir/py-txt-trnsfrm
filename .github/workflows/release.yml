@@ -15,10 +15,9 @@ on:
       environment:
         description: 'Deployment environment'
         required: true
-        default: 'staging'
+        default: 'production'
         type: choice
         options:
-        - staging
         - production
       run_full_tests:
         description: 'Run full test suite including slow tests'
@@ -41,7 +40,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -119,10 +118,10 @@ jobs:
         exit 0
 
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Install uv
-      uses: astral-sh/setup-uv@v3
+      uses: astral-sh/setup-uv@v6
       with:
         enable-cache: true
         version: ${{ env.UV_VERSION }}
@@ -167,7 +166,7 @@ jobs:
           reports/coverage/coverage-${{ matrix.test-suite.name }}.xml
         retention-days: 30
 
-  # Deploy to staging/production
+  # Deploy to production
   deploy:
     name: Deploy to ${{ inputs.environment || 'production' }}
     runs-on: ubuntu-latest
@@ -179,7 +178,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Setup deployment environment
       id: deploy
@@ -189,14 +188,9 @@ jobs:
         
         echo "Deploying version $VERSION to $ENV environment"
         
-        # Set environment-specific variables
-        if [[ "$ENV" == "production" ]]; then
-          echo "url=https://py-txt-trnsfrm.herokuapp.com" >> $GITHUB_OUTPUT
-          echo "HEROKU_APP=py-txt-trnsfrm" >> $GITHUB_ENV
-        else
-          echo "url=https://py-txt-trnsfrm-staging.herokuapp.com" >> $GITHUB_OUTPUT
-          echo "HEROKU_APP=py-txt-trnsfrm-staging" >> $GITHUB_ENV
-        fi
+        # Set production environment variables
+        echo "url=https://py-txt-trnsfrm.herokuapp.com" >> $GITHUB_OUTPUT
+        echo "HEROKU_APP=py-txt-trnsfrm" >> $GITHUB_ENV
 
     - name: Deploy to Heroku
       if: env.HEROKU_API_KEY != ''
@@ -251,7 +245,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
