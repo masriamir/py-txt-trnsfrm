@@ -10,12 +10,12 @@ Production-ready GitHub Actions CI/CD pipeline for py-txt-trnsfrm Flask applicat
 - **Jobs:** Code Quality → Testing Matrix + Security Analysis → Aggregate Results
 - **Features:** Fast failure, parallel execution, uv caching, comprehensive testing
 
-### 🔒 security-nightly.yml - Nightly Security Scan  
+### 🔒 security-nightly.yml - Nightly Security Scan
 - **Triggers:** Nightly at 2:00 AM UTC, manual dispatch
 - **Features:** Deep security analysis, slow tests, automatic issue creation
 
 ### 📦 release.yml - Release Pipeline
-- **Triggers:** Version tags, releases, manual dispatch  
+- **Triggers:** Version tags, releases, manual dispatch
 - **Features:** Version validation, full test suite, git-based Heroku deployment to production
 
 ## Key Features

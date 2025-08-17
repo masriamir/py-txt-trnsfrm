@@ -95,70 +95,70 @@ jobs:
     - name: Advanced dependency analysis
       run: |
         echo "::group::Advanced Dependency Analysis"
-        
+
         # Audit with pip-audit if available
         if uv run python -c "import pip_audit" 2>/dev/null; then
           uv run pip-audit --format=json --output=reports/security/pip_audit_report.json || true
         fi
-        
+
         # Check for outdated packages
         uv run python -m pip list --outdated --format=json > reports/security/outdated_packages.json || true
-        
+
         # Generate dependency tree
         uv run python -m pip list --format=json > reports/security/installed_packages.json || true
-        
+
         echo "::endgroup::"
 
     - name: Generate comprehensive security report
       run: |
         echo "::group::Comprehensive Security Report"
-        
+
         # Create comprehensive summary
         cat > reports/security/nightly_security_summary.md << 'EOF'
         # Nightly Security Analysis Report
-        
+
         **Generated on:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
         **Repository:** ${{ github.repository }}
         **Branch:** ${{ github.ref_name }}
         **Commit:** ${{ github.sha }}
-        
+
         ## Security Scan Results
-        
+
         EOF
-        
+
         # Add Bandit results
         if [ -f "reports/security/bandit_report.json" ]; then
           TOTAL_ISSUES=$(jq '.results | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
           HIGH_ISSUES=$(jq '.results | map(select(.issue_confidence == "HIGH")) | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
           MEDIUM_ISSUES=$(jq '.results | map(select(.issue_confidence == "MEDIUM")) | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
-          
+
           cat >> reports/security/nightly_security_summary.md << EOF
         ### Bandit Code Security Analysis
         - **Total Issues:** $TOTAL_ISSUES
         - **High Confidence Issues:** $HIGH_ISSUES
         - **Medium Confidence Issues:** $MEDIUM_ISSUES
-        
+
         EOF
         fi
-        
+
         # Add Safety results
         if [ -f "reports/security/safety_report.json" ]; then
           cat >> reports/security/nightly_security_summary.md << 'EOF'
         ### Safety Dependency Vulnerability Scan
         See `safety_report.json` for detailed vulnerability information.
-        
+
         EOF
         fi
-        
+
         # Add test results if available
         if [ -f "reports/pytest-security.xml" ]; then
           cat >> reports/security/nightly_security_summary.md << 'EOF'
         ### Security Test Results
         Security-focused tests have been executed. See `pytest-security.xml` for detailed results.
-        
+
         EOF
         fi
-        
+
         echo "::endgroup::"
 
     - name: Upload comprehensive security reports
@@ -180,23 +180,23 @@ jobs:
           const title = `🔒 Nightly Security Scan Failed - ${new Date().toISOString().split('T')[0]}`;
           const body = `
           The nightly security scan has detected issues that require attention.
-          
+
           **Run Details:**
           - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           - **Branch:** ${{ github.ref_name }}
           - **Commit:** ${{ github.sha }}
           - **Date:** ${new Date().toISOString()}
-          
+
           **Next Steps:**
           1. Review the security reports in the workflow artifacts
           2. Address any high-severity security issues immediately
           3. Update dependencies if vulnerabilities are found
           4. Re-run the security scan to verify fixes
-          
+
           **Artifacts:**
           Download the security reports from the workflow run to get detailed information about the issues found.
           `;
-          
+
           // Check if issue already exists
           const issues = await github.rest.issues.listForRepo({
             owner: context.repo.owner,
@@ -204,11 +204,11 @@ jobs:
             labels: ['security', 'automated'],
             state: 'open'
           });
-          
-          const existingIssue = issues.data.find(issue => 
+
+          const existingIssue = issues.data.find(issue =>
             issue.title.includes('Nightly Security Scan Failed')
           );
-          
+
           if (!existingIssue) {
             await github.rest.issues.create({
               owner: context.repo.owner,
@@ -231,9 +231,9 @@ jobs:
       if: always()
       run: |
         echo "::group::Critical Security Findings Check"
-        
+
         CRITICAL_FOUND=false
-        
+
         # Check for high-severity Bandit issues
         if [ -f "reports/security/bandit_report.json" ]; then
           HIGH_SEVERITY=$(jq '.results | map(select(.issue_confidence == "HIGH" and .issue_severity == "HIGH")) | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
@@ -242,7 +242,7 @@ jobs:
             CRITICAL_FOUND=true
           fi
         fi
-        
+
         # Check for known vulnerabilities
         if [ -f "reports/security/safety_report.json" ]; then
           VULNS=$(jq 'if type == "array" then length else 0 end' reports/security/safety_report.json 2>/dev/null || echo "0")
@@ -251,12 +251,12 @@ jobs:
             CRITICAL_FOUND=true
           fi
         fi
-        
+
         if [ "$CRITICAL_FOUND" = true ]; then
           echo "::error::Critical security findings detected! Please review the security reports immediately."
           exit 1
         else
           echo "✅ No critical security findings detected"
         fi
-        
+
         echo "::endgroup::"

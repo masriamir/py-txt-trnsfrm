@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       cache-key: ${{ steps.cache-key.outputs.key }}
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
@@ -242,10 +242,10 @@ jobs:
         echo "Code Quality: ${{ needs.code-quality.result }}"
         echo "Testing: ${{ needs.testing.result }}"
         echo "Security Analysis: ${{ needs.security-analysis.result }}"
-        
+
         # Determine overall status
-        if [[ "${{ needs.code-quality.result }}" == "success" && 
-              "${{ needs.testing.result }}" == "success" && 
+        if [[ "${{ needs.code-quality.result }}" == "success" &&
+              "${{ needs.testing.result }}" == "success" &&
               ("${{ needs.security-analysis.result }}" == "success" || "${{ needs.security-analysis.result }}" == "failure") ]]; then
           echo "✅ CI Pipeline completed successfully!"
           exit 0

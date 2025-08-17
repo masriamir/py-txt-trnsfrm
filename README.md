@@ -142,7 +142,7 @@ BASE_URL=https://py-txt-trnsfrm.herokuapp.com pytest tests/performance/test_api_
 
 Features include:
 - Benchmark testing with pytest-benchmark
-- Concurrent request handling validation  
+- Concurrent request handling validation
 - Sustained load testing capabilities
 - Configurable via environment variables
 
@@ -255,7 +255,7 @@ Dependencies are logically organized into groups:
 ```toml
 dependencies = [
     "flask>=3.0.0",
-    "gunicorn>=21.2.0", 
+    "gunicorn>=21.2.0",
     "werkzeug>=3.1.3",
 ]
 ```
@@ -301,7 +301,7 @@ The application features a comprehensive color theme system:
 
 ### Available Themes
 - **Pastel Sunset** (default): Warm peachy-pink gradients
-- **Mint Fresh**: Cool mint green tones  
+- **Mint Fresh**: Cool mint green tones
 - **Lavender Dreams**: Soft purple/violet hues
 - **Peach Vibes**: Coral and peach colors
 - **Ocean Breeze**: Light blue gradients

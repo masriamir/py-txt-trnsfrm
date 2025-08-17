@@ -71,14 +71,14 @@ jobs:
         # Check if this is a major version bump (breaking changes)
         VERSION="${{ steps.version.outputs.version }}"
         MAJOR=$(echo $VERSION | sed 's/v\([0-9]*\).*/\1/')
-        
+
         # Get previous tag
         PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "v0.0.0")
         PREV_MAJOR=$(echo $PREV_TAG | sed 's/v\([0-9]*\).*/\1/')
-        
+
         echo "Current major version: $MAJOR"
         echo "Previous major version: $PREV_MAJOR"
-        
+
         SHOULD_DEPLOY="true"
         if [[ "$MAJOR" -gt "$PREV_MAJOR" ]]; then
           echo "::warning::Major version bump detected ($PREV_MAJOR -> $MAJOR). This may contain breaking changes."
@@ -88,7 +88,7 @@ jobs:
             SHOULD_DEPLOY="false"
           fi
         fi
-        
+
         echo "should_deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
 
   # Comprehensive testing for releases
@@ -99,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test-suite: 
+        test-suite:
           - name: 'core'
             markers: 'unit or integration or api'
           - name: 'smoke'
@@ -172,7 +172,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate-release, comprehensive-testing]
     if: always() && needs.comprehensive-testing.result == 'success'
-    environment: 
+    environment:
       name: ${{ inputs.environment || 'production' }}
       url: ${{ steps.deploy.outputs.url }}
 
@@ -185,9 +185,9 @@ jobs:
       run: |
         ENV="${{ inputs.environment || 'production' }}"
         VERSION="${{ needs.validate-release.outputs.version }}"
-        
+
         echo "Deploying version $VERSION to $ENV environment"
-        
+
         # Set production environment variables
         echo "url=https://py-txt-trnsfrm.herokuapp.com" >> $GITHUB_OUTPUT
         echo "HEROKU_APP=py-txt-trnsfrm" >> $GITHUB_ENV
@@ -209,10 +209,10 @@ jobs:
     - name: Run post-deployment smoke tests
       run: |
         echo "Running post-deployment verification..."
-        
+
         # Wait for deployment to be ready
         sleep 30
-        
+
         # Basic health check
         URL="${{ steps.deploy.outputs.url }}"
         if [[ "$URL" != "" ]]; then
@@ -224,7 +224,7 @@ jobs:
             echo "Attempt $i failed, retrying in 10 seconds..."
             sleep 10
           done
-          
+
           # Test basic functionality
           if curl -f "$URL/" -m 10; then
             echo "✅ Basic functionality test passed"
@@ -254,21 +254,21 @@ jobs:
       run: |
         VERSION="${{ needs.validate-release.outputs.version }}"
         PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-        
+
         echo "# Release $VERSION" > CHANGELOG.md
         echo "" >> CHANGELOG.md
         echo "**Release Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG.md
         echo "" >> CHANGELOG.md
-        
+
         if [[ "$PREV_TAG" != "" ]]; then
           echo "## Changes since $PREV_TAG" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
-          
+
           # Generate commit log
           git log --pretty=format:"- %s (%an)" $PREV_TAG..HEAD >> CHANGELOG.md
           echo "" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
-          
+
           # Generate diff stats
           echo "## Statistics" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
@@ -325,17 +325,17 @@ jobs:
           const message = '${{ steps.status.outputs.message }}';
           const version = '${{ needs.validate-release.outputs.version }}';
           const environment = '${{ inputs.environment || 'production' }}';
-          
+
           const body = `
           ${message}
-          
+
           **Details:**
           - **Version:** ${version}
           - **Environment:** ${environment}
           - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           - **Commit:** ${{ github.sha }}
           `;
-          
+
           if (status === 'failure') {
             // Create issue for failed deployments
             await github.rest.issues.create({
@@ -346,5 +346,5 @@ jobs:
               labels: ['bug', 'deployment', 'high-priority']
             });
           }
-          
+
           console.log(body);
