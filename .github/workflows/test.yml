@@ -6,64 +6,53 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
-  schedule:
-    # Run tests daily at 2 AM UTC
-    - cron: '0 2 * * *'
 
 env:
   PYTHON_VERSION: "3.13"
+  UV_VERSION: ">=0.8.11,<0.9.0"
 
 jobs:
   test:
-    name: Run Tests
+    name: Run tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-type: [unit, integration, api, network, slow]
+        pytest-mark: [unit, integration, network, api, slow, smoke]
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
+      uses: actions/checkout@v5
       with:
-        version: "latest"
+        show-progress: 'true'
 
-    - name: Set up Python
+    - name: Install a pep440-specifier-satisfying version of uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: 'true'
+        version: ${{ env.UV_VERSION }}
+
+    - name: Install Python ${{ env.PYTHON_VERSION }}
       run: uv python install ${{ env.PYTHON_VERSION }}
 
     - name: Install dependencies
       run: uv sync --group dev --group test --group security
 
-    - name: Run ${{ matrix.test-type }} tests
-      run: uv run pytest -m ${{ matrix.test-type }} --tb=short
+    - name: Run ${{ matrix.pytest-mark }} tests with coverage
+      run: |
+        uv run pytest \
+        -m ${{ matrix.pytest-mark }} \
+        --tb=short \
+        --cov=app \
+        --cov-report=xml:reports/coverage/coverage-${{ matrix.pytest-mark }}.xml \
+        --cov-report=html:reports/coverage/html \
+        --cov-report=term \
+        --junitxml=reports/pytest_report.xml
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
       with:
-        name: test-results-${{ matrix.test-type }}
-        path: reports/
-
-  smoke-tests:
-    name: Smoke Tests
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
-      with:
-        version: "latest"
-
-    - name: Set up Python
-      run: uv python install ${{ env.PYTHON_VERSION }}
-
-    - name: Install dependencies
-      run: uv sync --group test
-
-    - name: Run smoke tests
-      run: uv run pytest -m smoke --tb=short
+        files: ./reports/coverage/coverage-*.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
+        token: ${{ secrets.CODECOV_TOKEN }}
