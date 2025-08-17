@@ -1,0 +1,279 @@
+name: Nightly Security Scan
+
+on:
+  schedule:
+    # Run every night at 2:00 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+    inputs:
+      deep_scan:
+        description: 'Run deep security analysis including slow tests'
+        required: false
+        default: 'true'
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.13"
+  UV_VERSION: ">=0.8.11,<0.9.0"
+
+jobs:
+  comprehensive-security-scan:
+    name: Comprehensive Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        enable-cache: true
+        version: ${{ env.UV_VERSION }}
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      run: uv python install ${{ env.PYTHON_VERSION }}
+
+    - name: Cache uv dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/uv
+          .venv
+        key: security-uv-${{ runner.os }}-${{ hashFiles('uv.lock', 'pyproject.toml') }}
+        restore-keys: |
+          security-uv-${{ runner.os }}-
+          uv-${{ runner.os }}-
+          uv-
+
+    - name: Install dependencies
+      run: uv sync --group dev --group test --group security
+
+    - name: Install additional security tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq curl git
+
+    - name: Run comprehensive security analysis
+      run: |
+        echo "::group::Comprehensive Security Analysis"
+        chmod +x ./run_security_analysis.sh
+        ./run_security_analysis.sh
+        echo "::endgroup::"
+
+    - name: Run security-focused tests
+      if: ${{ inputs.deep_scan == 'true' || github.event_name == 'schedule' }}
+      run: |
+        echo "::group::Security Tests"
+        uv run pytest \
+          -m security \
+          --tb=long \
+          --cov=app \
+          --cov-report=xml:reports/coverage/coverage-security.xml \
+          --cov-report=html:reports/coverage/html-security \
+          --junitxml=reports/pytest-security.xml \
+          --maxfail=10 \
+          --timeout=300
+        echo "::endgroup::"
+
+    - name: Run slow security tests
+      if: ${{ inputs.deep_scan == 'true' || github.event_name == 'schedule' }}
+      run: |
+        echo "::group::Slow Security Tests"
+        uv run pytest \
+          -m "slow and security" \
+          --tb=long \
+          --timeout=600 \
+          --maxfail=5
+        echo "::endgroup::"
+
+    - name: Advanced dependency analysis
+      run: |
+        echo "::group::Advanced Dependency Analysis"
+        
+        # Audit with pip-audit if available
+        if uv run python -c "import pip_audit" 2>/dev/null; then
+          uv run pip-audit --format=json --output=reports/security/pip_audit_report.json || true
+        fi
+        
+        # Check for outdated packages
+        uv run python -m pip list --outdated --format=json > reports/security/outdated_packages.json || true
+        
+        # Generate dependency tree
+        uv run python -m pip list --format=json > reports/security/installed_packages.json || true
+        
+        echo "::endgroup::"
+
+    - name: Container security scan
+      run: |
+        echo "::group::Container Security Scan"
+        
+        # Build the Docker image
+        docker build -t py-txt-trnsfrm:security-scan .
+        
+        # Run container security tools if available
+        if command -v trivy &> /dev/null; then
+          trivy image --format json --output reports/security/trivy_report.json py-txt-trnsfrm:security-scan || true
+        fi
+        
+        # Basic container inspection
+        docker inspect py-txt-trnsfrm:security-scan > reports/security/docker_inspect.json || true
+        
+        echo "::endgroup::"
+
+    - name: Generate comprehensive security report
+      run: |
+        echo "::group::Comprehensive Security Report"
+        
+        # Create comprehensive summary
+        cat > reports/security/nightly_security_summary.md << 'EOF'
+        # Nightly Security Analysis Report
+        
+        **Generated on:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+        **Repository:** ${{ github.repository }}
+        **Branch:** ${{ github.ref_name }}
+        **Commit:** ${{ github.sha }}
+        
+        ## Security Scan Results
+        
+        EOF
+        
+        # Add Bandit results
+        if [ -f "reports/security/bandit_report.json" ]; then
+          TOTAL_ISSUES=$(jq '.results | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
+          HIGH_ISSUES=$(jq '.results | map(select(.issue_confidence == "HIGH")) | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
+          MEDIUM_ISSUES=$(jq '.results | map(select(.issue_confidence == "MEDIUM")) | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
+          
+          cat >> reports/security/nightly_security_summary.md << EOF
+        ### Bandit Code Security Analysis
+        - **Total Issues:** $TOTAL_ISSUES
+        - **High Confidence Issues:** $HIGH_ISSUES
+        - **Medium Confidence Issues:** $MEDIUM_ISSUES
+        
+        EOF
+        fi
+        
+        # Add Safety results
+        if [ -f "reports/security/safety_report.json" ]; then
+          cat >> reports/security/nightly_security_summary.md << 'EOF'
+        ### Safety Dependency Vulnerability Scan
+        See `safety_report.json` for detailed vulnerability information.
+        
+        EOF
+        fi
+        
+        # Add test results if available
+        if [ -f "reports/pytest-security.xml" ]; then
+          cat >> reports/security/nightly_security_summary.md << 'EOF'
+        ### Security Test Results
+        Security-focused tests have been executed. See `pytest-security.xml` for detailed results.
+        
+        EOF
+        fi
+        
+        echo "::endgroup::"
+
+    - name: Upload comprehensive security reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: nightly-security-reports-${{ github.run_number }}
+        path: |
+          reports/security/
+          reports/coverage/coverage-security.xml
+          reports/pytest-security.xml
+        retention-days: 90
+
+    - name: Create security issue on failure
+      if: failure() && github.event_name == 'schedule'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const title = `🔒 Nightly Security Scan Failed - ${new Date().toISOString().split('T')[0]}`;
+          const body = `
+          The nightly security scan has detected issues that require attention.
+          
+          **Run Details:**
+          - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - **Branch:** ${{ github.ref_name }}
+          - **Commit:** ${{ github.sha }}
+          - **Date:** ${new Date().toISOString()}
+          
+          **Next Steps:**
+          1. Review the security reports in the workflow artifacts
+          2. Address any high-severity security issues immediately
+          3. Update dependencies if vulnerabilities are found
+          4. Re-run the security scan to verify fixes
+          
+          **Artifacts:**
+          Download the security reports from the workflow run to get detailed information about the issues found.
+          `;
+          
+          // Check if issue already exists
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: ['security', 'automated'],
+            state: 'open'
+          });
+          
+          const existingIssue = issues.data.find(issue => 
+            issue.title.includes('Nightly Security Scan Failed')
+          );
+          
+          if (!existingIssue) {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'bug', 'automated', 'high-priority']
+            });
+          } else {
+            // Update existing issue
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: existingIssue.number,
+              body: `🔄 **Security scan failed again on ${new Date().toISOString().split('T')[0]}**\n\nWorkflow Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            });
+          }
+
+    - name: Notify on critical findings
+      if: always()
+      run: |
+        echo "::group::Critical Security Findings Check"
+        
+        CRITICAL_FOUND=false
+        
+        # Check for high-severity Bandit issues
+        if [ -f "reports/security/bandit_report.json" ]; then
+          HIGH_SEVERITY=$(jq '.results | map(select(.issue_confidence == "HIGH" and .issue_severity == "HIGH")) | length' reports/security/bandit_report.json 2>/dev/null || echo "0")
+          if [ "$HIGH_SEVERITY" -gt 0 ]; then
+            echo "::error::Found $HIGH_SEVERITY critical security issues in code analysis"
+            CRITICAL_FOUND=true
+          fi
+        fi
+        
+        # Check for known vulnerabilities
+        if [ -f "reports/security/safety_report.json" ]; then
+          VULNS=$(jq 'if type == "array" then length else 0 end' reports/security/safety_report.json 2>/dev/null || echo "0")
+          if [ "$VULNS" -gt 0 ]; then
+            echo "::error::Found $VULNS known vulnerabilities in dependencies"
+            CRITICAL_FOUND=true
+          fi
+        fi
+        
+        if [ "$CRITICAL_FOUND" = true ]; then
+          echo "::error::Critical security findings detected! Please review the security reports immediately."
+          exit 1
+        else
+          echo "✅ No critical security findings detected"
+        fi
+        
+        echo "::endgroup::"
