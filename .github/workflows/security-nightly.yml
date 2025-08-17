@@ -109,23 +109,6 @@ jobs:
         
         echo "::endgroup::"
 
-    - name: Container security scan
-      run: |
-        echo "::group::Container Security Scan"
-        
-        # Build the Docker image
-        docker build -t py-txt-trnsfrm:security-scan .
-        
-        # Run container security tools if available
-        if command -v trivy &> /dev/null; then
-          trivy image --format json --output reports/security/trivy_report.json py-txt-trnsfrm:security-scan || true
-        fi
-        
-        # Basic container inspection
-        docker inspect py-txt-trnsfrm:security-scan > reports/security/docker_inspect.json || true
-        
-        echo "::endgroup::"
-
     - name: Generate comprehensive security report
       run: |
         echo "::group::Comprehensive Security Report"

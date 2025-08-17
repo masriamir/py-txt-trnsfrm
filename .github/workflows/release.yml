@@ -29,8 +29,6 @@ on:
 env:
   PYTHON_VERSION: "3.13"
   UV_VERSION: ">=0.8.11,<0.9.0"
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # Validate release prerequisites
@@ -169,65 +167,12 @@ jobs:
           reports/coverage/coverage-${{ matrix.test-suite.name }}.xml
         retention-days: 30
 
-  # Build and push Docker images
-  build-and-push:
-    name: Build and Push Docker Images
-    runs-on: ubuntu-latest
-    needs: [validate-release, comprehensive-testing]
-    if: needs.validate-release.outputs.should_deploy == 'true'
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=semver,pattern={{major}}
-          type=raw,value=latest,enable={{is_default_branch}}
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile
-        platforms: linux/amd64,linux/arm64
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        build-args: |
-          VERSION=${{ needs.validate-release.outputs.version }}
-          BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
-          VCS_REF=${{ github.sha }}
-
   # Deploy to staging/production
   deploy:
     name: Deploy to ${{ inputs.environment || 'production' }}
     runs-on: ubuntu-latest
-    needs: [validate-release, comprehensive-testing, build-and-push]
-    if: always() && needs.build-and-push.result == 'success'
+    needs: [validate-release, comprehensive-testing]
+    if: always() && needs.comprehensive-testing.result == 'success'
     environment: 
       name: ${{ inputs.environment || 'production' }}
       url: ${{ steps.deploy.outputs.url }}
@@ -260,21 +205,12 @@ jobs:
         heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
         heroku_app_name: ${{ env.HEROKU_APP }}
         heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        docker_build: true
-        docker_build_args: |
-          VERSION
-          BUILD_DATE
-          VCS_REF
-      env:
-        VERSION: ${{ needs.validate-release.outputs.version }}
-        BUILD_DATE: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
-        VCS_REF: ${{ github.sha }}
 
     - name: Alternative deployment notification
       if: env.HEROKU_API_KEY == ''
       run: |
         echo "::notice::Heroku deployment skipped - HEROKU_API_KEY not configured"
-        echo "Docker image is available at: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.validate-release.outputs.version }}"
+        echo "Manual deployment required for version ${{ needs.validate-release.outputs.version }}"
 
     - name: Run post-deployment smoke tests
       run: |
@@ -310,7 +246,7 @@ jobs:
   release-artifacts:
     name: Generate Release Artifacts
     runs-on: ubuntu-latest
-    needs: [validate-release, comprehensive-testing, build-and-push, deploy]
+    needs: [validate-release, comprehensive-testing, deploy]
     if: always() && needs.validate-release.result == 'success'
 
     steps:
@@ -404,8 +340,6 @@ jobs:
           - **Environment:** ${environment}
           - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           - **Commit:** ${{ github.sha }}
-          
-          **Docker Image:** \`ghcr.io/${{ github.repository }}:${version}\`
           `;
           
           if (status === 'failure') {
