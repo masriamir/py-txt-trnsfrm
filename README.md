@@ -18,8 +18,9 @@
 [![MyPy](https://img.shields.io/badge/mypy-checked-blue?style=flat)](https://mypy-lang.org/)
 
 <!-- Code Quality & Testing Badges -->
-[![Tests](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/tests.yml?style=flat&logo=github-actions&label=tests)](https://github.com/masriamir/py-txt-trnsfrm/actions)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/ci.yml?style=flat&logo=github-actions&label=build)](https://github.com/masriamir/py-txt-trnsfrm/actions)
+[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/ci.yml?style=flat&logo=github-actions&label=CI)](https://github.com/masriamir/py-txt-trnsfrm/actions/workflows/ci.yml)
+[![Security Scan](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/security-nightly.yml?style=flat&logo=github-actions&label=security)](https://github.com/masriamir/py-txt-trnsfrm/actions/workflows/security-nightly.yml)
+[![Release Pipeline](https://img.shields.io/github/actions/workflow/status/masriamir/py-txt-trnsfrm/release.yml?style=flat&logo=github-actions&label=release)](https://github.com/masriamir/py-txt-trnsfrm/actions/workflows/release.yml)
 [![Coverage](https://img.shields.io/codecov/c/github/masriamir/py-txt-trnsfrm?style=flat&logo=codecov)](https://codecov.io/gh/masriamir/py-txt-trnsfrm)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=masriamir_py-txt-trnsfrm&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=masriamir_py-txt-trnsfrm)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=masriamir_py-txt-trnsfrm&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=masriamir_py-txt-trnsfrm)
@@ -75,6 +76,14 @@ A Flask web application for creative text transformations inspired by early 90s 
 - **Organized Test Data**: Centralized test data management with faker and pytest-datadir
 - **Test Markers**: Organized test categorization (unit, integration, api, smoke, slow, security)
 
+### 🚀 CI/CD & Automation
+- **Comprehensive CI Pipeline**: Multi-job GitHub Actions workflow with fast-fail quality checks
+- **Automated Security Scanning**: Nightly security analysis with automatic issue creation
+- **Release Automation**: Git-based Heroku deployment with version validation
+- **Performance Testing**: Standalone performance test suite for load and benchmark testing
+- **Code Quality Gates**: Zero-tolerance linting with ruff, black, and mypy
+- **Latest GitHub Actions**: Uses checkout@v5 and setup-uv@v6 for optimal performance
+
 ### 🔒 Security Features
 - **Automated Security Scanning**: Modern safety scan integration with timeout handling
 - **Code Security Analysis**: Bandit static analysis with organized reporting
@@ -91,6 +100,51 @@ A Flask web application for creative text transformations inspired by early 90s 
 - **Type hints** throughout the codebase
 - **Production-ready** with Gunicorn and optional Nginx
 - **Modern Testing Stack**: pytest 8.4.1+ with comprehensive plugin ecosystem
+
+## 🚀 CI/CD & Automation
+
+### GitHub Actions Workflows
+
+The project features a comprehensive CI/CD pipeline with three main workflows:
+
+#### 🔄 CI Pipeline (`.github/workflows/ci.yml`)
+Comprehensive continuous integration with parallel execution:
+- **Code Quality**: Fast-fail linting with ruff, black, and mypy
+- **Testing Matrix**: Parallel test execution by type (unit, integration, api, smoke)
+- **Security Analysis**: Integrated bandit and safety scanning
+- **Coverage Reporting**: Automatic Codecov integration
+
+#### 🔒 Nightly Security Scan (`.github/workflows/security-nightly.yml`)
+Automated security analysis with issue creation:
+- **Scheduled Execution**: Every night at 2:00 AM UTC
+- **Deep Security Analysis**: Comprehensive vulnerability scanning
+- **Automatic Issue Creation**: Creates GitHub issues for critical findings
+- **Security Reports**: Organized reports in `reports/security/`
+
+#### 📦 Release Pipeline (`.github/workflows/release.yml`)
+Production deployment automation:
+- **Version Validation**: Semantic version checking and breaking change detection
+- **Full Test Suite**: Comprehensive testing including slow tests
+- **Production Deployment**: Git-based Heroku deployment
+- **Release Automation**: Automatic changelog generation and GitHub releases
+
+### Performance Testing
+
+A standalone performance test suite is available for comprehensive load testing:
+
+```bash
+# Run performance benchmarks
+pytest tests/performance/test_api_performance.py --benchmark-only
+
+# Test against production
+BASE_URL=https://py-txt-trnsfrm.herokuapp.com pytest tests/performance/test_api_performance.py
+```
+
+Features include:
+- Benchmark testing with pytest-benchmark
+- Concurrent request handling validation  
+- Sustained load testing capabilities
+- Configurable via environment variables
 
 ## 🚀 Quick Start
 
@@ -358,6 +412,14 @@ py-txt-trnsfrm/
 9. Push to the branch (`git push origin feature/amazing-feature`)
 10. Open a Pull Request
 
+### CI/CD Integration
+- **Automatic CI**: All PRs trigger the comprehensive CI pipeline
+- **Security Scanning**: Nightly security scans with automatic issue creation
+- **Release Automation**: Tagged releases automatically deploy to production
+- **Quality Gates**: Zero-tolerance policy for linting and security issues
+
+See `docs/CI_CD_PIPELINE.md` for detailed workflow documentation.
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -372,6 +434,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ Security analysis automation
 - ✅ Docker containerization
 - ✅ Heroku deployment ready
+- ✅ Production-ready CI/CD pipeline
+- ✅ Automated security scanning
+- ✅ Release automation with GitHub Actions
 
 ### Planned Features 🚧
 - 🚧 Additional text transformations
@@ -380,6 +445,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 🚧 API rate limiting
 - 🚧 Text history/favorites
 - 🚧 Export functionality (PDF, etc.)
+- 🚧 Performance testing GitHub Actions workflow
 
 ---
 
