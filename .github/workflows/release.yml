@@ -1,0 +1,350 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  release:
+    types: [created, published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+      run_full_tests:
+        description: 'Run full test suite including slow tests'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.13"
+  UV_VERSION: ">=0.8.11,<0.9.0"
+
+jobs:
+  # Validate release prerequisites
+  validate-release:
+    name: Validate Release Prerequisites
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should_deploy: ${{ steps.validate.outputs.should_deploy }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Extract version
+      id: version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          VERSION="${{ inputs.version }}"
+        elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION="v0.0.0-dev"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+
+    - name: Validate version format
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+          echo "::error::Invalid version format: $VERSION. Expected format: vX.Y.Z"
+          exit 1
+        fi
+
+    - name: Check for breaking changes
+      id: validate
+      run: |
+        # Check if this is a major version bump (breaking changes)
+        VERSION="${{ steps.version.outputs.version }}"
+        MAJOR=$(echo $VERSION | sed 's/v\([0-9]*\).*/\1/')
+
+        # Get previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "v0.0.0")
+        PREV_MAJOR=$(echo $PREV_TAG | sed 's/v\([0-9]*\).*/\1/')
+
+        echo "Current major version: $MAJOR"
+        echo "Previous major version: $PREV_MAJOR"
+
+        SHOULD_DEPLOY="true"
+        if [[ "$MAJOR" -gt "$PREV_MAJOR" ]]; then
+          echo "::warning::Major version bump detected ($PREV_MAJOR -> $MAJOR). This may contain breaking changes."
+          # For major versions, require manual approval or additional validation
+          if [[ "${{ github.event_name }}" != "workflow_dispatch" ]]; then
+            echo "::error::Major version releases must be triggered manually via workflow_dispatch"
+            SHOULD_DEPLOY="false"
+          fi
+        fi
+
+        echo "should_deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+
+  # Comprehensive testing for releases
+  comprehensive-testing:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    needs: validate-release
+    strategy:
+      fail-fast: false
+      matrix:
+        test-suite:
+          - name: 'core'
+            markers: 'unit or integration or api'
+          - name: 'smoke'
+            markers: 'smoke'
+          - name: 'security'
+            markers: 'security and not slow'
+          - name: 'slow'
+            markers: 'slow'
+            condition: ${{ inputs.run_full_tests == 'true' || github.event_name != 'workflow_dispatch' }}
+
+    steps:
+    - name: Skip slow tests if not requested
+      if: ${{ matrix.test-suite.name == 'slow' && matrix.test-suite.condition == 'false' }}
+      run: |
+        echo "Skipping slow tests as not requested in manual dispatch"
+        exit 0
+
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        version: ${{ env.UV_VERSION }}
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      run: uv python install ${{ env.PYTHON_VERSION }}
+
+    - name: Cache uv dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/uv
+          .venv
+        key: release-uv-${{ runner.os }}-${{ hashFiles('uv.lock', 'pyproject.toml') }}
+        restore-keys: |
+          release-uv-${{ runner.os }}-
+          uv-${{ runner.os }}-
+          uv-
+
+    - name: Install dependencies
+      run: uv sync --group dev --group test --group security
+
+    - name: Run ${{ matrix.test-suite.name }} test suite
+      run: |
+        uv run pytest \
+          -m "${{ matrix.test-suite.markers }}" \
+          --tb=short \
+          --cov=app \
+          --cov-report=xml:reports/coverage/coverage-${{ matrix.test-suite.name }}.xml \
+          --cov-report=html:reports/coverage/html-${{ matrix.test-suite.name }} \
+          --junitxml=reports/pytest-${{ matrix.test-suite.name }}.xml \
+          --maxfail=10 \
+          --timeout=600
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: release-test-results-${{ matrix.test-suite.name }}
+        path: |
+          reports/pytest-${{ matrix.test-suite.name }}.xml
+          reports/coverage/coverage-${{ matrix.test-suite.name }}.xml
+        retention-days: 30
+
+  # Deploy to production
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    needs: [validate-release, comprehensive-testing]
+    if: always() && needs.comprehensive-testing.result == 'success'
+    environment:
+      name: ${{ inputs.environment || 'production' }}
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Setup deployment environment
+      id: deploy
+      run: |
+        ENV="${{ inputs.environment || 'production' }}"
+        VERSION="${{ needs.validate-release.outputs.version }}"
+
+        echo "Deploying version $VERSION to $ENV environment"
+
+        # Set production environment variables
+        echo "url=https://py-txt-trnsfrm.herokuapp.com" >> $GITHUB_OUTPUT
+        echo "HEROKU_APP=py-txt-trnsfrm" >> $GITHUB_ENV
+
+    - name: Deploy to Heroku
+      if: env.HEROKU_API_KEY != ''
+      uses: akhileshns/heroku-deploy@v3.13.15
+      with:
+        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+        heroku_app_name: ${{ env.HEROKU_APP }}
+        heroku_email: ${{ secrets.HEROKU_EMAIL }}
+
+    - name: Alternative deployment notification
+      if: env.HEROKU_API_KEY == ''
+      run: |
+        echo "::notice::Heroku deployment skipped - HEROKU_API_KEY not configured"
+        echo "Manual deployment required for version ${{ needs.validate-release.outputs.version }}"
+
+    - name: Run post-deployment smoke tests
+      run: |
+        echo "Running post-deployment verification..."
+
+        # Wait for deployment to be ready
+        sleep 30
+
+        # Basic health check
+        URL="${{ steps.deploy.outputs.url }}"
+        if [[ "$URL" != "" ]]; then
+          for i in {1..10}; do
+            if curl -f "$URL/health" -m 10; then
+              echo "✅ Deployment health check passed"
+              break
+            fi
+            echo "Attempt $i failed, retrying in 10 seconds..."
+            sleep 10
+          done
+
+          # Test basic functionality
+          if curl -f "$URL/" -m 10; then
+            echo "✅ Basic functionality test passed"
+          else
+            echo "❌ Basic functionality test failed"
+            exit 1
+          fi
+        else
+          echo "Skipping health checks - no deployment URL available"
+        fi
+
+  # Generate release notes and artifacts
+  release-artifacts:
+    name: Generate Release Artifacts
+    runs-on: ubuntu-latest
+    needs: [validate-release, comprehensive-testing, deploy]
+    if: always() && needs.validate-release.result == 'success'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        VERSION="${{ needs.validate-release.outputs.version }}"
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+        echo "# Release $VERSION" > CHANGELOG.md
+        echo "" >> CHANGELOG.md
+        echo "**Release Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> CHANGELOG.md
+        echo "" >> CHANGELOG.md
+
+        if [[ "$PREV_TAG" != "" ]]; then
+          echo "## Changes since $PREV_TAG" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+          # Generate commit log
+          git log --pretty=format:"- %s (%an)" $PREV_TAG..HEAD >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+          # Generate diff stats
+          echo "## Statistics" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "\`\`\`" >> CHANGELOG.md
+          git diff --stat $PREV_TAG..HEAD >> CHANGELOG.md
+          echo "\`\`\`" >> CHANGELOG.md
+        fi
+
+    - name: Create GitHub release
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ needs.validate-release.outputs.version }}
+        release_name: Release ${{ needs.validate-release.outputs.version }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: ${{ contains(needs.validate-release.outputs.version, '-') }}
+
+    - name: Upload release artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-artifacts-${{ needs.validate-release.outputs.version }}
+        path: |
+          CHANGELOG.md
+          reports/
+        retention-days: 90
+
+  # Notify stakeholders
+  notify:
+    name: Notify Stakeholders
+    runs-on: ubuntu-latest
+    needs: [validate-release, deploy, release-artifacts]
+    if: always()
+
+    steps:
+    - name: Determine notification status
+      id: status
+      run: |
+        if [[ "${{ needs.deploy.result }}" == "success" ]]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+          echo "message=✅ Release ${{ needs.validate-release.outputs.version }} deployed successfully" >> $GITHUB_OUTPUT
+        else
+          echo "status=failure" >> $GITHUB_OUTPUT
+          echo "message=❌ Release ${{ needs.validate-release.outputs.version }} deployment failed" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create deployment notification
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const status = '${{ steps.status.outputs.status }}';
+          const message = '${{ steps.status.outputs.message }}';
+          const version = '${{ needs.validate-release.outputs.version }}';
+          const environment = '${{ inputs.environment || 'production' }}';
+
+          const body = `
+          ${message}
+
+          **Details:**
+          - **Version:** ${version}
+          - **Environment:** ${environment}
+          - **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - **Commit:** ${{ github.sha }}
+          `;
+
+          if (status === 'failure') {
+            // Create issue for failed deployments
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Release ${version} deployment failed`,
+              body: body,
+              labels: ['bug', 'deployment', 'high-priority']
+            });
+          }
+
+          console.log(body);
