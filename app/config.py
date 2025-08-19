@@ -4,6 +4,7 @@ This module contains configuration classes for different deployment environments
 (development, testing, production) and provides a centralized way to manage
 application settings and environment-specific configurations.
 """
+
 import os
 
 
@@ -18,10 +19,11 @@ class Config:
         DEBUG: Debug mode flag, defaults to False for security.
         TESTING: Testing mode flag, defaults to False.
     """
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
 
     # Flask settings
-    DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() in ['true', '1', 'yes']
+    DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() in ["true", "1", "yes"]
     TESTING = False
 
     @classmethod
@@ -40,8 +42,9 @@ class DevelopmentConfig(Config):
     Configuration optimized for local development with debugging enabled
     and relaxed security settings for ease of development.
     """
+
     DEBUG = True
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
 
 
 class TestConfig(Config):
@@ -50,8 +53,9 @@ class TestConfig(Config):
     Configuration optimized for running automated tests with testing mode
     enabled and CSRF protection disabled for easier testing.
     """
+
     TESTING = True
-    SECRET_KEY = 'test-secret-key'
+    SECRET_KEY = "test-secret-key"  # noqa: S105  # Test configuration only
     WTF_CSRF_ENABLED = False
 
 
@@ -61,6 +65,7 @@ class ProductionConfig(Config):
     Configuration optimized for production deployment with security
     hardening and environment validation.
     """
+
     DEBUG = False
 
     @classmethod
@@ -79,19 +84,20 @@ class ProductionConfig(Config):
         Config.init_app(app)
 
         from app.logging_config import get_logger
-        logger = get_logger('config')
+
+        logger = get_logger("config")
 
         # Validate that SECRET_KEY is set in production
-        if not os.environ.get('SECRET_KEY'):
+        if not os.environ.get("SECRET_KEY"):
             logger.critical("No SECRET_KEY set for production environment")
             raise ValueError("No SECRET_KEY set for production environment")
 
-        app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+        app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
         logger.info("Production configuration initialized successfully")
 
 
 config: dict[str, type[Config]] = {
-    'development': DevelopmentConfig,
-    'testing': TestConfig,
-    'production': ProductionConfig
+    "development": DevelopmentConfig,
+    "testing": TestConfig,
+    "production": ProductionConfig,
 }

@@ -5,19 +5,23 @@ Heroku deployment environments. It extends the base ProductionConfig
 with Heroku-specific settings including proxy configuration, SSL settings,
 and environment validation.
 """
+
 import os
 
 try:
     from app.config import ProductionConfig
 except ImportError as e:
     import logging
+
     logging.warning(f"Could not import ProductionConfig: {e}")
+
     # Fallback base config
     class ProductionConfig:
         """Fallback configuration class if main config cannot be imported."""
+
         DEBUG = False
         TESTING = False
-        SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
+        SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
         @classmethod
         def init_app(cls, app):
@@ -27,6 +31,7 @@ except ImportError as e:
                 app: Flask application instance.
             """
             pass
+
 
 class HerokuConfig(ProductionConfig):
     """Configuration class optimized for Heroku deployment.
@@ -42,7 +47,7 @@ class HerokuConfig(ProductionConfig):
     """
 
     # Use DATABASE_URL if provided (for future database integration)
-    DATABASE_URL = os.environ.get('DATABASE_URL')
+    DATABASE_URL = os.environ.get("DATABASE_URL")
 
     # Force SSL redirect in production
     SSL_REDIRECT = True
@@ -66,10 +71,12 @@ class HerokuConfig(ProductionConfig):
         # Import logger after app initialization to avoid circular imports
         try:
             from app.logging_config import get_logger
-            logger = get_logger('heroku_config')
+
+            logger = get_logger("heroku_config")
         except ImportError:
             import logging
-            logger = logging.getLogger('heroku_config')
+
+            logger = logging.getLogger("heroku_config")
 
         try:
             ProductionConfig.init_app(app)
@@ -78,17 +85,18 @@ class HerokuConfig(ProductionConfig):
             logger.warning(f"ProductionConfig.init_app failed: {e}")
 
         # Validate SECRET_KEY
-        secret_key = os.environ.get('SECRET_KEY')
+        secret_key = os.environ.get("SECRET_KEY")
         if not secret_key:
             logger.critical("No SECRET_KEY set for Heroku production environment")
             raise ValueError("No SECRET_KEY set for Heroku production environment")
 
-        app.config['SECRET_KEY'] = secret_key
+        app.config["SECRET_KEY"] = secret_key
         logger.info("SECRET_KEY configured for Heroku")
 
         # Trust the proxy headers from Heroku
         try:
             from werkzeug.middleware.proxy_fix import ProxyFix
+
             app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
             logger.info("ProxyFix middleware applied for Heroku")
         except ImportError as e:
