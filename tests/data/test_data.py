@@ -10,28 +10,29 @@ Line three""",
     "empty": "",
     "whitespace": "   spaces   and   tabs\t\n",
     "special_chars": "Special @#$% characters & symbols",
-    "long_text": "This is a very long text that should be used for testing performance and edge cases in text transformation algorithms. " * 10,
+    "long_text": "This is a very long text that should be used for testing performance and edge cases in text transformation algorithms. "
+    * 10,
     "html": "<p>HTML content with <strong>tags</strong></p>",
-    "quotes": 'Text with "double quotes" and \'single quotes\'',
-    "case_mixed": "MiXeD cAsE tExT FoR tEsTiNg"
+    "quotes": "Text with \"double quotes\" and 'single quotes'",
+    "case_mixed": "MiXeD cAsE tExT FoR tEsTiNg",
 }
 
 expected_results = {
     "alternate_case": {
         "simple": "hElLo WoRlD",
         "empty": "",
-        "punctuation": "hElLo, WoRlD! hOw ArE yOu?"
+        "punctuation": "hElLo, WoRlD! hOw ArE yOu?",
     },
     "backwards": {
         "simple": "dlroW olleH",
         "empty": "",
-        "numbers": "654srebmun htiw 321tseT"
+        "numbers": "654srebmun htiw 321tseT",
     },
     "rot13": {
         "simple": "Uryyb Jbeyq",
         "empty": "",
-        "numbers": "Grfg123 jvgu ahzoref456"
-    }
+        "numbers": "Grfg123 jvgu ahzoref456",
+    },
 }
 
 # Performance test data
@@ -39,7 +40,7 @@ performance_texts = {
     "small": "A" * 100,
     "medium": "B" * 1000,
     "large": "C" * 10000,
-    "xlarge": "D" * 100000
+    "xlarge": "D" * 100000,
 }
 
 # Edge cases for testing
@@ -55,5 +56,5 @@ edge_cases = {
     "numbers_only": "1234567890",
     "symbols_only": "!@#$%^&*()",
     "unicode_emoji": "🚀🌟💫⭐🌈",
-    "unicode_accents": "àáâãäåæçèéêë"
+    "unicode_accents": "àáâãäåæçèéêë",
 }

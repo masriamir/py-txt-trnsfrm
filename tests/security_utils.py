@@ -1,4 +1,5 @@
 """Security testing utilities and configuration."""
+
 import json
 import subprocess
 from datetime import UTC, datetime
@@ -9,16 +10,20 @@ def run_bandit_security_scan():
     """Run Bandit security scanner and return results."""
     try:
         result = subprocess.run(
-            ['bandit', '-r', 'app/', '-f', 'json'],
+            ["bandit", "-r", "app/", "-f", "json"],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent
+            cwd=Path(__file__).parent.parent,
         )
 
         if result.stdout:
             return json.loads(result.stdout)
         return {"results": [], "metrics": {}}
-    except (subprocess.CalledProcessError, json.JSONDecodeError, FileNotFoundError) as e:
+    except (
+        subprocess.CalledProcessError,
+        json.JSONDecodeError,
+        FileNotFoundError,
+    ) as e:
         print(f"Error running Bandit: {e}")
         return None
 
@@ -28,10 +33,10 @@ def run_safety_check():
     try:
         # Use the modern safety scan command
         result = subprocess.run(
-            ['safety', 'scan', '--output', 'json'],
+            ["safety", "scan", "--output", "json"],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent
+            cwd=Path(__file__).parent.parent,
         )
 
         if result.stdout.strip():
@@ -61,12 +66,12 @@ def generate_security_report():
     report = {
         "timestamp": datetime.now(UTC).isoformat(),
         "bandit": bandit_results,
-        "safety": safety_results
+        "safety": safety_results,
     }
 
     # Save report in security subdirectory
     report_file = security_dir / "security_report.json"
-    with open(report_file, 'w') as f:
+    with open(report_file, "w") as f:
         json.dump(report, f, indent=2)
 
     print(f"Security report saved to: {report_file}")

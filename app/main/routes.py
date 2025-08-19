@@ -3,6 +3,7 @@
 This module contains the primary Flask routes for the text transformation web
 application, including the main page and the text transformation API endpoint.
 """
+
 from flask import jsonify, render_template, request
 
 from app.logging_config import get_logger
@@ -12,7 +13,7 @@ from app.utils.text_transformers import TextTransformer
 logger = get_logger(__name__)
 
 
-@bp.route('/')
+@bp.route("/")
 def index():
     """Render the main application page.
 
@@ -23,10 +24,10 @@ def index():
         str: Rendered HTML template for the main page.
     """
     logger.info("Index page requested")
-    return render_template('index.html')
+    return render_template("index.html")
 
 
-@bp.route('/health')
+@bp.route("/health")
 def health_check():
     """Health check endpoint for load balancers and monitoring.
 
@@ -38,20 +39,15 @@ def health_check():
     """
     try:
         # Basic health check - could be expanded with database checks, etc.
-        return jsonify({
-            'status': 'healthy',
-            'service': 'py-txt-trnsfrm',
-            'version': '0.1.0'
-        }), 200
+        return jsonify(
+            {"status": "healthy", "service": "py-txt-trnsfrm", "version": "0.1.0"}
+        ), 200
     except Exception as e:
         logger.error(f"Health check failed: {e}")
-        return jsonify({
-            'status': 'unhealthy',
-            'error': str(e)
-        }), 503
+        return jsonify({"status": "unhealthy", "error": str(e)}), 503
 
 
-@bp.route('/transform', methods=['POST'])
+@bp.route("/transform", methods=["POST"])
 def transform_text():
     """Handle text transformation requests via JSON API.
 
@@ -81,16 +77,20 @@ def transform_text():
     logger.info("Text transformation request received")
 
     data = request.get_json()
-    if not data or 'text' not in data or 'transformation' not in data:
-        logger.warning("Invalid transformation request - missing text or transformation type")
-        return jsonify({'error': 'Missing text or transformation type'}), 400
+    if not data or "text" not in data or "transformation" not in data:
+        logger.warning(
+            "Invalid transformation request - missing text or transformation type"
+        )
+        return jsonify({"error": "Missing text or transformation type"}), 400
 
-    text = data['text']
-    transformation = data['transformation']
+    text = data["text"]
+    transformation = data["transformation"]
 
     # Log the request details (truncate text if too long for readability)
     text_preview = text[:100] + "..." if len(text) > 100 else text
-    logger.info(f"Transformation request - Type: '{transformation}', Text: '{text_preview}'")
+    logger.info(
+        f"Transformation request - Type: '{transformation}', Text: '{text_preview}'"
+    )
     logger.debug(f"Full text length: {len(text)} characters")
 
     transformer = TextTransformer()
@@ -100,12 +100,16 @@ def transform_text():
         logger.info(f"Transformation '{transformation}' completed successfully")
         logger.debug(f"Result length: {len(result)} characters")
 
-        return jsonify({
-            'success': True,
-            'original_text': text,
-            'transformed_text': result,
-            'transformation': transformation
-        })
+        return jsonify(
+            {
+                "success": True,
+                "original_text": text,
+                "transformed_text": result,
+                "transformation": transformation,
+            }
+        )
     except ValueError as e:
-        logger.error(f"Transformation failed - Type: '{transformation}', Error: {str(e)}")
-        return jsonify({'error': str(e)}), 400
+        logger.error(
+            f"Transformation failed - Type: '{transformation}', Error: {str(e)}"
+        )
+        return jsonify({"error": str(e)}), 400
