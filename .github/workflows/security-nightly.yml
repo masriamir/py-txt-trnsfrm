@@ -52,7 +52,7 @@ jobs:
           uv-
 
     - name: Install dependencies
-      run: uv sync --group dev --group test --group security
+      run: uv sync --frozen --group dev --group test --group security
 
     - name: Install additional security tools
       run: |

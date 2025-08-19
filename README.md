@@ -176,6 +176,8 @@ uv sync --group test         # Testing framework (pytest, coverage, etc.)
 uv sync --group security     # Security analysis tools (bandit, safety)
 ```
 
+> **💡 Troubleshooting:** If you encounter issues with `uv sync`, see the [UV Troubleshooting Guide](docs/UV_TROUBLESHOOTING.md) for solutions.
+
 3. **Alternative: Install with pip**
 ```bash
 # Create virtual environment
@@ -255,7 +257,7 @@ Dependencies are logically organized into groups:
 ```toml
 dependencies = [
     "flask>=3.0.0",
-    "gunicorn>=21.2.0",
+    "gunicorn>=23.0.0",
     "werkzeug>=3.1.3",
 ]
 ```
