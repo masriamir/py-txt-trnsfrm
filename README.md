@@ -7,7 +7,7 @@
 [![GitHub commits](https://img.shields.io/github/commit-activity/t/masriamir/py-txt-trnsfrm?style=flat&logo=git)](https://github.com/masriamir/py-txt-trnsfrm/commits)
 
 <!-- Framework & Technology Stack -->
-[![Flask](https://img.shields.io/badge/Flask-3.0+-green?style=flat&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![Flask](https://img.shields.io/badge/Flask-3.1.1+-green?style=flat&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 
@@ -256,7 +256,7 @@ Dependencies are logically organized into groups:
 ### Essential Runtime Dependencies
 ```toml
 dependencies = [
-    "flask>=3.0.0",
+    "flask>=3.1.1",
     "gunicorn>=23.0.0",
     "werkzeug>=3.1.3",
 ]
