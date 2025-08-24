@@ -21,7 +21,7 @@ classifiers = [
     "Framework :: Flask",
 ]
 dependencies = [
-    "flask>=3.0.0",
+    "flask>=3.1.1",
     "gunicorn>=23.0.0",
     "werkzeug>=3.1.3",
 ]
