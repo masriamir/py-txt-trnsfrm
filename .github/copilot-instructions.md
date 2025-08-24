@@ -29,6 +29,13 @@ Always reference these instructions first and fallback to search or bash command
 - **Install all dependencies**: `uv sync --group dev --group test --group security` -- takes 3-4 minutes. NEVER CANCEL. Set timeout to 10+ minutes.
 - **Verify installation**: `uv run python -c "import app; print('✅ Application imports successfully')"`
 
+### Dependency Management with Safety Registry
+- **Adding new dependencies**: When adding dependencies to `pyproject.toml`, always sync with the safety registry to preserve URLs
+- **Correct sync command**: `uv sync --default-index https://pkgs.safetycli.com/repository/akm-circuits-llc/pypi/simple/ --group dev --group test --group security`
+- **CRITICAL**: The `uv.lock` file URLs must always use `pkgs.safetycli.com/` - never change them to `pypi.org` or `files.pythonhosted.org`
+- **When uv.lock changes**: Only commit changes that add the specific new dependency and its direct dependencies - all other entries should preserve safety URLs
+- **Verification**: After adding dependencies, confirm safety URLs with `grep "pkgs.safetycli.com" uv.lock | head -3`
+
 ### Code Quality Tools
 - **Linting**: `uv run ruff check .` -- takes <1 second. Passes cleanly.
 - **Formatting**: `uv run black --check .` -- takes <1 second. Currently fails on 7 files, run `uv run black .` to fix.
