@@ -2,6 +2,26 @@
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
+## Project Overview
+
+**py-txt-trnsfrm** is a Flask web application that provides creative text transformations inspired by early 90s internet culture. This is a Python 3.13+ project using modern tools and practices.
+
+### Technology Stack
+- **Backend Framework**: Flask 3.0+ with Gunicorn for production deployment
+- **Frontend**: Bootstrap 5 with vanilla JavaScript, Jinja2 templates for server-side rendering
+- **Package Management**: uv (modern, fast Python package management replacement for pip/pipenv)
+- **Security**: Bandit for static analysis, Safety for dependency vulnerability scanning
+- **Code Quality**: ruff (linting) + black (formatting) + mypy (type checking)
+- **Testing**: pytest with comprehensive plugins (coverage, xdist for parallel execution, hypothesis for property-based testing, benchmark for performance testing)
+- **Deployment**: Docker-ready with Heroku deployment support, Nginx configuration available
+
+### Application Architecture
+- **Main Flask App**: Located in `app/` package with blueprint-based routing in `app/main/`
+- **Text Transformations**: Utility functions in `app/utils/` for various text effects
+- **UI Components**: Five pastel color themes with accessibility-first design
+- **API Endpoints**: RESTful API for text transformations with JSON responses
+- **Health Monitoring**: Built-in health check endpoint for deployment monitoring
+
 ## Working Effectively
 
 ### Bootstrap and Dependencies
@@ -15,15 +35,15 @@ Always reference these instructions first and fallback to search or bash command
 - **Type checking**: `uv run mypy .` -- takes 7-8 seconds. Currently has 99 errors, mostly missing type annotations.
 
 ### Testing
-- **Run all tests (excluding performance)**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" -n 0` -- takes 1-2 seconds. Currently 47 passed, 1 failed (expected).
-- **Run specific test categories**: 
-  - `uv run pytest -m unit -n 0` -- Unit tests only
-  - `uv run pytest -m integration -n 0` -- Integration tests
-  - `uv run pytest -m api -n 0` -- API endpoint tests
-  - `uv run pytest -m smoke -n 0` -- Critical functionality tests
+- **Run all tests (excluding performance)**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- takes 1-2 seconds with parallel execution. Currently 47 passed, 1 failed (expected).
+- **Run specific test categories (with parallel execution)**: 
+  - `uv run pytest -m unit --benchmark-disable` -- Unit tests only
+  - `uv run pytest -m integration --benchmark-disable` -- Integration tests
+  - `uv run pytest -m api --benchmark-disable` -- API endpoint tests
+  - `uv run pytest -m smoke --benchmark-disable` -- Critical functionality tests
 - **Run with coverage**: Tests include coverage reporting to `reports/coverage/`
 - **Performance tests**: `BASE_URL=http://localhost:5000 uv run pytest tests/performance/test_api_performance.py --benchmark-only -n 0` (requires running Flask app first)
-- **NOTE**: Must use `-n 0` to disable xdist parallel execution when pytest-benchmark is installed
+- **NOTE**: Use `--benchmark-disable` for regular tests to maintain xdist parallel execution. Use `-n 0` flag **only** when running benchmark tests with `--benchmark-only` to disable xdist parallel execution which conflicts with pytest-benchmark.
 
 ### Security Analysis
 - **Run comprehensive security scan**: `./run_security_analysis.sh` -- may take 5+ minutes or timeout on safety scan. NEVER CANCEL. Set timeout to 10+ minutes.
@@ -58,14 +78,14 @@ Always reference these instructions first and fallback to search or bash command
 - **ALWAYS run before committing**:
   1. `uv run ruff check .` -- must pass
   2. `uv run black .` -- to fix formatting issues
-  3. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" -n 0` -- should have minimal failures
+  3. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
   4. Manual application test as described above
 
 ## Known Issues and Limitations
 
 ### Test Suite Issues
 - **Performance tests**: Require `concurrent` and `load` markers in pytest.ini (already added)
-- **Parallel execution conflict**: pytest-benchmark requires `-n 0` flag to disable xdist parallel execution
+- **Benchmark vs parallel execution**: pytest-benchmark conflicts with xdist parallel execution, so use `--benchmark-disable` for regular tests and `-n 0` only when running `--benchmark-only` performance tests
 - **Property-based test**: `test_transform_property_based` fails due to Hypothesis function-scoped fixture health check
 - **Security test**: `test_json_input_validation` fails because app doesn't sanitize HTML in transformations (by design)
 
@@ -104,7 +124,7 @@ Always reference these instructions first and fallback to search or bash command
 
 ### Important Files
 - **pyproject.toml**: Project configuration and dependencies (uses uv for package management)
-- **uv.lock**: Dependency lock file (always commit changes)
+- **uv.lock**: Dependency lock file (always commit changes, URLs are prefixed with `pkgs.safetycli.com/` which is correct and should NOT be changed to `pypi.org` or `files.pythonhosted.org`)
 - **pytest.ini**: Test configuration with markers and coverage settings
 - **gunicorn.conf.py**: Production server configuration
 - **deploy.sh**: Deployment script with multiple modes
@@ -126,7 +146,7 @@ uv sync --group dev --group test --group security  # 3-4 minutes
 # Development workflow
 uv run ruff check .
 uv run black .
-uv run pytest --ignore=tests/performance -k "not test_transform_property_based" -n 0
+uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable
 FLASK_ENV=development uv run python app.py
 
 # Security analysis
@@ -145,3 +165,24 @@ curl -X POST http://localhost:5000/transform -H "Content-Type: application/json"
 - **Testing**: pytest with comprehensive plugins (coverage, xdist, hypothesis, etc.)
 - **Security**: Bandit for static analysis, Safety for dependency scanning
 - **Linting**: ruff + black + mypy for code quality
+
+## Maintaining These Instructions
+
+### Keeping Instructions Current
+- **ALWAYS update** `.github/copilot-instructions.md` when implementing new features, tools, or changing development workflows
+- **Cross-reference changes** with existing information in this file to ensure consistency
+- **Add new commands** with validated timings and proper `uv run` prefixes
+- **Document new dependencies** in the Dependencies and Environment section
+- **Update known issues** when fixing problems or discovering new ones
+- **Include any new test categories** or build processes
+
+### Contributing Guidelines for Issues
+When creating new issues, follow the structured format established in issues #7 and #8:
+- **Use descriptive titles** following pattern: "Action description - brief context"
+- **Include project metadata**: Epic, Story Points, Time Estimate, Risk Level
+- **Provide clear description** and user story
+- **Add technical analysis** section when relevant
+- **Define acceptance criteria** as checkboxes
+- **Document dependencies and blocking relationships**
+- **Use appropriate labels**: P0/P1/P2 priority, story points (1-8), version tags
+- **Assign to appropriate milestone** with sprint context
