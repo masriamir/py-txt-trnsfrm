@@ -5,6 +5,7 @@ This module provides comprehensive request and response logging middleware
 for Flask applications. It captures detailed information about incoming
 requests including timing, client information, headers, and response details.
 """
+
 import time
 
 from flask import g, request
@@ -14,7 +15,7 @@ from app.logging_config import get_logger
 logger = get_logger(__name__)
 
 
-def setup_request_logging(app):
+def setup_request_logging(app):  # noqa: C901  # Complex middleware function
     """Set up comprehensive request logging middleware for the Flask application.
 
     Configures before_request and after_request handlers to log detailed
@@ -36,9 +37,9 @@ def setup_request_logging(app):
         g.start_time = time.time()
 
         # Get client IP (handling proxies)
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if client_ip:
-            client_ip = client_ip.split(',')[0].strip()
+            client_ip = client_ip.split(",")[0].strip()
 
         # Log basic request info
         logger.info(f"Request started: {request.method} {request.path}")
@@ -52,8 +53,11 @@ def setup_request_logging(app):
 
         # Log request headers in debug mode (excluding sensitive ones)
         if app.debug:
-            safe_headers = {k: v for k, v in request.headers if k.lower() not in
-                          ['authorization', 'cookie', 'x-api-key']}
+            safe_headers = {
+                k: v
+                for k, v in request.headers
+                if k.lower() not in ["authorization", "cookie", "x-api-key"]
+            }
             logger.debug(f"Request headers: {dict(safe_headers)}")
 
     @app.after_request
@@ -69,12 +73,12 @@ def setup_request_logging(app):
         Returns:
             Flask response object (unchanged).
         """
-        duration = time.time() - g.get('start_time', time.time())
+        duration = time.time() - g.get("start_time", time.time())
 
         # Get client IP again for consistency
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if client_ip:
-            client_ip = client_ip.split(',')[0].strip()
+            client_ip = client_ip.split(",")[0].strip()
 
         # Determine log level based on status code
         if response.status_code < 400:
@@ -85,10 +89,12 @@ def setup_request_logging(app):
             log_level = logger.error
 
         # Log request completion
-        log_level(f"Request completed: {request.method} {request.path} - "
-                 f"Status: {response.status_code} - "
-                 f"Duration: {duration:.3f}s - "
-                 f"IP: {client_ip}")
+        log_level(
+            f"Request completed: {request.method} {request.path} - "
+            f"Status: {response.status_code} - "
+            f"Duration: {duration:.3f}s - "
+            f"IP: {client_ip}"
+        )
 
         # Log response details in debug mode
         if app.debug:
@@ -111,13 +117,15 @@ def setup_request_logging(app):
         Returns:
             tuple: JSON error response and 404 status code.
         """
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if client_ip:
-            client_ip = client_ip.split(',')[0].strip()
+            client_ip = client_ip.split(",")[0].strip()
 
-        logger.warning(f"404 Not Found: {request.method} {request.path} - "
-                      f"IP: {client_ip} - "
-                      f"User Agent: {request.headers.get('User-Agent', 'Unknown')}")
+        logger.warning(
+            f"404 Not Found: {request.method} {request.path} - "
+            f"IP: {client_ip} - "
+            f"User Agent: {request.headers.get('User-Agent', 'Unknown')}"
+        )
         return {"error": "Not found"}, 404
 
     @app.errorhandler(500)
@@ -133,13 +141,15 @@ def setup_request_logging(app):
         Returns:
             tuple: JSON error response and 500 status code.
         """
-        client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if client_ip:
-            client_ip = client_ip.split(',')[0].strip()
+            client_ip = client_ip.split(",")[0].strip()
 
-        logger.error(f"500 Server Error: {request.method} {request.path} - "
-                    f"IP: {client_ip} - "
-                    f"Error: {str(error)}")
+        logger.error(
+            f"500 Server Error: {request.method} {request.path} - "
+            f"IP: {client_ip} - "
+            f"Error: {str(error)}"
+        )
         return {"error": "Internal server error"}, 500
 
     logger.info("Request logging middleware initialized")

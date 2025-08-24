@@ -20,12 +20,12 @@ from app.config import config
 from app.logging_config import get_logger, setup_logging
 
 # Initialize logging based on LOG_LEVEL environment variable
-log_level = os.environ.get('LOG_LEVEL', 'info').lower()
-debug_mode = log_level == 'debug'
+log_level = os.environ.get("LOG_LEVEL", "info").lower()
+debug_mode = log_level == "debug"
 setup_logging(debug=debug_mode)
 
 # Get logger for WSGI startup
-logger = get_logger('wsgi')
+logger = get_logger("wsgi")
 
 # 🚀 Log startup banner with detailed system information
 logger.info("=" * 60)
@@ -33,7 +33,7 @@ logger.info("🚀 Starting py-txt-trnsfrm Flask Application")
 logger.info("=" * 60)
 
 # Detect environment and select appropriate configuration
-config_name = os.environ.get('FLASK_ENV', 'production')
+config_name = os.environ.get("FLASK_ENV", "production")
 
 # Log configuration details
 logger.info("📋 Configuration Details:")
@@ -63,7 +63,7 @@ if debug_mode:
 # Log environment variables (debug only, exclude sensitive ones)
 if debug_mode:
     logger.debug("🌍 Environment Variables:")
-    sensitive_vars = {'SECRET_KEY', 'DATABASE_URL', 'API_KEY', 'PASSWORD', 'TOKEN'}
+    sensitive_vars = {"SECRET_KEY", "DATABASE_URL", "API_KEY", "PASSWORD", "TOKEN"}
     for key, value in sorted(os.environ.items()):
         if any(sensitive in key.upper() for sensitive in sensitive_vars):
             logger.debug(f"   • {key}: [REDACTED]")
@@ -71,26 +71,31 @@ if debug_mode:
             logger.debug(f"   • {key}: {value}")
 
 # Handle Heroku-specific configuration if running on Heroku
-if os.environ.get('DYNO'):  # Running on Heroku
+if os.environ.get("DYNO"):  # Running on Heroku
     try:
         # Import here is necessary because heroku_config may not exist in all deployments
         from heroku_config import HerokuConfig
-        config['heroku'] = HerokuConfig
-        config_name = 'heroku'
+
+        config["heroku"] = HerokuConfig
+        config_name = "heroku"
         logger.info("☁️  Detected Heroku environment, using Heroku config")
         logger.info(f"   • Dyno: {os.environ.get('DYNO')}")
         logger.info(f"   • Dyno RAM: {os.environ.get('WEB_MEMORY', 'unknown')}")
     except ImportError as e:
         logger.warning(f"⚠️  Warning: Could not import HerokuConfig: {e}")
         logger.info("🔄 Falling back to production config")
-        config_name = 'production'
+        config_name = "production"
 
 # Log additional deployment information
 logger.info("🚀 Deployment Information:")
 logger.info(f"   • Container: {'Yes' if Path('/.dockerenv').exists() else 'No'}")
-logger.info(f"   • Kubernetes: {'Yes' if os.environ.get('KUBERNETES_SERVICE_HOST') else 'No'}")
+logger.info(
+    f"   • Kubernetes: {'Yes' if os.environ.get('KUBERNETES_SERVICE_HOST') else 'No'}"
+)
 logger.info(f"   • Cloud Run: {'Yes' if os.environ.get('K_SERVICE') else 'No'}")
-logger.info(f"   • AWS Lambda: {'Yes' if os.environ.get('AWS_LAMBDA_FUNCTION_NAME') else 'No'}")
+logger.info(
+    f"   • AWS Lambda: {'Yes' if os.environ.get('AWS_LAMBDA_FUNCTION_NAME') else 'No'}"
+)
 
 # Create the Flask application instance with appropriate configuration
 try:
@@ -99,20 +104,26 @@ try:
     # Log memory usage before application creation (if psutil is available)
     try:
         import psutil
+
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
-        logger.info(f"💾 Memory Usage (before app creation): {memory_info.rss / 1024 / 1024:.1f} MB")
+        logger.info(
+            f"💾 Memory Usage (before app creation): {memory_info.rss / 1024 / 1024:.1f} MB"
+        )
     except ImportError:
         logger.debug("📊 psutil not available, skipping memory information")
 
-    application = create_app(config.get(config_name, config['production']))
+    application = create_app(config.get(config_name, config["production"]))
 
     # Log memory usage after application creation
     try:
         import psutil
+
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
-        logger.info(f"💾 Memory Usage (after app creation): {memory_info.rss / 1024 / 1024:.1f} MB")
+        logger.info(
+            f"💾 Memory Usage (after app creation): {memory_info.rss / 1024 / 1024:.1f} MB"
+        )
     except ImportError:
         pass
 
@@ -131,7 +142,7 @@ if __name__ == "__main__":
     # For development/testing when running wsgi.py directly
     logger.info("🧪 Running WSGI application directly (development mode)")
     application.run(
-        host='0.0.0.0',
-        port=int(os.environ.get('PORT', 5000)),
-        debug=config_name == 'development'
+        host="0.0.0.0",  # noqa: S104  # Development server
+        port=int(os.environ.get("PORT", 5000)),
+        debug=config_name == "development",
     )

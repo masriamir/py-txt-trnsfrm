@@ -12,7 +12,7 @@ def test_uv_sync_core_dependencies():
         ["uv", "pip", "list"],
         capture_output=True,
         text=True,
-        cwd=Path(__file__).parent.parent
+        cwd=Path(__file__).parent.parent,
     )
 
     assert result.returncode == 0, f"uv pip list failed: {result.stderr}"
@@ -31,7 +31,7 @@ def test_uv_sync_development_groups():
         ["uv", "pip", "list"],
         capture_output=True,
         text=True,
-        cwd=Path(__file__).parent.parent
+        cwd=Path(__file__).parent.parent,
     )
 
     assert result.returncode == 0, f"uv pip list failed: {result.stderr}"
@@ -47,10 +47,7 @@ def test_uv_sync_test_group():
     """Test that uv sync with test group works correctly."""
     # Test by attempting to install test group in fresh environment
     result = subprocess.run(
-        ["uv", "tree"],
-        capture_output=True,
-        text=True,
-        cwd=Path(__file__).parent.parent
+        ["uv", "tree"], capture_output=True, text=True, cwd=Path(__file__).parent.parent
     )
 
     assert result.returncode == 0, f"uv tree failed: {result.stderr}"
@@ -81,7 +78,7 @@ def test_uv_sync_all_groups():
         ["uv", "sync", "--dry-run"],
         capture_output=True,
         text=True,
-        cwd=Path(__file__).parent.parent
+        cwd=Path(__file__).parent.parent,
     )
 
     assert result.returncode == 0, f"uv sync dry-run failed: {result.stderr}"
@@ -90,7 +87,9 @@ def test_uv_sync_all_groups():
     pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
     pyproject_content = pyproject_path.read_text()
 
-    assert "[dependency-groups]" in pyproject_content, "Dependency groups section should exist"
+    assert "[dependency-groups]" in pyproject_content, (
+        "Dependency groups section should exist"
+    )
     assert "dev = [" in pyproject_content, "Dev group should be defined"
     assert "test = [" in pyproject_content, "Test group should be defined"
     assert "security = [" in pyproject_content, "Security group should be defined"
@@ -100,10 +99,7 @@ def test_application_imports_after_sync():
     """Test that the application can be imported after uv sync."""
     # First ensure dependencies are synced
     sync_result = subprocess.run(
-        ["uv", "sync"],
-        capture_output=True,
-        text=True,
-        cwd=Path(__file__).parent.parent
+        ["uv", "sync"], capture_output=True, text=True, cwd=Path(__file__).parent.parent
     )
 
     assert sync_result.returncode == 0, f"uv sync failed: {sync_result.stderr}"
@@ -113,7 +109,7 @@ def test_application_imports_after_sync():
         ["uv", "run", "python", "-c", "import app; print('SUCCESS')"],
         capture_output=True,
         text=True,
-        cwd=Path(__file__).parent.parent
+        cwd=Path(__file__).parent.parent,
     )
 
     assert import_result.returncode == 0, f"App import failed: {import_result.stderr}"
@@ -128,24 +124,25 @@ def test_uv_sync_frozen_no_dev():
         temp_repo = Path(temp_dir) / "test_repo"
 
         # Copy essential files for testing
-        shutil.copytree(repo_dir, temp_repo, ignore=shutil.ignore_patterns('.venv', '__pycache__', '*.pyc'))
+        shutil.copytree(
+            repo_dir,
+            temp_repo,
+            ignore=shutil.ignore_patterns(".venv", "__pycache__", "*.pyc"),
+        )
 
         # Test production sync
         result = subprocess.run(
             ["uv", "sync", "--frozen", "--no-dev"],
             capture_output=True,
             text=True,
-            cwd=temp_repo
+            cwd=temp_repo,
         )
 
         assert result.returncode == 0, f"Production sync failed: {result.stderr}"
 
         # Verify only production dependencies are installed
         list_result = subprocess.run(
-            ["uv", "pip", "list"],
-            capture_output=True,
-            text=True,
-            cwd=temp_repo
+            ["uv", "pip", "list"], capture_output=True, text=True, cwd=temp_repo
         )
 
         assert list_result.returncode == 0, "pip list should work"

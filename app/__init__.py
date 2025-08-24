@@ -4,6 +4,7 @@ This module contains the Flask application factory function that creates and con
 the Flask application instance with all necessary components including logging,
 middleware, and blueprints.
 """
+
 import os
 
 from flask import Flask
@@ -36,25 +37,27 @@ def create_app(config_class=None):
 
     # Use default config if none provided
     if config_class is None:
-        config_name = os.environ.get('FLASK_ENV', 'development')
-        config_class = config.get(config_name, config['development'])
+        config_name = os.environ.get("FLASK_ENV", "development")
+        config_class = config.get(config_name, config["development"])
 
     app.config.from_object(config_class)
 
     # Initialize logging based on LOG_LEVEL environment variable
     # LOG_LEVEL takes precedence over DEBUG setting for logging configuration
-    log_level_env = os.environ.get('LOG_LEVEL', '').upper()
-    if log_level_env in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
-        debug_mode = log_level_env == 'DEBUG'
+    log_level_env = os.environ.get("LOG_LEVEL", "").upper()
+    if log_level_env in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
+        debug_mode = log_level_env == "DEBUG"
         setup_logging(debug=debug_mode, log_level=log_level_env)
     else:
         # Fall back to Flask config DEBUG setting if LOG_LEVEL is not set or invalid
-        debug_mode = app.config.get('DEBUG', False)
-        setup_logging(debug=debug_mode, log_level='DEBUG' if debug_mode else 'INFO')
+        debug_mode = app.config.get("DEBUG", False)
+        setup_logging(debug=debug_mode, log_level="DEBUG" if debug_mode else "INFO")
 
     logger = get_logger(__name__)
     logger.info(f"Starting application with config: {config_class.__name__}")
-    logger.info(f"Log level: {log_level_env if log_level_env else ('DEBUG' if debug_mode else 'INFO')}")
+    logger.info(
+        f"Log level: {log_level_env if log_level_env else ('DEBUG' if debug_mode else 'INFO')}"
+    )
     logger.debug(f"Debug mode: {debug_mode}")
 
     # Initialize the config (this will validate production settings if needed)

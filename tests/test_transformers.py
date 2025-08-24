@@ -4,6 +4,7 @@ This module contains comprehensive unit tests for the TextTransformer class,
 testing all available text transformation methods to ensure correct behavior
 and output formatting for various input scenarios.
 """
+
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -40,9 +41,20 @@ class TestTextTransformer:
         """
         transformations = transformer.get_available_transformations()
         expected = [
-            'alternate_case', 'rainbow_html', 'l33t_speak', 'backwards',
-            'upside_down', 'stutter', 'zalgo', 'morse_code', 'binary',
-            'rot13', 'reverse_words', 'spongebob_case', 'wave_text', 'shizzle'
+            "alternate_case",
+            "rainbow_html",
+            "l33t_speak",
+            "backwards",
+            "upside_down",
+            "stutter",
+            "zalgo",
+            "morse_code",
+            "binary",
+            "rot13",
+            "reverse_words",
+            "spongebob_case",
+            "wave_text",
+            "shizzle",
         ]
 
         for expected_transform in expected:
@@ -57,16 +69,16 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.alternate_case('Hello World')
-        assert result == 'HeLlO wOrLd'
+        result = transformer.alternate_case("Hello World")
+        assert result == "HeLlO wOrLd"
 
         # Test with punctuation
-        result = transformer.alternate_case('Hello, world!')
-        assert result == 'HeLlO, wOrLd!'
+        result = transformer.alternate_case("Hello, world!")
+        assert result == "HeLlO, wOrLd!"
 
         # Test sentence reset
-        result = transformer.alternate_case('Hi. How are you?')
-        assert result == 'Hi. HoW aRe YoU?'
+        result = transformer.alternate_case("Hi. How are you?")
+        assert result == "Hi. HoW aRe YoU?"
 
     def test_rainbow_html(self, transformer):
         """Test rainbow HTML transformation output format.
@@ -77,9 +89,12 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.rainbow_html('Hi')
+        result = transformer.rainbow_html("Hi")
         assert '<span style="color:' in result
-        assert 'Hi' in result.replace('<span style="color: #FF0000;">H</span><span style="color: #FF7F00;">i</span>', 'Hi')
+        assert "Hi" in result.replace(
+            '<span style="color: #FF0000;">H</span><span style="color: #FF7F00;">i</span>',
+            "Hi",
+        )
 
     def test_l33t_speak(self, transformer):
         """Test leet speak transformation accuracy.
@@ -90,11 +105,11 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.l33t_speak('Hello')
-        assert result == 'H3110'
+        result = transformer.l33t_speak("Hello")
+        assert result == "H3110"
 
-        result = transformer.l33t_speak('Leet Speak')
-        assert result == '1337 5p34k'
+        result = transformer.l33t_speak("Leet Speak")
+        assert result == "1337 5p34k"
 
     def test_backwards(self, transformer):
         """Test backwards text transformation.
@@ -104,11 +119,11 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.backwards('Hello')
-        assert result == 'olleH'
+        result = transformer.backwards("Hello")
+        assert result == "olleH"
 
-        result = transformer.backwards('Hello World')
-        assert result == 'dlroW olleH'
+        result = transformer.backwards("Hello World")
+        assert result == "dlroW olleH"
 
     def test_upside_down(self, transformer):
         """Test upside-down Unicode transformation.
@@ -119,10 +134,10 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.upside_down('hello')
+        result = transformer.upside_down("hello")
         # Should contain upside-down characters
         assert len(result) == 5
-        assert result != 'hello'
+        assert result != "hello"
 
     def test_stutter(self, transformer):
         """Test stuttering effect transformation.
@@ -133,13 +148,13 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.stutter('hello world')
-        assert 'h-h-hello' in result
-        assert 'w-w-world' in result
+        result = transformer.stutter("hello world")
+        assert "h-h-hello" in result
+        assert "w-w-world" in result
 
         # Short words should not stutter
-        result = transformer.stutter('hi ok')
-        assert result == 'hi ok'
+        result = transformer.stutter("hi ok")
+        assert result == "hi ok"
 
     def test_morse_code(self, transformer):
         """Test Morse code transformation accuracy.
@@ -150,13 +165,13 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.morse_code('SOS')
-        assert result == '... --- ...'
+        result = transformer.morse_code("SOS")
+        assert result == "... --- ..."
 
-        result = transformer.morse_code('HELLO')
-        assert '....' in result  # H
-        assert '.' in result     # E
-        assert '.-..' in result  # L
+        result = transformer.morse_code("HELLO")
+        assert "...." in result  # H
+        assert "." in result  # E
+        assert ".-.." in result  # L
 
     def test_binary(self, transformer):
         """Test binary conversion transformation.
@@ -167,11 +182,11 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.binary('A')
-        assert result == '01000001'
+        result = transformer.binary("A")
+        assert result == "01000001"
 
-        result = transformer.binary('Hi')
-        parts = result.split(' ')
+        result = transformer.binary("Hi")
+        parts = result.split(" ")
         assert len(parts) == 2
         assert all(len(part) == 8 for part in parts)
 
@@ -184,12 +199,12 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.rot13('hello')
-        assert result == 'uryyb'
+        result = transformer.rot13("hello")
+        assert result == "uryyb"
 
         # ROT13 should be reversible
         double_rot = transformer.rot13(result)
-        assert double_rot == 'hello'
+        assert double_rot == "hello"
 
     def test_reverse_words(self, transformer):
         """Test individual word reversal transformation.
@@ -200,8 +215,8 @@ class TestTextTransformer:
         Args:
             transformer: TextTransformer fixture.
         """
-        result = transformer.reverse_words('hello world')
-        assert result == 'olleh dlrow'
+        result = transformer.reverse_words("hello world")
+        assert result == "olleh dlrow"
 
     def test_transform_method(self, transformer):
         """Test the main transform method with valid and invalid inputs.
@@ -213,13 +228,13 @@ class TestTextTransformer:
             transformer: TextTransformer fixture.
         """
         # Test valid transformation
-        result = transformer.transform('Hello', 'backwards')
-        assert result == 'olleH'
+        result = transformer.transform("Hello", "backwards")
+        assert result == "olleH"
 
         # Test invalid transformation
         with pytest.raises(ValueError) as exc_info:
-            transformer.transform('Hello', 'invalid_transform')
-        assert 'Unknown transformation' in str(exc_info.value)
+            transformer.transform("Hello", "invalid_transform")
+        assert "Unknown transformation" in str(exc_info.value)
 
     def test_shizzle(self, transformer):
         """Test shizzle transformation with sophisticated izzle speak rules.
@@ -232,89 +247,89 @@ class TestTextTransformer:
             transformer: TextTransformer fixture.
         """
         # Basic consonant-ending words - just add 'izzle'
-        result = transformer.shizzle('world')
-        assert result == 'worldizzle'
+        result = transformer.shizzle("world")
+        assert result == "worldizzle"
 
         # Words ending in vowels - replace vowel with 'izzle'
-        result = transformer.shizzle('money')
-        assert result == 'monizzle'
+        result = transformer.shizzle("money")
+        assert result == "monizzle"
 
-        result = transformer.shizzle('home')
-        assert result == 'homizzle'
+        result = transformer.shizzle("home")
+        assert result == "homizzle"
 
-        result = transformer.shizzle('baby')
-        assert result == 'babizzle'
+        result = transformer.shizzle("baby")
+        assert result == "babizzle"
 
         # Plural words ending in 's' - move plural to izzle
-        result = transformer.shizzle('cats')
-        assert result == 'catizzles'
+        result = transformer.shizzle("cats")
+        assert result == "catizzles"
 
-        result = transformer.shizzle('dogs')
-        assert result == 'dogizzles'
+        result = transformer.shizzle("dogs")
+        assert result == "dogizzles"
 
         # Plural words ending in 'es' - move plural to izzle
-        result = transformer.shizzle('snitches')
-        assert result == 'snitchizzles'
+        result = transformer.shizzle("snitches")
+        assert result == "snitchizzles"
 
-        result = transformer.shizzle('dishes')
-        assert result == 'dishizzles'
+        result = transformer.shizzle("dishes")
+        assert result == "dishizzles"
 
-        result = transformer.shizzle('boxes')
-        assert result == 'boxizzles'
+        result = transformer.shizzle("boxes")
+        assert result == "boxizzles"
 
         # Plural words ending in 'ies' - move plural to izzle
-        result = transformer.shizzle('ladies')
-        assert result == 'ladizzles'
+        result = transformer.shizzle("ladies")
+        assert result == "ladizzles"
 
-        result = transformer.shizzle('babies')
-        assert result == 'babizzles'
+        result = transformer.shizzle("babies")
+        assert result == "babizzles"
 
         # Mixed case preservation
-        result = transformer.shizzle('Money')
-        assert result == 'Monizzle'
+        result = transformer.shizzle("Money")
+        assert result == "Monizzle"
 
-        result = transformer.shizzle('Ladies')
-        assert result == 'Ladizzles'
+        result = transformer.shizzle("Ladies")
+        assert result == "Ladizzles"
 
         # Complex sentence with multiple rule types
-        result = transformer.shizzle('hello money snitches world')
-        assert result == 'hellizzle monizzle snitchizzles worldizzle'
+        result = transformer.shizzle("hello money snitches world")
+        assert result == "hellizzle monizzle snitchizzles worldizzle"
 
         # Punctuation handling
-        result = transformer.shizzle('money!')
-        assert result == 'monizzle!'
+        result = transformer.shizzle("money!")
+        assert result == "monizzle!"
 
-        result = transformer.shizzle('@ladies#')
-        assert result == '@ladizzles#'
+        result = transformer.shizzle("@ladies#")
+        assert result == "@ladizzles#"
 
         # Words that naturally end in 's' but aren't plurals
-        result = transformer.shizzle('bus')
-        assert result == 'busizzle'  # 'bus' is not treated as plural
+        result = transformer.shizzle("bus")
+        assert result == "busizzle"  # 'bus' is not treated as plural
 
-        result = transformer.shizzle('gas')
-        assert result == 'gasizzle'  # 'gas' is not treated as plural
+        result = transformer.shizzle("gas")
+        assert result == "gasizzle"  # 'gas' is not treated as plural
 
         # Single letter words
-        result = transformer.shizzle('a')
-        assert result == 'aizzle'
+        result = transformer.shizzle("a")
+        assert result == "aizzle"
 
-        result = transformer.shizzle('I')
-        assert result == 'Iizzle'
+        result = transformer.shizzle("I")
+        assert result == "Iizzle"
 
         # Edge cases
-        result = transformer.shizzle('')
-        assert result == ''
+        result = transformer.shizzle("")
+        assert result == ""
 
-        result = transformer.shizzle('   ')
-        assert result == '   '
+        result = transformer.shizzle("   ")
+        assert result == "   "
 
         # Numbers and symbols should remain unchanged
-        result = transformer.shizzle('123 !@# $%^')
-        assert result == '123 !@# $%^'
+        result = transformer.shizzle("123 !@# $%^")
+        assert result == "123 !@# $%^"
 
         # Mixed alphanumeric - should still transform alphabetic parts
-        result = transformer.shizzle('hello123 money!')
-        assert result == 'hellizzle123 monizzle!'
+        result = transformer.shizzle("hello123 money!")
+        assert result == "hellizzle123 monizzle!"
 
     def test_empty_text_handling(self, transformer):
         """Test transformation behavior with empty input.
@@ -325,7 +340,7 @@ class TestTextTransformer:
             transformer: TextTransformer fixture.
         """
         for transform_name in transformer.get_available_transformations():
-            result = transformer.transform('', transform_name)
+            result = transformer.transform("", transform_name)
             assert isinstance(result, str)  # Should return string, even if empty
 
     @pytest.mark.unit
@@ -346,7 +361,7 @@ class TestTextTransformer:
     @pytest.mark.unit
     def test_edge_cases_comprehensive(self, transformer):
         """Test transformations with edge case inputs."""
-        for case_name, case_text in edge_cases.items():
+        for _case_name, case_text in edge_cases.items():
             for transform_name in ["alternate_case", "backwards", "rot13"]:
                 result = transformer.transform(case_text, transform_name)
                 assert isinstance(result, str)
@@ -366,12 +381,20 @@ class TestTextTransformer:
         assert isinstance(result, str)
 
         # 3. Non-alphabetic characters should remain unchanged
-        for i, (original_char, result_char) in enumerate(zip(text, result, strict=False)):
+        for _i, (original_char, result_char) in enumerate(
+            zip(text, result, strict=False)
+        ):
             if not original_char.isalpha():
                 assert original_char == result_char
 
     @pytest.mark.slow
-    @given(text=st.text(alphabet=st.characters(whitelist_categories=('Lu', 'Ll')), min_size=1, max_size=50))
+    @given(
+        text=st.text(
+            alphabet=st.characters(whitelist_categories=("Lu", "Ll")),
+            min_size=1,
+            max_size=50,
+        )
+    )
     def test_rot13_property_based(self, transformer, text):
         """Property-based testing for ROT13 - should be reversible."""
         result = transformer.rot13(text)

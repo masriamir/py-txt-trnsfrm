@@ -5,6 +5,7 @@ inspired by 90s internet culture and modern text effects. It includes various
 transformations such as leet speak, case alternation, encoding methods, and
 visual text effects.
 """
+
 import random
 from collections.abc import Callable
 
@@ -38,22 +39,24 @@ class TextTransformer:
         """
         logger.debug("Initializing TextTransformer with available transformations")
         self.transformations: dict[str, Callable[[str], str]] = {
-            'alternate_case': self.alternate_case,
-            'rainbow_html': self.rainbow_html,
-            'l33t_speak': self.l33t_speak,
-            'backwards': self.backwards,
-            'upside_down': self.upside_down,
-            'stutter': self.stutter,
-            'zalgo': self.zalgo_light,
-            'morse_code': self.morse_code,
-            'binary': self.binary,
-            'rot13': self.rot13,
-            'reverse_words': self.reverse_words,
-            'spongebob_case': self.spongebob_case,
-            'wave_text': self.wave_text,
-            'shizzle': self.shizzle,
+            "alternate_case": self.alternate_case,
+            "rainbow_html": self.rainbow_html,
+            "l33t_speak": self.l33t_speak,
+            "backwards": self.backwards,
+            "upside_down": self.upside_down,
+            "stutter": self.stutter,
+            "zalgo": self.zalgo_light,
+            "morse_code": self.morse_code,
+            "binary": self.binary,
+            "rot13": self.rot13,
+            "reverse_words": self.reverse_words,
+            "spongebob_case": self.spongebob_case,
+            "wave_text": self.wave_text,
+            "shizzle": self.shizzle,
         }
-        logger.debug(f"TextTransformer initialized with {len(self.transformations)} transformations")
+        logger.debug(
+            f"TextTransformer initialized with {len(self.transformations)} transformations"
+        )
 
     def transform(self, text: str, transformation: str) -> str:
         """Apply the specified transformation to the input text.
@@ -74,13 +77,19 @@ class TextTransformer:
             >>> print(result)  # "olleH"
         """
         if transformation not in self.transformations:
-            logger.error(f"Unknown transformation requested: '{transformation}'. Available: {list(self.transformations.keys())}")
+            logger.error(
+                f"Unknown transformation requested: '{transformation}'. Available: {list(self.transformations.keys())}"
+            )
             raise ValueError(f"Unknown transformation: {transformation}")
 
-        logger.debug(f"Applying transformation '{transformation}' to text of length {len(text)}")
+        logger.debug(
+            f"Applying transformation '{transformation}' to text of length {len(text)}"
+        )
         try:
             result = self.transformations[transformation](text)
-            logger.debug(f"Transformation '{transformation}' successful, result length: {len(result)}")
+            logger.debug(
+                f"Transformation '{transformation}' successful, result length: {len(result)}"
+            )
             return result
         except Exception as e:
             logger.error(f"Error during '{transformation}' transformation: {str(e)}")
@@ -130,10 +139,10 @@ class TextTransformer:
                 uppercase = not uppercase
             else:
                 result.append(char)
-                if char in '.!?':
+                if char in ".!?":
                     uppercase = True
 
-        return ''.join(result)
+        return "".join(result)
 
     def rainbow_html(self, text: str) -> str:
         """Generate HTML with rainbow-colored text using inline styles.
@@ -152,7 +161,15 @@ class TextTransformer:
             >>> result = transformer.rainbow_html("Hello")
             >>> # Returns HTML with each letter in different rainbow colors
         """
-        colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3']
+        colors = [
+            "#FF0000",
+            "#FF7F00",
+            "#FFFF00",
+            "#00FF00",
+            "#0000FF",
+            "#4B0082",
+            "#9400D3",
+        ]
         result = []
         color_index = 0
 
@@ -164,7 +181,7 @@ class TextTransformer:
             else:
                 result.append(char)
 
-        return ''.join(result)
+        return "".join(result)
 
     def l33t_speak(self, text: str) -> str:
         """Convert text to leet speak (1337 speak) format.
@@ -184,22 +201,31 @@ class TextTransformer:
             >>> print(result)  # "311t3 h4ck3r"
         """
         leet_map = {
-            'a': '4', 'A': '4',
-            'e': '3', 'E': '3',
-            'i': '1', 'I': '1',
-            'l': '1', 'L': '1',
-            'o': '0', 'O': '0',
-            's': '5', 'S': '5',
-            't': '7', 'T': '7',
-            'g': '9', 'G': '9',
-            'b': '6', 'B': '6',
+            "a": "4",
+            "A": "4",
+            "e": "3",
+            "E": "3",
+            "i": "1",
+            "I": "1",
+            "l": "1",
+            "L": "1",
+            "o": "0",
+            "O": "0",
+            "s": "5",
+            "S": "5",
+            "t": "7",
+            "T": "7",
+            "g": "9",
+            "G": "9",
+            "b": "6",
+            "B": "6",
         }
 
         result = []
         for char in text:
             result.append(leet_map.get(char, char))
 
-        return ''.join(result)
+        return "".join(result)
 
     def backwards(self, text: str) -> str:
         """Reverse the entire text string.
@@ -235,20 +261,44 @@ class TextTransformer:
             >>> # Returns upside-down Unicode equivalent
         """
         upside_down_map = {
-            'a': 'ɐ', 'b': 'q', 'c': 'ɔ', 'd': 'p', 'e': 'ǝ',
-            'f': 'ɟ', 'g': 'ƃ', 'h': 'ɥ', 'i': 'ᴉ', 'j': 'ɾ',
-            'k': 'ʞ', 'l': 'l', 'm': 'ɯ', 'n': 'u', 'o': 'o',
-            'p': 'd', 'q': 'b', 'r': 'ɹ', 's': 's', 't': 'ʇ',
-            'u': 'n', 'v': 'ʌ', 'w': 'ʍ', 'x': 'x', 'y': 'ʎ',
-            'z': 'z', '?': '¿', '!': '¡', '.': '˙', ',': "'",
-            ' ': ' '
+            "a": "ɐ",
+            "b": "q",
+            "c": "ɔ",
+            "d": "p",
+            "e": "ǝ",
+            "f": "ɟ",
+            "g": "ƃ",
+            "h": "ɥ",
+            "i": "ᴉ",
+            "j": "ɾ",
+            "k": "ʞ",
+            "l": "l",
+            "m": "ɯ",
+            "n": "u",
+            "o": "o",
+            "p": "d",
+            "q": "b",
+            "r": "ɹ",
+            "s": "s",
+            "t": "ʇ",
+            "u": "n",
+            "v": "ʌ",
+            "w": "ʍ",
+            "x": "x",
+            "y": "ʎ",
+            "z": "z",
+            "?": "¿",
+            "!": "¡",
+            ".": "˙",
+            ",": "'",
+            " ": " ",
         }
 
         result = []
         for char in text.lower():
             result.append(upside_down_map.get(char, char))
 
-        return ''.join(result)[::-1]
+        return "".join(result)[::-1]
 
     def stutter(self, text: str) -> str:
         """Add stuttering effect to words by repeating first letters.
@@ -278,7 +328,7 @@ class TextTransformer:
             else:
                 result.append(word)
 
-        return ' '.join(result)
+        return " ".join(result)
 
     def zalgo_light(self, text: str) -> str:
         """Add light zalgo effect using combining diacritical marks.
@@ -296,15 +346,15 @@ class TextTransformer:
             This is a "light" version that adds fewer combining characters
             for better readability compared to full zalgo text.
         """
-        combining_chars = ['̀', '́', '̂', '̃', '̄', '̅', '̆', '̇', '̈', '̉', '̊', '̋', '̌', '̍']
+        combining_chars = ["̀", "́", "̂", "̃", "̄", "̅", "̆", "̇", "̈", "̉", "̊", "̋", "̌", "̍"]
         result = []
 
         for char in text:
             result.append(char)
-            if char.isalpha() and random.random() < 0.3:
-                result.append(random.choice(combining_chars))
+            if char.isalpha() and random.random() < 0.3:  # noqa: S311  # Non-cryptographic use
+                result.append(random.choice(combining_chars))  # noqa: S311  # Non-cryptographic use
 
-        return ''.join(result)
+        return "".join(result)
 
     def morse_code(self, text: str) -> str:
         """Convert text to Morse code representation.
@@ -324,23 +374,53 @@ class TextTransformer:
             >>> print(result)  # "... --- ..."
         """
         morse_map = {
-            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
-            'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
-            'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
-            'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
-            'Y': '-.--', 'Z': '--..', '0': '-----', '1': '.----', '2': '..---',
-            '3': '...--', '4': '....-', '5': '.....', '6': '-....', '7': '--...',
-            '8': '---..', '9': '----.', ' ': '/'
+            "A": ".-",
+            "B": "-...",
+            "C": "-.-.",
+            "D": "-..",
+            "E": ".",
+            "F": "..-.",
+            "G": "--.",
+            "H": "....",
+            "I": "..",
+            "J": ".---",
+            "K": "-.-",
+            "L": ".-..",
+            "M": "--",
+            "N": "-.",
+            "O": "---",
+            "P": ".--.",
+            "Q": "--.-",
+            "R": ".-.",
+            "S": "...",
+            "T": "-",
+            "U": "..-",
+            "V": "...-",
+            "W": ".--",
+            "X": "-..-",
+            "Y": "-.--",
+            "Z": "--..",
+            "0": "-----",
+            "1": ".----",
+            "2": "..---",
+            "3": "...--",
+            "4": "....-",
+            "5": ".....",
+            "6": "-....",
+            "7": "--...",
+            "8": "---..",
+            "9": "----.",
+            " ": "/",
         }
 
         result = []
         for char in text.upper():
             if char in morse_map:
                 result.append(morse_map[char])
-            elif char == ' ':
-                result.append('/')
+            elif char == " ":
+                result.append("/")
 
-        return ' '.join(result)
+        return " ".join(result)
 
     def binary(self, text: str) -> str:
         """Convert text to binary representation.
@@ -359,7 +439,7 @@ class TextTransformer:
             >>> result = transformer.binary("Hi")
             >>> print(result)  # "01001000 01101001"
         """
-        return ' '.join(format(ord(char), '08b') for char in text)
+        return " ".join(format(ord(char), "08b") for char in text)
 
     def rot13(self, text: str) -> str:
         """Apply ROT13 encoding to the text.
@@ -380,13 +460,13 @@ class TextTransformer:
         """
         result = []
         for char in text:
-            if 'a' <= char <= 'z':
-                result.append(chr((ord(char) - ord('a') + 13) % 26 + ord('a')))
-            elif 'A' <= char <= 'Z':
-                result.append(chr((ord(char) - ord('A') + 13) % 26 + ord('A')))
+            if "a" <= char <= "z":
+                result.append(chr((ord(char) - ord("a") + 13) % 26 + ord("a")))
+            elif "A" <= char <= "Z":
+                result.append(chr((ord(char) - ord("A") + 13) % 26 + ord("A")))
             else:
                 result.append(char)
-        return ''.join(result)
+        return "".join(result)
 
     def reverse_words(self, text: str) -> str:
         """Reverse each word individually while maintaining word order.
@@ -402,7 +482,7 @@ class TextTransformer:
             >>> result = transformer.reverse_words("hello world")
             >>> print(result)  # "olleh dlrow"
         """
-        return ' '.join(word[::-1] for word in text.split())
+        return " ".join(word[::-1] for word in text.split())
 
     def spongebob_case(self, text: str) -> str:
         """Apply random alternating case (SpongeBob mocking meme style).
@@ -425,10 +505,10 @@ class TextTransformer:
         result = []
         for char in text:
             if char.isalpha():
-                result.append(char.upper() if random.random() < 0.5 else char.lower())
+                result.append(char.upper() if random.random() < 0.5 else char.lower())  # noqa: S311  # Non-cryptographic use
             else:
                 result.append(char)
-        return ''.join(result)
+        return "".join(result)
 
     def wave_text(self, text: str) -> str:
         """Create wave effect using Unicode wave characters.
@@ -447,13 +527,13 @@ class TextTransformer:
             >>> result = transformer.wave_text("hello")
             >>> # Returns text decorated with wave characters
         """
-        wave_chars = ['~', '∼', '〜', '～', '˜']
+        wave_chars = ["~", "∼", "〜", "～", "˜"]
         result = []
         wave_index = 0
 
         for i, char in enumerate(text):
-            if char == ' ':
-                result.append(' ')
+            if char == " ":
+                result.append(" ")
             else:
                 wave_char = wave_chars[wave_index % len(wave_chars)]
                 if i % 2 == 0:
@@ -462,9 +542,9 @@ class TextTransformer:
                     result.append(char)
                 wave_index += 1
 
-        return ''.join(result)
+        return "".join(result)
 
-    def shizzle(self, text: str) -> str:
+    def shizzle(self, text: str) -> str:  # noqa: C901  # Complex text transformation
         """Transform text to a 'shizzle' style (izzle speak).
 
         Adds the suffix 'izzle' to words, popularized by 90s hip-hop culture
@@ -492,7 +572,7 @@ class TextTransformer:
 
         def transform_word(word):
             # Extract leading non-alphabetic, alphabetic part, and trailing non-alphabetic
-            match = re.match(r'^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$', word)
+            match = re.match(r"^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$", word)
             if match:
                 leading_punct = match.group(1)
                 alphabetic_part = match.group(2)
@@ -505,10 +585,10 @@ class TextTransformer:
                 # If no alphabetic characters found, return unchanged
                 return word
 
-        def apply_izzle_rules(word):
+        def apply_izzle_rules(word):  # noqa: C901  # Complex transformation rules
             """Apply sophisticated izzle transformation rules."""
             if len(word) <= 1:
-                return word + 'izzle'
+                return word + "izzle"
 
             word_lower = word.lower()
 
@@ -517,26 +597,26 @@ class TextTransformer:
             base_word = word
 
             # Check for common plural patterns
-            if word_lower.endswith('ies') and len(word) > 3:
+            if word_lower.endswith("ies") and len(word) > 3:
                 # "ladies" → "lad" + "ies"
                 base_word = word[:-3]
                 plural_suffix = "ies"
-            elif word_lower.endswith('es') and len(word) > 2:
+            elif word_lower.endswith("es") and len(word) > 2:
                 # Check if it's a real plural (not just words ending in 'es')
                 # Common patterns: -ches, -shes, -xes, -zes, -ses
-                if word_lower.endswith(('ches', 'shes', 'xes', 'zes', 'ses')):
+                if word_lower.endswith(("ches", "shes", "xes", "zes", "ses")):
                     base_word = word[:-2]
                     plural_suffix = "es"
-                elif word_lower.endswith('es'):
+                elif word_lower.endswith("es"):
                     # For other -es endings, treat as plural if word > 3 chars
                     if len(word) > 3:
                         base_word = word[:-2]
                         plural_suffix = "es"
-            elif word_lower.endswith('s') and len(word) > 2:
+            elif word_lower.endswith("s") and len(word) > 2:
                 # Simple plural: "cats" → "cat" + "s"
                 # But avoid words that naturally end in 's' like "bus", "gas"
                 penultimate = word_lower[-2]
-                if penultimate not in 'aeiou':  # Consonant before 's' suggests plural
+                if penultimate not in "aeiou":  # Consonant before 's' suggests plural
                     base_word = word[:-1]
                     plural_suffix = "s"
 
@@ -544,7 +624,7 @@ class TextTransformer:
             base_lower = base_word.lower()
 
             # Handle words ending in vowels - replace the vowel with 'izzle'
-            if len(base_word) > 1 and base_lower[-1] in 'aeiouy':
+            if len(base_word) > 1 and base_lower[-1] in "aeiouy":
                 # For words ending in vowels, we want to replace the final vowel(s)
                 # with 'izzle' but keep the consonant structure
 
@@ -552,25 +632,25 @@ class TextTransformer:
                 final_vowel_start = len(base_word)
                 # Go backwards from the end to find where vowels start
                 for i in range(len(base_word) - 1, -1, -1):
-                    if base_lower[i] in 'aeiouy':
+                    if base_lower[i] in "aeiouy":
                         final_vowel_start = i
                     else:
                         break
 
                 # Replace the final vowel sequence with 'izzle'
-                transformed = base_word[:final_vowel_start] + 'izzle'
+                transformed = base_word[:final_vowel_start] + "izzle"
             else:
                 # Word ends in consonant or is single letter, just add 'izzle'
-                transformed = base_word + 'izzle'
+                transformed = base_word + "izzle"
 
             # Add back the plural suffix to 'izzle'
             if plural_suffix:
-                if plural_suffix == 'ies':
+                if plural_suffix == "ies":
                     # For 'ies' endings, just add 's' to izzle (izzle + s = izzles)
-                    return transformed + 's'
-                elif plural_suffix == 'es':
+                    return transformed + "s"
+                elif plural_suffix == "es":
                     # For 'es' endings, just add 's' to izzle (izzle + s = izzles)
-                    return transformed + 's'
+                    return transformed + "s"
                 else:
                     return transformed + plural_suffix
             else:
@@ -585,4 +665,4 @@ class TextTransformer:
             else:
                 result.append(word)
 
-        return ' '.join(result)
+        return " ".join(result)
