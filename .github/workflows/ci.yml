@@ -2,14 +2,14 @@ name: Comprehensive CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, fix/**, feature/**, release/**]
     paths-ignore:
       - '*.md'
       - 'docs/**'
       - '.gitignore'
       - 'LICENSE'
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, fix/**, feature/**, release/**]
     types: [opened, synchronize, reopened]
   workflow_dispatch: # Allow manual trigger
 
