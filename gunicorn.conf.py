@@ -45,7 +45,9 @@ proc_name = "py-txt-trnsfrm"
 
 # Server mechanics
 daemon = False
-pidfile = str(Path("/tmp") / "gunicorn.pid")  # noqa: S108  # Standard gunicorn temp location
+pidfile = str(
+    Path("/tmp") / "gunicorn.pid"
+)  # noqa: S108  # Standard gunicorn temp location
 user = None
 group = None
 tmp_upload_dir = None
