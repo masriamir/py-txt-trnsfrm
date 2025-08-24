@@ -351,8 +351,12 @@ class TextTransformer:
 
         for char in text:
             result.append(char)
-            if char.isalpha() and random.random() < 0.3:  # noqa: S311  # Non-cryptographic use
-                result.append(random.choice(combining_chars))  # noqa: S311  # Non-cryptographic use
+            if (
+                char.isalpha() and random.random() < 0.3
+            ):  # noqa: S311  # Non-cryptographic use
+                result.append(
+                    random.choice(combining_chars)
+                )  # noqa: S311  # Non-cryptographic use
 
         return "".join(result)
 
@@ -505,7 +509,9 @@ class TextTransformer:
         result = []
         for char in text:
             if char.isalpha():
-                result.append(char.upper() if random.random() < 0.5 else char.lower())  # noqa: S311  # Non-cryptographic use
+                result.append(
+                    char.upper() if random.random() < 0.5 else char.lower()
+                )  # noqa: S311  # Non-cryptographic use
             else:
                 result.append(char)
         return "".join(result)
