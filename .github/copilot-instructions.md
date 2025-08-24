@@ -6,7 +6,8 @@ Always reference these instructions first and fallback to search or bash command
 
 **py-txt-trnsfrm** is a Flask web application that provides creative text transformations inspired by early 90s internet culture. This is a Python 3.13+ project using modern tools and practices.
 
-### Technology Stack
+### Technology Stack and Dependencies
+- **Python**: 3.13+ (specified in .python-version)
 - **Backend Framework**: Flask 3.0+ with Gunicorn for production deployment
 - **Frontend**: Bootstrap 5 with vanilla JavaScript, Jinja2 templates for server-side rendering
 - **Package Management**: uv (modern, fast Python package management replacement for pip/pipenv)
@@ -164,22 +165,13 @@ curl -X POST http://localhost:5000/transform -H "Content-Type: application/json"
   -d '{"text": "Hello World", "transformation": "alternate_case"}'
 ```
 
-## Dependencies and Environment
-- **Python**: 3.13+ (specified in .python-version)
-- **Package Manager**: uv (modern, fast Python package management)
-- **Framework**: Flask 3.0+ with Gunicorn for production
-- **Frontend**: Bootstrap 5 with vanilla JavaScript
-- **Testing**: pytest with comprehensive plugins (coverage, xdist, hypothesis, etc.)
-- **Security**: Bandit for static analysis, Safety for dependency scanning
-- **Linting**: ruff + black + mypy for code quality
-
 ## Maintaining These Instructions
 
 ### Keeping Instructions Current
 - **ALWAYS update** `.github/copilot-instructions.md` when implementing new features, tools, or changing development workflows
 - **Cross-reference changes** with existing information in this file to ensure consistency
 - **Add new commands** with validated timings and proper `uv run` prefixes
-- **Document new dependencies** in the Dependencies and Environment section
+- **Document new dependencies** in the Technology Stack and Dependencies section
 - **Update known issues** when fixing problems or discovering new ones
 - **Include any new test categories** or build processes
 
