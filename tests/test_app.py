@@ -116,3 +116,50 @@ class TestStaticFiles:
         response = client.get("/static/js/app.js")
         assert response.status_code == 200
         assert b"transformText" in response.data
+
+
+@pytest.mark.integration
+class TestProjectConfiguration:
+    """Test project configuration files."""
+
+    def test_editorconfig_exists(self):
+        """Test that .editorconfig file exists and contains expected settings."""
+        from pathlib import Path
+
+        # Get project root directory
+        project_root = Path(__file__).parent.parent
+        editorconfig_path = project_root / ".editorconfig"
+
+        # Check file exists
+        assert (
+            editorconfig_path.exists()
+        ), ".editorconfig file should exist in project root"
+
+        # Check file content contains key settings
+        content = editorconfig_path.read_text(encoding="utf-8")
+
+        # Verify root directive
+        assert "root = true" in content, ".editorconfig should declare itself as root"
+
+        # Verify Python settings (4 spaces, 88 char limit)
+        assert (
+            "[*.py]" in content
+        ), ".editorconfig should have Python file configuration"
+        assert (
+            "indent_size = 4" in content
+        ), ".editorconfig should set 4 spaces for Python files"
+        assert (
+            "max_line_length = 88" in content
+        ), ".editorconfig should set 88 char limit for Python files"
+
+        # Verify web file settings (2 spaces)
+        assert (
+            "[*.{css,js,html,htm,json}]" in content
+        ), ".editorconfig should configure web files"
+
+        # Verify global settings
+        assert "charset = utf-8" in content, ".editorconfig should set UTF-8 encoding"
+        assert "end_of_line = lf" in content, ".editorconfig should set LF line endings"
+        assert (
+            "insert_final_newline = true" in content
+        ), ".editorconfig should require final newline"
