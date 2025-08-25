@@ -63,7 +63,9 @@ def main():
         logger.info(f"Starting server on port: {port}")
         logger.info(f"Debug mode: {debug}")
 
-        app.run(host="0.0.0.0", port=port, debug=debug)  # noqa: S104  # Development server
+        app.run(
+            host="0.0.0.0", port=port, debug=debug
+        )  # noqa: S104  # Development server
 
     except Exception as e:
         logger.error(f"Configuration error: {e}")

@@ -39,9 +39,12 @@ def health_check():
     """
     try:
         # Basic health check - could be expanded with database checks, etc.
-        return jsonify(
-            {"status": "healthy", "service": "py-txt-trnsfrm", "version": "0.1.0"}
-        ), 200
+        return (
+            jsonify(
+                {"status": "healthy", "service": "py-txt-trnsfrm", "version": "0.1.0"}
+            ),
+            200,
+        )
     except Exception as e:
         logger.error(f"Health check failed: {e}")
         return jsonify({"status": "unhealthy", "error": str(e)}), 503
