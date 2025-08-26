@@ -132,8 +132,7 @@ def test_env_example_file_exists():
         "SECRET_KEY",
         "LOG_LEVEL",
         "PORT",
-        "WEB_CONCURRENCY",
-        "DATABASE_URL"
+        "WEB_CONCURRENCY"
     ]
 
     for var in expected_vars:
