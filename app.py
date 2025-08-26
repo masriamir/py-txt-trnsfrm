@@ -13,19 +13,20 @@ except ImportError:
     # python-dotenv not available, skip loading
     pass
 
-# Set up basic logging for main entry point
-import logging
+# Set up centralized logging for main entry point
 import os
 
 from app import create_app
 from app.config import config
+from app.logging_config import get_logger, setup_logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("main")
+# Initialize logging based on LOG_LEVEL environment variable
+log_level = os.environ.get("LOG_LEVEL", "info").lower()
+debug_mode = log_level == "debug"
+setup_logging(debug=debug_mode, log_level=log_level.upper())
+
+# Get logger for main startup
+logger = get_logger("main")
 
 
 def main():
