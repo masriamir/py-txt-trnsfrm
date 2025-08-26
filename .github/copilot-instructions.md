@@ -59,6 +59,42 @@ Always reference these instructions first and fallback to search or bash command
   - `uv run bandit -r app/` -- Code security analysis (currently 4 low-severity issues) takes <1 second
   - `uv run safety scan` -- Dependency vulnerability scan (may timeout, that's expected)
 
+### GitHub Issue Management
+
+When working on issues with Acceptance Criteria, follow this workflow to ensure comprehensive tracking and verification:
+
+#### Before Starting Work
+- **Review Acceptance Criteria**: Carefully read all Acceptance Criteria to understand requirements
+- **Ask Questions**: If any criteria are unclear, ask for clarification in issue comments
+- **Plan Implementation**: Break down work to address each Acceptance Criterion systematically
+- **Estimate Effort**: Ensure your time estimate accounts for verifying all criteria
+
+#### During Development
+- **Reference Issue**: Include issue number in commit messages (e.g., `git commit -m "Fix transformation bug - addresses #123"`)
+- **Update Progress**: Add comments to the issue about your progress and any implementation decisions
+- **Check Off Completed Criteria**: As you complete each Acceptance Criterion, check it off in the issue:
+  - Navigate to the issue on GitHub
+  - Edit the issue description or add a comment
+  - Check off completed items in the Acceptance Criteria checklist
+- **Document Evidence**: For complex criteria, add comments with evidence of completion (test results, screenshots, etc.)
+- **Test Each Criterion**: Create or run tests that specifically validate each Acceptance Criterion
+- **Manual Verification**: Manually test functionality to ensure criteria are met in real usage
+
+#### Before Submitting Pull Request
+- **Final Verification**: Ensure all Acceptance Criteria are implemented and tested
+- **Complete Checklist**: Verify all criteria are checked off in the issue
+- **Cross-reference**: Ensure all acceptance criteria are addressed before considering work complete
+- **Link to Issue**: Reference the issue in your pull request description
+- **Evidence Summary**: Summarize how each major criterion was verified
+
+#### Pull Request Review and Completion
+- **Criteria Reference**: Reviewers should verify that all Acceptance Criteria are addressed
+- **Testing Evidence**: Confirm that verification evidence is documented
+- **Issue Closure**: Issues should only be closed when all criteria are completed and verified
+- **Final Status Update**: Add a final comment summarizing completion and verification
+
+This workflow ensures thorough requirement verification, maintains project quality, and provides clear tracking of development progress.
+
 ### Running the Application
 
 #### Development Mode
@@ -74,6 +110,14 @@ Always reference these instructions first and fallback to search or bash command
 
 ## Validation
 
+### Acceptance Criteria Verification
+- **When working on issues with Acceptance Criteria, ALWAYS verify each criterion before considering work complete**:
+  1. **Review Original Issue**: Confirm you understand all Acceptance Criteria
+  2. **Test Each Criterion**: Create specific tests or perform manual verification for each criterion
+  3. **Check Off Completed Items**: Mark each verified criterion as complete in the GitHub issue
+  4. **Document Verification**: Add comments or evidence showing how each criterion was verified
+  5. **Final Validation**: Ensure all criteria are checked off before submitting PR
+
 ### Manual Testing Requirements
 - **ALWAYS** test the application after making changes:
   1. Run `uv run python -c "import app; print('✅ Import test passed')"`
@@ -88,6 +132,10 @@ Always reference these instructions first and fallback to search or bash command
   2. `uv run black .` -- to fix formatting issues
   3. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
   4. Manual application test as described above
+  5. **Acceptance Criteria Verification** (when working on issues):
+     - Verify all completed Acceptance Criteria are checked off in the GitHub issue
+     - Ensure any evidence or verification steps are documented in issue comments
+     - Confirm the pull request references the issue for proper tracking
 
 ## Known Issues and Limitations
 
@@ -185,3 +233,5 @@ When creating new issues, follow the structured format established in issues #7 
 - **Document dependencies and blocking relationships**
 - **Use appropriate labels**: P0/P1/P2 priority, story points (1-8), version tags
 - **Assign to appropriate milestone** with sprint context
+
+For detailed workflow on working with issues that have Acceptance Criteria, see the **GitHub Issue Management** section under "Working Effectively".
