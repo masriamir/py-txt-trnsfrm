@@ -5,6 +5,14 @@ the Flask application instance with all necessary components including logging,
 middleware, and blueprints.
 """
 
+# Load environment variables from .env file before any other imports
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not available, skip loading
+    pass
+
 import os
 
 from flask import Flask

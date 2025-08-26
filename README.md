@@ -178,7 +178,22 @@ uv sync --group security     # Security analysis tools (bandit, safety)
 
 > **💡 Troubleshooting:** If you encounter issues with `uv sync`, see the [UV Troubleshooting Guide](docs/UV_TROUBLESHOOTING.md) for solutions.
 
-3. **Alternative: Install with pip**
+3. **Configure environment (optional)**
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your preferred settings
+# Key settings include:
+# - FLASK_ENV=development
+# - SECRET_KEY=your-secret-key  
+# - LOG_LEVEL=info
+# - PORT=5000
+```
+
+> **🔧 Environment Variables:** The application supports `.env` files for easy configuration management. All environment variables are optional and have sensible defaults for development.
+
+4. **Alternative: Install with pip**
 ```bash
 # Create virtual environment
 python -m venv .venv
@@ -188,7 +203,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
-4. **Run the application**
+5. **Run the application**
 ```bash
 # Development server
 uv run flask --app app run --debug
@@ -197,10 +212,62 @@ uv run flask --app app run --debug
 python app.py
 ```
 
-5. **Open in browser**
+6. **Open in browser**
 Navigate to `http://localhost:5000`
 
 ## 🛠️ Development Configuration
+
+### Environment Variables
+
+The application supports `.env` files for convenient environment configuration. All variables have sensible defaults and are optional for development.
+
+#### Setting up Environment Variables
+
+1. **Copy the example file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Edit `.env` with your preferences:**
+   ```bash
+   # Flask Configuration
+   FLASK_ENV=development
+   FLASK_DEBUG=true
+   SECRET_KEY=your-secret-key-here
+   
+   # Logging & Server
+   LOG_LEVEL=info
+   PORT=5000
+   
+   # Production (when deploying)
+   WEB_CONCURRENCY=auto
+   DATABASE_URL=your-database-url
+   ```
+
+#### Key Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FLASK_ENV` | `development` | Application environment (development/production/testing) |
+| `FLASK_DEBUG` | `true` | Enable debug mode for development |
+| `SECRET_KEY` | `dev-secret-key-change-in-production` | Flask secret key (⚠️ **Must change for production**) |
+| `LOG_LEVEL` | `info` | Logging level (debug/info/warning/error/critical) |
+| `PORT` | `5000` | Server port number |
+| `WEB_CONCURRENCY` | `auto` | Number of Gunicorn workers (production) |
+| `DATABASE_URL` | None | Database connection URL (future use) |
+
+> **🔒 Security Note:** Always use a strong, unique `SECRET_KEY` in production. Generate one with:
+> ```bash
+> python -c "import secrets; print(secrets.token_hex(32))"
+> ```
+
+#### Environment File Priority
+
+1. System environment variables (highest priority)
+2. `.env` file in project root
+3. Application defaults (lowest priority)
+
+The application will automatically search for `.env` files in the current directory and parent directories.
 
 ### Editor Setup
 

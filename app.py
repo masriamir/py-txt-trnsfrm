@@ -5,6 +5,14 @@ transformation application directly (not through a WSGI server). It handles
 configuration detection, environment setup, and server startup.
 """
 
+# Load environment variables from .env file before any other imports
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not available, skip loading
+    pass
+
 # Set up basic logging for main entry point
 import logging
 import os
