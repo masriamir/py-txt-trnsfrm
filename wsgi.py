@@ -28,9 +28,9 @@ from app.config import config
 from app.logging_config import get_logger, setup_logging
 
 # Initialize logging based on LOG_LEVEL environment variable
-log_level = os.environ.get("LOG_LEVEL", "info").lower()
-debug_mode = log_level == "debug"
-setup_logging(debug=debug_mode, log_level=log_level.upper())
+log_level = os.environ.get("LOG_LEVEL", "info").upper()
+debug_mode = log_level == "DEBUG"
+setup_logging(debug=debug_mode, log_level=log_level)
 
 # Get logger for WSGI startup
 logger = get_logger("wsgi")
