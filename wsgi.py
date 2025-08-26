@@ -5,6 +5,14 @@ This file is used by Gunicorn to serve the application in production environment
 It handles environment detection and proper configuration selection.
 """
 
+# Load environment variables from .env file before any other imports
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not available, skip loading
+    pass
+
 import os
 import platform
 import sys
