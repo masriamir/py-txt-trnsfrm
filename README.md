@@ -200,6 +200,38 @@ python app.py
 5. **Open in browser**
 Navigate to `http://localhost:5000`
 
+## 🛠️ Development Configuration
+
+### Editor Setup
+
+The project includes an `.editorconfig` file that provides consistent editor settings across different IDEs and editors. This ensures uniform code formatting and helps maintain code quality standards.
+
+#### Supported Editors
+- **VSCode**: Install the "EditorConfig for VS Code" extension
+- **PyCharm/IntelliJ**: Built-in EditorConfig support
+- **Vim/Neovim**: Install `editorconfig-vim` plugin
+- **Emacs**: Install `editorconfig-emacs` package
+- **Sublime Text**: Install "EditorConfig" package
+- **Atom**: Install "editorconfig" package
+
+#### Configuration Details
+- **Python files (*.py)**: 4 spaces, UTF-8, 88 character line length (matches Black/Ruff)
+- **Web files (*.css, *.js, *.html)**: 2 spaces, UTF-8 
+- **Configuration files (*.yml, *.json)**: 2 spaces, UTF-8
+- **Markdown files (*.md)**: 2 spaces, UTF-8, preserve trailing whitespace
+- **All files**: LF line endings, UTF-8 encoding, trim trailing whitespace
+
+#### Manual Setup (if EditorConfig not available)
+For editors without EditorConfig support, configure these settings manually:
+```
+Indentation: 4 spaces (Python), 2 spaces (CSS/JS/HTML)
+Line endings: LF (Unix-style)
+Encoding: UTF-8
+Max line length: 88 characters (Python)
+Trim trailing whitespace: Yes (except Markdown)
+Insert final newline: Yes
+```
+
 ## 🧪 Testing & Quality
 
 ### Running Tests
