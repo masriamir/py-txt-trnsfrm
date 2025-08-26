@@ -63,32 +63,37 @@ Always reference these instructions first and fallback to search or bash command
 
 When working on issues with Acceptance Criteria, follow this workflow to ensure comprehensive tracking and verification:
 
-#### Issue Assignment and Planning
-- **Review Acceptance Criteria**: Before starting work, carefully read all Acceptance Criteria in the issue
-- **Understand Requirements**: Ensure you understand each criterion and how to verify completion
+#### Before Starting Work
+- **Review Acceptance Criteria**: Carefully read all Acceptance Criteria to understand requirements
+- **Ask Questions**: If any criteria are unclear, ask for clarification in issue comments
 - **Plan Implementation**: Break down work to address each Acceptance Criterion systematically
-- **Comment on Progress**: Add comments to the issue when starting work or encountering blockers
+- **Estimate Effort**: Ensure your time estimate accounts for verifying all criteria
 
 #### During Development
 - **Reference Issue**: Include issue number in commit messages (e.g., `git commit -m "Fix transformation bug - addresses #123"`)
+- **Update Progress**: Add comments to the issue about your progress and any implementation decisions
 - **Check Off Completed Criteria**: As you complete each Acceptance Criterion, check it off in the issue:
   - Navigate to the issue on GitHub
   - Edit the issue description or add a comment
   - Check off completed items in the Acceptance Criteria checklist
 - **Document Evidence**: For complex criteria, add comments with evidence of completion (test results, screenshots, etc.)
-- **Update Status**: Keep the issue updated with current progress and any implementation decisions
-
-#### Verification Requirements
 - **Test Each Criterion**: Create or run tests that specifically validate each Acceptance Criterion
 - **Manual Verification**: Manually test functionality to ensure criteria are met in real usage
-- **Cross-reference**: Ensure all acceptance criteria are addressed before considering work complete
-- **Final Review**: Before marking work complete, review the entire issue to confirm all criteria are checked off
 
-#### Issue Completion
-- **All Criteria Verified**: Ensure every Acceptance Criterion is checked off and verified
-- **Evidence Documented**: Confirm testing evidence and verification steps are documented
-- **Pull Request Reference**: Link the pull request to the issue for traceability
+#### Before Submitting Pull Request
+- **Final Verification**: Ensure all Acceptance Criteria are implemented and tested
+- **Complete Checklist**: Verify all criteria are checked off in the issue
+- **Cross-reference**: Ensure all acceptance criteria are addressed before considering work complete
+- **Link to Issue**: Reference the issue in your pull request description
+- **Evidence Summary**: Summarize how each major criterion was verified
+
+#### Pull Request Review and Completion
+- **Criteria Reference**: Reviewers should verify that all Acceptance Criteria are addressed
+- **Testing Evidence**: Confirm that verification evidence is documented
+- **Issue Closure**: Issues should only be closed when all criteria are completed and verified
 - **Final Status Update**: Add a final comment summarizing completion and verification
+
+This workflow ensures thorough requirement verification, maintains project quality, and provides clear tracking of development progress.
 
 ### Running the Application
 
@@ -229,31 +234,4 @@ When creating new issues, follow the structured format established in issues #7 
 - **Use appropriate labels**: P0/P1/P2 priority, story points (1-8), version tags
 - **Assign to appropriate milestone** with sprint context
 
-#### Working with Issues that have Acceptance Criteria
-When assigned to or working on an issue with Acceptance Criteria:
-
-**Before Starting Work:**
-1. **Read and Understand**: Carefully review all Acceptance Criteria to understand requirements
-2. **Ask Questions**: If any criteria are unclear, ask for clarification in issue comments
-3. **Plan Approach**: Consider how you will implement and verify each criterion
-4. **Estimate Effort**: Ensure your time estimate accounts for verifying all criteria
-
-**During Development:**
-1. **Reference in Commits**: Include issue number in commit messages for traceability
-2. **Update Progress**: Add comments to the issue about your progress and any decisions
-3. **Check Off Criteria**: As you complete each Acceptance Criterion, edit the issue to check it off
-4. **Document Verification**: For complex criteria, add comments explaining how verification was done
-5. **Test Thoroughly**: Create tests or perform manual verification for each criterion
-
-**Before Submitting Pull Request:**
-1. **Final Verification**: Ensure all Acceptance Criteria are implemented and tested
-2. **Complete Checklist**: Verify all criteria are checked off in the issue
-3. **Link to Issue**: Reference the issue in your pull request description
-4. **Evidence Summary**: Summarize how each major criterion was verified
-
-**Pull Request Review:**
-1. **Criteria Reference**: Reviewers should verify that all Acceptance Criteria are addressed
-2. **Testing Evidence**: Confirm that verification evidence is documented
-3. **Issue Closure**: Issues should only be closed when all criteria are completed and verified
-
-This workflow ensures thorough requirement verification, maintains project quality, and provides clear tracking of development progress.
+For detailed workflow on working with issues that have Acceptance Criteria, see the **GitHub Issue Management** section under "Working Effectively".
