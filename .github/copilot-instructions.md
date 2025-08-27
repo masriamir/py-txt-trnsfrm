@@ -38,8 +38,15 @@ Always reference these instructions first and fallback to search or bash command
 - **Verification**: After adding dependencies, confirm safety URLs with `grep "pkgs.safetycli.com" uv.lock | head -3`
 
 ### Code Quality Tools
-- **Linting**: `uv run ruff check .` -- takes <1 second. Passes cleanly.
-- **Formatting**: `uv run black --check .` -- takes <1 second. Currently fails on 7 files, run `uv run black .` to fix.
+
+**MANDATORY FIXES REQUIRED BEFORE ALL COMMITS:**
+
+- **Linting (MUST be fixed)**: 
+  - **Fix issues**: `uv run ruff check --fix .` -- automatically fixes many linting issues
+  - **Verify clean**: `uv run ruff check .` -- MUST pass with zero issues before PR submission
+- **Formatting (MUST be fixed)**: 
+  - **Fix formatting**: `uv run black .` -- automatically fixes all formatting issues
+  - **Verify clean**: `uv run black --check .` -- MUST pass with zero issues before PR submission  
 - **Type checking**: `uv run mypy .` -- takes 7-8 seconds. Currently has 99 errors, mostly missing type annotations.
 
 ### Testing
@@ -127,15 +134,22 @@ This workflow ensures thorough requirement verification, maintains project quali
   5. Stop the server with Ctrl+C
 
 ### Pre-commit Validation
-- **ALWAYS run before committing**:
-  1. `uv run ruff check .` -- must pass
-  2. `uv run black .` -- to fix formatting issues
-  3. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
-  4. Manual application test as described above
-  5. **Acceptance Criteria Verification** (when working on issues):
+
+**MANDATORY WORKFLOW - ALL STEPS MUST PASS BEFORE COMMITTING:**
+
+- **ALWAYS run this EXACT sequence before every commit**:
+  1. **FIX linting issues**: `uv run ruff check --fix .` -- REQUIRED: automatically fix all auto-fixable issues
+  2. **VERIFY linting passes**: `uv run ruff check .` -- REQUIRED: must show zero issues
+  3. **FIX formatting issues**: `uv run black .` -- REQUIRED: automatically fix all formatting issues  
+  4. **VERIFY formatting passes**: `uv run black --check .` -- REQUIRED: must show zero issues
+  5. **RUN tests**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
+  6. **MANUAL application test**: as described above
+  7. **Acceptance Criteria Verification** (when working on issues):
      - Verify all completed Acceptance Criteria are checked off in the GitHub issue
      - Ensure any evidence or verification steps are documented in issue comments
      - Confirm the pull request references the issue for proper tracking
+
+**CRITICAL**: Steps 1-4 are MANDATORY. All linting and formatting issues MUST be FIXED and verified clean before any PR submission. No exceptions.
 
 ## Known Issues and Limitations
 
@@ -200,8 +214,10 @@ export PATH="$HOME/.local/bin:$PATH"
 uv sync --group dev --group test --group security  # 3-4 minutes
 
 # Development workflow
-uv run ruff check .
-uv run black .
+uv run ruff check --fix .  # Fix linting issues first
+uv run ruff check .        # Verify all issues are resolved
+uv run black .             # Fix formatting issues
+uv run black --check .     # Verify formatting is clean
 uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable
 FLASK_ENV=development uv run python app.py
 
