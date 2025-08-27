@@ -131,6 +131,7 @@ usage() {
     echo "  WEB_CONCURRENCY   Number of workers (default: 4)"
     echo "  LOG_LEVEL         Log level (default: info)"
     echo "  FLASK_ENV         Flask environment (default: production)"
+    echo "  GUNICORN_PIDFILE  PID file location (default: secure system directories)"
 }
 
 # Main script logic

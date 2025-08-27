@@ -45,9 +45,41 @@ proc_name = "py-txt-trnsfrm"
 
 # Server mechanics
 daemon = False
-pidfile = str(
-    Path("/tmp") / "gunicorn.pid"
-)  # noqa: S108  # Standard gunicorn temp location
+
+
+# PID file configuration with secure defaults and fallback strategy
+def get_secure_pidfile_path():
+    """Get secure PID file path with environment variable support and fallback strategy.
+
+    Returns:
+        str: Secure path for PID file based on environment and permissions.
+    """
+    # Check for explicit environment variable
+    env_pidfile = os.environ.get("GUNICORN_PIDFILE")
+    if env_pidfile:
+        return env_pidfile
+
+    # Secure defaults with fallback strategy
+    secure_paths = [
+        "/var/run/gunicorn.pid",  # Standard system location
+        "/run/gunicorn.pid",  # Modern systemd location
+        "./gunicorn.pid",  # Current directory fallback
+    ]
+
+    for pidfile_path in secure_paths:
+        try:
+            # Test if directory is writable
+            parent_dir = Path(pidfile_path).parent
+            if parent_dir.exists() and os.access(parent_dir, os.W_OK):
+                return pidfile_path
+        except (OSError, PermissionError):
+            continue
+
+    # Final fallback to current directory (always writable)
+    return "./gunicorn.pid"
+
+
+pidfile = get_secure_pidfile_path()
 user = None
 group = None
 tmp_upload_dir = None

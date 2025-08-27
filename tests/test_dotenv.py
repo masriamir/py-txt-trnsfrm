@@ -11,7 +11,7 @@ def test_dotenv_loading():
     # The .env file should be loaded when the app package is imported
 
     # Create a temporary .env file for testing
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
         f.write("TEST_DOTENV_INTEGRATION=success\n")
         f.write("DOTENV_TEST_VALUE=12345\n")
         temp_env_file = f.name
@@ -19,6 +19,7 @@ def test_dotenv_loading():
     try:
         # Load the temporary .env file
         from dotenv import load_dotenv
+
         load_dotenv(temp_env_file)
 
         # Verify variables are loaded
@@ -39,13 +40,14 @@ def test_dotenv_does_not_override_existing_env():
     os.environ["TEST_EXISTING_VAR"] = "existing_value"
 
     # Create a temporary .env file with the same variable
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
         f.write("TEST_EXISTING_VAR=dotenv_value\n")
         temp_env_file = f.name
 
     try:
         # Load the .env file
         from dotenv import load_dotenv
+
         load_dotenv(temp_env_file)
 
         # The existing environment variable should not be overridden
@@ -69,6 +71,7 @@ def test_app_import_loads_dotenv():
 
         # Load the test .env file
         from dotenv import load_dotenv
+
         load_dotenv(test_env_file)
 
         # Verify the variable was loaded
@@ -84,7 +87,7 @@ def test_app_import_loads_dotenv():
 def test_dotenv_with_flask_app_creation():
     """Test that dotenv variables are available during Flask app creation."""
     # Create a temporary .env file with Flask configuration
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False) as f:
         f.write("SECRET_KEY=test-secret-from-dotenv-integration\n")
         f.write("FLASK_ENV=development\n")
         f.write("LOG_LEVEL=warning\n")
@@ -93,6 +96,7 @@ def test_dotenv_with_flask_app_creation():
     try:
         # Load the .env file
         from dotenv import load_dotenv
+
         load_dotenv(temp_env_file)
 
         # Import app after loading dotenv
@@ -132,7 +136,7 @@ def test_env_example_file_exists():
         "SECRET_KEY",
         "LOG_LEVEL",
         "PORT",
-        "WEB_CONCURRENCY"
+        "WEB_CONCURRENCY",
     ]
 
     for var in expected_vars:
@@ -200,6 +204,7 @@ class TestDotenvIntegration:
                 os.chdir(sub_dir)
 
                 from dotenv import load_dotenv
+
                 load_dotenv()
 
                 # Should find the .env file in parent directory
