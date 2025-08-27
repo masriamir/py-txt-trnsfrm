@@ -97,6 +97,40 @@ When working on issues with Acceptance Criteria, follow this workflow to ensure 
 
 This workflow ensures thorough requirement verification, maintains project quality, and provides clear tracking of development progress.
 
+### Pull Request Management
+
+When opening a pull request to address a specific issue, proper metadata inheritance ensures consistent project tracking and maintains sprint management accuracy for the Retro Text Transformer project.
+
+#### Metadata Inheritance Process
+When creating a PR to address an issue, **all metadata from the originating issue must be copied to the PR**:
+
+##### Step-by-Step Metadata Inheritance Instructions
+1. **Copy Labels**: Inherit all labels from the originating issue
+   - **Priority labels** (P0, P1, P2)
+   - **Story point labels** (1, 2, 3, 5, 8, etc.)
+   - **Version tags** (v1.0.0, etc.)
+   - **Type labels** (bug, enhancement, documentation, etc.)
+   - **Component labels** (frontend, backend, testing, etc.)
+
+2. **Copy Milestones**: Assign the same milestone from the originating issue to maintain sprint tracking
+
+3. **Copy Project Assignments**: Ensure the PR is assigned to the same project board(s) as the issue
+
+4. **Copy Custom Field Values**: Inherit any custom field values from the project board:
+   - Epic assignments
+   - Sprint assignments  
+   - Risk level indicators
+   - Time estimates
+   - Any other custom fields used in project management
+
+##### Metadata Inheritance Workflow
+- **Before Creating PR**: Review the originating issue and note all metadata
+- **During PR Creation**: Apply all relevant metadata from the issue to the PR
+- **Verification**: Double-check that all metadata has been properly inherited
+- **Documentation**: Reference the issue number in the PR description
+
+This ensures continuous tracking from issue creation through PR completion and maintains accuracy in sprint management, story point tracking, and milestone progress for the Retro Text Transformer project.
+
 ### Running the Application
 
 #### Development Mode
@@ -140,6 +174,11 @@ This workflow ensures thorough requirement verification, maintains project quali
      - Verify all completed Acceptance Criteria are checked off in the GitHub issue
      - Ensure any evidence or verification steps are documented in issue comments
      - Confirm the pull request references the issue for proper tracking
+  8. **Metadata Inheritance Verification** (when working on issues):
+     - Verify the PR has inherited all relevant metadata from the originating issue
+     - Confirm labels (priority, story points, version tags) are copied to the PR
+     - Ensure milestone and project assignments match the originating issue
+     - Validate any custom field values from the project board are inherited
 
 ## Mandatory Pre-Pull Request Requirements
 
