@@ -8,6 +8,7 @@ from app.utils.text_transformers import TextTransformer
 class TestSecureRandomUsage:
     """Test that secure random number generation is properly implemented."""
 
+    @pytest.mark.unit
     def test_secure_random_import_available(self):
         """Test that secrets module is properly imported and accessible."""
         import secrets
@@ -25,6 +26,7 @@ class TestSecureRandomUsage:
             value = secure_random.random()
             assert 0.0 <= value < 1.0
 
+    @pytest.mark.unit
     def test_spongebob_case_uses_secure_random(self):
         """Test that spongebob_case transformation works with secure random."""
         transformer = TextTransformer()
@@ -43,6 +45,7 @@ class TestSecureRandomUsage:
         unique_results = set(results)
         assert len(unique_results) > 1, "Secure random should produce varying results"
 
+    @pytest.mark.unit
     def test_zalgo_light_uses_secure_random(self):
         """Test that zalgo_light transformation works with secure random."""
         transformer = TextTransformer()
@@ -61,6 +64,8 @@ class TestSecureRandomUsage:
         # At least some results should be different (combining characters are added randomly)
         assert len(unique_results) >= 1
 
+    @pytest.mark.slow
+    @pytest.mark.unit
     def test_secure_random_performance(self):
         """Test that secure random doesn't significantly impact performance."""
         import time
@@ -79,6 +84,7 @@ class TestSecureRandomUsage:
         duration = end_time - start_time
         assert duration < 1.0, f"Transformations took {duration:.3f}s, may be too slow"
 
+    @pytest.mark.unit
     def test_transformation_determinism_within_call(self):
         """Test that each transformation call uses fresh random values."""
         transformer = TextTransformer()
@@ -92,7 +98,7 @@ class TestSecureRandomUsage:
         has_lower = any(c.islower() for c in result)
         assert has_upper and has_lower, "Should have mixed case from secure random"
 
-    @pytest.mark.unit
+    @pytest.mark.integration
     def test_secure_random_integration(self):
         """Integration test for secure random usage."""
         transformer = TextTransformer()
