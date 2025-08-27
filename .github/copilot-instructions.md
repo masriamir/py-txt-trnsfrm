@@ -38,8 +38,10 @@ Always reference these instructions first and fallback to search or bash command
 - **Verification**: After adding dependencies, confirm safety URLs with `grep "pkgs.safetycli.com" uv.lock | head -3`
 
 ### Code Quality Tools
-- **Linting**: `uv run ruff check .` -- takes <1 second. Passes cleanly.
-- **Formatting**: `uv run black --check .` -- takes <1 second. Currently fails on 7 files, run `uv run black .` to fix.
+- **Linting (Fix)**: `uv run ruff check --fix .` -- automatically fixes all auto-fixable issues
+- **Linting (Verify)**: `uv run ruff check .` -- must pass with zero errors
+- **Formatting (Fix)**: `uv run black .` -- fixes all formatting issues
+- **Formatting (Verify)**: `uv run black --check .` -- must pass with zero changes needed
 - **Type checking**: `uv run mypy .` -- takes 7-8 seconds. Currently has 99 errors, mostly missing type annotations.
 
 ### Testing
@@ -127,15 +129,39 @@ This workflow ensures thorough requirement verification, maintains project quali
   5. Stop the server with Ctrl+C
 
 ### Pre-commit Validation
-- **ALWAYS run before committing**:
-  1. `uv run ruff check .` -- must pass
-  2. `uv run black .` -- to fix formatting issues
-  3. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
-  4. Manual application test as described above
-  5. **Acceptance Criteria Verification** (when working on issues):
+- **ALWAYS run before committing** (MANDATORY):
+  1. **Fix all linting issues**: `uv run ruff check --fix .`
+  2. **Verify linting passes**: `uv run ruff check .` -- must pass cleanly
+  3. **Fix all formatting issues**: `uv run black .`
+  4. **Verify formatting passes**: `uv run black --check .` -- must pass cleanly
+  5. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
+  6. Manual application test as described above
+  7. **Acceptance Criteria Verification** (when working on issues):
      - Verify all completed Acceptance Criteria are checked off in the GitHub issue
      - Ensure any evidence or verification steps are documented in issue comments
      - Confirm the pull request references the issue for proper tracking
+
+## Mandatory Pre-Pull Request Requirements
+
+**CRITICAL**: The following steps are **mandatory** for all pull request submissions. PRs that fail these requirements will be rejected.
+
+### Code Quality Requirements (MANDATORY)
+1. **All linting issues MUST be fixed** (not just identified):
+   - Run: `uv run ruff check --fix .` to automatically fix issues
+   - Verify: `uv run ruff check .` must pass with zero errors
+2. **All formatting issues MUST be fixed** (not just identified):
+   - Run: `uv run black .` to fix all formatting issues  
+   - Verify: `uv run black --check .` must pass with zero changes needed
+3. **Verification commands MUST pass** before PR submission
+4. **This is a mandatory requirement**, not a suggestion
+
+### Mandatory Workflow
+The required workflow is: **fix → verify → commit**
+- **Step 1**: Fix all issues using the fix commands
+- **Step 2**: Verify fixes using the verification commands  
+- **Step 3**: Only then proceed with commit and PR submission
+
+**Note**: PRs with linting or formatting failures will be automatically rejected.
 
 ## Known Issues and Limitations
 
@@ -199,9 +225,16 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 uv sync --group dev --group test --group security  # 3-4 minutes
 
-# Development workflow
-uv run ruff check .
-uv run black .
+# Mandatory pre-commit workflow (fix → verify → commit)
+# Step 1: Fix all issues
+uv run ruff check --fix .       # Fix linting issues
+uv run black .                  # Fix formatting issues
+
+# Step 2: Verify all issues are resolved
+uv run ruff check .             # Must pass with zero errors
+uv run black --check .          # Must pass with zero changes needed
+
+# Step 3: Run tests and commit (only after verification passes)
 uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable
 FLASK_ENV=development uv run python app.py
 
