@@ -37,7 +37,7 @@ def exec_gunicorn_config(env_vars=None):
     try:
         # Read and execute the gunicorn config file
         config_path = Path(__file__).parent.parent / "gunicorn.conf.py"
-        with open(config_path) as f:
+        with open(config_path, "r") as f:
             config_code = f.read()
 
         exec(config_code, namespace)
