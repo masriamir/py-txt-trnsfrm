@@ -18,7 +18,7 @@ except ImportError:
 import os
 
 from app import create_app
-from app.config import config
+from app.config import config, get_host_for_environment
 from app.logging_config import get_logger, setup_logging
 
 # Initialize logging based on LOG_LEVEL environment variable
@@ -69,13 +69,15 @@ def main():
 
         port = int(os.environ.get("PORT", 5000))
         debug = config_name == "development"
+        host = get_host_for_environment(config_name)
 
-        logger.info(f"Starting server on port: {port}")
+        logger.info(f"Starting server on host: {host}, port: {port}")
         logger.info(f"Debug mode: {debug}")
+        logger.info(f"Environment: {config_name}")
 
         app.run(
-            host="0.0.0.0", port=port, debug=debug
-        )  # noqa: S104  # Development server
+            host=host, port=port, debug=debug
+        )  # Conditional host binding for security - see get_host_for_environment()
 
     except Exception as e:
         logger.error(f"Configuration error: {e}")
