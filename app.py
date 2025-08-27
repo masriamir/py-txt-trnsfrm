@@ -8,6 +8,7 @@ configuration detection, environment setup, and server startup.
 # Load environment variables from .env file before any other imports
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     # python-dotenv not available, skip loading
