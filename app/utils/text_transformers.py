@@ -7,6 +7,7 @@ visual text effects.
 """
 
 import random
+import secrets
 from collections.abc import Callable
 
 from app.logging_config import get_logger
@@ -352,11 +353,11 @@ class TextTransformer:
         for char in text:
             result.append(char)
             if (
-                char.isalpha() and random.random() < 0.3
-            ):  # noqa: S311  # Non-cryptographic use
+                char.isalpha() and secrets.SystemRandom().random() < 0.3
+            ):  # Secure random for consistent security practices
                 result.append(
-                    random.choice(combining_chars)
-                )  # noqa: S311  # Non-cryptographic use
+                    secrets.choice(combining_chars)
+                )  # Secure random selection for security compliance
 
         return "".join(result)
 
@@ -510,8 +511,8 @@ class TextTransformer:
         for char in text:
             if char.isalpha():
                 result.append(
-                    char.upper() if random.random() < 0.5 else char.lower()
-                )  # noqa: S311  # Non-cryptographic use
+                    char.upper() if secrets.SystemRandom().random() < 0.5 else char.lower()
+                )  # Secure random for consistent security practices
             else:
                 result.append(char)
         return "".join(result)
