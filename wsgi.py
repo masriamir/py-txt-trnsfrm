@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 # Standard library and third-party imports first
 # Local imports after sys.path manipulation
 from app import create_app
-from app.config import config
+from app.config import config, get_host_for_environment
 from app.logging_config import get_logger, setup_logging
 
 # Initialize logging based on LOG_LEVEL environment variable
@@ -149,8 +149,14 @@ except Exception as e:
 if __name__ == "__main__":
     # For development/testing when running wsgi.py directly
     logger.info("🧪 Running WSGI application directly (development mode)")
+    host = get_host_for_environment(config_name)
+    port = int(os.environ.get("PORT", 5000))
+    debug = config_name == "development"
+
+    logger.info(f"Direct WSGI execution - Host: {host}, Port: {port}, Debug: {debug}")
+
     application.run(
-        host="0.0.0.0",  # noqa: S104  # Development server
-        port=int(os.environ.get("PORT", 5000)),
-        debug=config_name == "development",
+        host=host,  # Conditional host binding for security - see get_host_for_environment()
+        port=port,
+        debug=debug,
     )

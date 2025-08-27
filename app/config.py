@@ -8,6 +8,46 @@ application settings and environment-specific configurations.
 import os
 
 
+def get_host_for_environment(config_name: str) -> str:
+    """Determine the appropriate host address based on the deployment environment.
+
+    Returns '0.0.0.0' for production environments to allow external access,
+    and '127.0.0.1' for development environments for security.
+
+    This follows security best practices by:
+    - Restricting network exposure in development environments
+    - Only binding to all interfaces when explicitly in production
+    - Preventing accidental exposure of development servers
+
+    Args:
+        config_name: The configuration environment name (e.g., 'development', 'production', 'heroku')
+
+    Returns:
+        str: Host address to bind to ('127.0.0.1' for dev, '0.0.0.0' for production)
+
+    Production environments (bind to 0.0.0.0):
+        - config_name == "production"
+        - config_name == "heroku"
+        - DYNO environment variable is set (Heroku detection)
+
+    Development environments (bind to 127.0.0.1):
+        - config_name == "development"
+        - config_name == "testing"
+        - All other environments
+    """
+    # Check for Heroku environment first (most specific)
+    if os.environ.get("DYNO"):
+        return "0.0.0.0"  # noqa: S104  # Intentional production binding
+
+    # Check config name for production environments
+    production_configs = {"production", "heroku"}
+    if config_name in production_configs:
+        return "0.0.0.0"  # noqa: S104  # Intentional production binding
+
+    # Default to localhost for development/testing environments
+    return "127.0.0.1"
+
+
 class Config:
     """Base configuration class with common settings.
 
