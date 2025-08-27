@@ -61,6 +61,132 @@ Always reference these instructions first and fallback to search or bash command
   - `uv run bandit -r app/` -- Code security analysis (currently 4 low-severity issues) takes <1 second
   - `uv run safety scan` -- Dependency vulnerability scan (may timeout, that's expected)
 
+### Test Creation and Maintenance Guidelines
+
+**MANDATORY**: All code changes must include proper test coverage with appropriate pytest markers. This section defines requirements and best practices for creating, maintaining, and categorizing tests.
+
+#### Test Creation Requirements (MANDATORY)
+
+**All new functionality MUST include tests:**
+- **New functions/methods**: Unit tests with `@pytest.mark.unit` (mandatory)
+- **New Flask endpoints**: API tests with `@pytest.mark.api` (mandatory)
+- **New utilities/transformations**: Unit tests + integration tests for complex workflows
+- **Security-related changes**: Security tests with `@pytest.mark.security`
+- **Performance-critical code**: Performance tests with `@pytest.mark.load` or `@pytest.mark.concurrent`
+
+**Coverage Requirements:**
+- **Minimum 80%** overall coverage (enforced by pytest configuration)
+- **New code must maintain or improve** coverage percentage
+- **All new functions must have dedicated unit tests**
+- **All new endpoints must have dedicated API tests**
+
+#### Test Creation Guidelines
+
+**When to Create Tests:**
+1. **Before implementation** (TDD approach encouraged) - Plan tests alongside feature design
+2. **During implementation** - Create tests as you build functionality
+3. **For bug fixes** - Create regression tests to prevent issue recurrence
+4. **For refactoring** - Ensure existing behavior is preserved
+
+**Pytest Marker Assignment (MANDATORY):**
+- `@pytest.mark.unit` - Isolated unit tests for individual functions/methods (mandatory for all functions)
+- `@pytest.mark.integration` - Cross-component tests (required for complex workflows spanning multiple modules)  
+- `@pytest.mark.api` - Flask endpoint tests (mandatory for all routes in `app/main/`)
+- `@pytest.mark.smoke` - Critical functionality tests (for core features affecting user experience)
+- `@pytest.mark.slow` - Tests taking >5 seconds (property-based, large data processing)
+- `@pytest.mark.security` - Security validation tests (authentication, input sanitization, vulnerability checks)
+- `@pytest.mark.concurrent` - Concurrency/threading tests (for parallel processing features)
+- `@pytest.mark.load` - Performance/load tests (for performance optimization work)
+
+**Test Data Management:**
+- **Use centralized test data** from `tests/data/test_data.py` for consistency
+- **Use faker** for dynamic test data generation: `from faker import Faker`
+- **Use pytest-datadir** for file-based test data: `@pytest.mark.datadir`
+- **Edge cases**: Include tests for empty strings, special characters, unicode, large inputs
+- **Sample data**: Leverage existing `sample_texts`, `expected_results`, `edge_cases` dictionaries
+
+**Test Structure Requirements:**
+```python
+import pytest
+from faker import Faker
+from app.utils.some_module import SomeClass
+
+@pytest.mark.unit
+class TestSomeClass:
+    """Test suite for SomeClass functionality."""
+    
+    @pytest.fixture
+    def instance(self):
+        """Fixture providing test instance."""
+        return SomeClass()
+    
+    @pytest.mark.unit
+    def test_basic_functionality(self, instance):
+        """Test basic functionality with clear assertion."""
+        result = instance.some_method("test input")
+        assert result == "expected output"
+        assert isinstance(result, str)
+    
+    @pytest.mark.unit  
+    def test_edge_cases(self, instance):
+        """Test edge cases comprehensively."""
+        # Test with edge_cases from test_data
+        for case_name, case_input in edge_cases.items():
+            result = instance.some_method(case_input)
+            assert isinstance(result, str)  # Should handle all edge cases
+```
+
+#### Test Maintenance Guidelines
+
+**Updating Existing Tests:**
+- **When modifying functionality**: Update corresponding tests to match new behavior
+- **When fixing bugs**: Add regression tests before implementing the fix
+- **When refactoring**: Ensure tests still validate the same behavior contracts
+- **When adding features**: Extend existing test classes rather than creating duplicate tests
+
+**Removing Tests:**
+- **Remove tests only when** the associated functionality is completely removed
+- **Update test markers** if test categorization changes (e.g., unit -> integration)
+- **Consolidate redundant tests** to maintain test suite efficiency
+
+**Performance Considerations:**
+- **Use `--benchmark-disable`** for regular test runs to maintain xdist parallel execution
+- **Run performance tests separately** with `-n 0 --benchmark-only` when measuring performance
+- **Keep test execution time reasonable** - mark slow tests with `@pytest.mark.slow`
+
+#### Coverage Verification and Quality Assurance
+
+**Coverage Verification Steps:**
+1. **Before making changes**: Run `uv run pytest --cov=app --cov-report=term-missing` to establish baseline
+2. **After adding tests**: Verify coverage improvements with `uv run pytest --cov=app --cov-report=html:reports/coverage/html`
+3. **Check coverage reports**: Review `reports/coverage/html/index.html` for detailed coverage analysis
+4. **Ensure 80% minimum**: Tests will fail if coverage drops below 80% threshold
+
+**Test Quality Assurance:**
+- **Clear test names**: Use descriptive names that explain what is being tested
+- **Comprehensive assertions**: Test both positive and negative cases
+- **Test isolation**: Each test should be independent and not rely on other tests
+- **Mock external dependencies**: Use `pytest-mock` for isolating units under test
+- **Document complex tests**: Add docstrings explaining test rationale for complex scenarios
+
+#### Integration with Development Workflow
+
+**Before Starting Work:**
+- **Review existing tests** related to the area you're modifying
+- **Plan test requirements** alongside feature requirements in Acceptance Criteria
+- **Identify test types needed**: Unit, integration, API, security, performance
+
+**During Development:**
+- **Create tests incrementally** as you implement functionality
+- **Run relevant test subset** frequently: `uv run pytest -m unit` or `uv run pytest tests/test_specific_module.py`
+- **Verify test markers** are applied correctly with `uv run pytest --collect-only`
+
+**Before Committing:**
+- **Run full test suite**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable`
+- **Verify coverage**: Ensure coverage requirements are met
+- **Check test categorization**: Confirm proper pytest markers are applied
+- **Validate test quality**: Ensure tests have clear assertions and proper structure
+
 ### GitHub Issue Management
 
 When working on issues with Acceptance Criteria, follow this workflow to ensure comprehensive tracking and verification:
@@ -168,13 +294,19 @@ This ensures continuous tracking from issue creation through PR completion and m
   2. **Verify linting passes**: `uv run ruff check .` -- must pass cleanly
   3. **Fix all formatting issues**: `uv run black .`
   4. **Verify formatting passes**: `uv run black --check .` -- must pass cleanly
-  5. `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
-  6. Manual application test as described above
-  7. **Acceptance Criteria Verification** (when working on issues):
+  5. **Test Creation Verification** (MANDATORY for code changes):
+     - Confirm new/updated tests exist for all functionality changes
+     - Verify proper pytest markers are applied: `uv run pytest --collect-only | grep -E "@pytest.mark.(unit|api|integration)"`
+     - Validate test coverage meets requirements: `uv run pytest --cov=app --cov-report=term-missing`
+     - Ensure coverage is maintained or improved (80% minimum threshold)
+  6. **Run full test suite**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
+  7. **Manual application test** as described above
+  8. **Acceptance Criteria Verification** (when working on issues):
      - Verify all completed Acceptance Criteria are checked off in the GitHub issue
      - Ensure any evidence or verification steps are documented in issue comments
      - Confirm the pull request references the issue for proper tracking
-  8. **Metadata Inheritance Verification** (when working on issues):
+     - Validate that tests exist for each Acceptance Criterion
+  9. **Metadata Inheritance Verification** (when working on issues):
      - Verify the PR has inherited all relevant metadata from the originating issue
      - Confirm labels (priority, story points, version tags) are copied to the PR
      - Ensure milestone and project assignments match the originating issue
@@ -191,16 +323,34 @@ This ensures continuous tracking from issue creation through PR completion and m
 2. **All formatting issues MUST be fixed** (not just identified):
    - Run: `uv run black .` to fix all formatting issues  
    - Verify: `uv run black --check .` must pass with zero changes needed
-3. **Verification commands MUST pass** before PR submission
-4. **This is a mandatory requirement**, not a suggestion
+3. **Test Requirements MUST be met** (MANDATORY):
+   - All new functionality must have corresponding tests with proper pytest markers
+   - Coverage must meet or exceed 80% threshold: `uv run pytest --cov=app --cov-fail-under=80`
+   - All tests must pass: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable`
+   - New functions must have unit tests with `@pytest.mark.unit`
+   - New endpoints must have API tests with `@pytest.mark.api`
+   - Complex workflows must have integration tests with `@pytest.mark.integration`
+4. **Verification commands MUST pass** before PR submission
+5. **This is a mandatory requirement**, not a suggestion
+
+### Test Creation Requirements (MANDATORY)
+- **Unit Tests**: Every new function/method must have dedicated unit tests
+- **API Tests**: Every new Flask endpoint must have API tests  
+- **Integration Tests**: Multi-component features must have integration tests
+- **Security Tests**: Authentication/authorization features must have security tests
+- **Performance Tests**: Performance-critical code must have performance tests
+- **Regression Tests**: Bug fixes must include tests preventing regression
+- **Proper Markers**: All tests must use appropriate pytest markers for categorization
 
 ### Mandatory Workflow
-The required workflow is: **fix → verify → commit**
-- **Step 1**: Fix all issues using the fix commands
-- **Step 2**: Verify fixes using the verification commands  
-- **Step 3**: Only then proceed with commit and PR submission
+The required workflow is: **implement → test → fix → verify → commit**
+- **Step 1**: Implement functionality with corresponding tests
+- **Step 2**: Apply proper pytest markers and ensure coverage
+- **Step 3**: Fix all linting and formatting issues using the fix commands
+- **Step 4**: Verify all fixes and test requirements using the verification commands  
+- **Step 5**: Only then proceed with commit and PR submission
 
-**Note**: PRs with linting or formatting failures will be automatically rejected.
+**Note**: PRs with linting, formatting, or test coverage failures will be automatically rejected.
 
 ## Known Issues and Limitations
 
@@ -264,18 +414,35 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 uv sync --group dev --group test --group security  # 3-4 minutes
 
-# Mandatory pre-commit workflow (fix → verify → commit)
-# Step 1: Fix all issues
+# Mandatory pre-commit workflow (implement → test → fix → verify → commit)
+# Step 1: Implement functionality with tests
+# Step 2: Apply proper pytest markers and ensure coverage
+uv run pytest --cov=app --cov-report=term-missing    # Check coverage
+uv run pytest --collect-only | grep "@pytest.mark"  # Verify markers
+
+# Step 3: Fix all issues
 uv run ruff check --fix .       # Fix linting issues
 uv run black .                  # Fix formatting issues
 
-# Step 2: Verify all issues are resolved
+# Step 4: Verify all issues are resolved
 uv run ruff check .             # Must pass with zero errors
 uv run black --check .          # Must pass with zero changes needed
+uv run pytest --cov=app --cov-fail-under=80  # Must meet coverage threshold
 
-# Step 3: Run tests and commit (only after verification passes)
+# Step 5: Run tests and commit (only after verification passes)
 uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable
 FLASK_ENV=development uv run python app.py
+
+# Test execution by category
+uv run pytest -m unit --benchmark-disable           # Unit tests only
+uv run pytest -m integration --benchmark-disable    # Integration tests
+uv run pytest -m api --benchmark-disable           # API endpoint tests
+uv run pytest -m smoke --benchmark-disable         # Critical functionality tests
+
+# Test coverage and quality
+uv run pytest --cov=app --cov-report=html:reports/coverage/html  # HTML coverage report
+uv run pytest --cov=app --cov-report=term-missing               # Terminal coverage report
+uv run pytest tests/specific_module.py -v                       # Run specific test module
 
 # Security analysis
 uv run bandit -r app/  # Individual tool - fast and reliable
@@ -294,6 +461,8 @@ curl -X POST http://localhost:5000/transform -H "Content-Type: application/json"
 - **Document new dependencies** in the Technology Stack and Dependencies section
 - **Update known issues** when fixing problems or discovering new ones
 - **Include any new test categories** or build processes
+- **Update test guidelines** when adding new pytest markers, test types, or coverage requirements
+- **Maintain test command accuracy** when modifying test execution workflows or adding new test categories
 
 ### Contributing Guidelines for Issues
 When creating new issues, follow the structured format established in issues #7 and #8:
