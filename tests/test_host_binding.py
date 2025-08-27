@@ -31,7 +31,9 @@ class TestHostBinding:
     def test_production_environment_binds_to_all_interfaces(self):
         """Test that production environment binds to 0.0.0.0."""
         host = get_host_for_environment("production")
-        assert host == "0.0.0.0", "Production should bind to all interfaces"  # noqa: S104
+        assert (
+            host == "0.0.0.0"
+        ), "Production should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit
     def test_heroku_environment_binds_to_all_interfaces(self):
@@ -51,14 +53,18 @@ class TestHostBinding:
         """Test that environments with DYNO set bind to 0.0.0.0."""
         # Should return 0.0.0.0 regardless of config_name when DYNO is set
         host = get_host_for_environment("development")
-        assert host == "0.0.0.0", "Heroku DYNO environment should bind to all interfaces"  # noqa: S104
+        assert (
+            host == "0.0.0.0"
+        ), "Heroku DYNO environment should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "worker.1"})
     def test_heroku_worker_dyno_binds_to_all_interfaces(self):
         """Test that worker dynos also bind to 0.0.0.0."""
         host = get_host_for_environment("testing")
-        assert host == "0.0.0.0", "Heroku worker dyno should bind to all interfaces"  # noqa: S104
+        assert (
+            host == "0.0.0.0"
+        ), "Heroku worker dyno should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit
     @patch.dict(os.environ, {}, clear=True)
@@ -94,6 +100,7 @@ class TestHostBindingIntegration:
     def test_host_binding_function_is_available(self):
         """Test that the host binding function is available and works correctly."""
         from app.config import get_host_for_environment
+
         assert callable(get_host_for_environment)
 
         # Test basic functionality
@@ -106,6 +113,7 @@ class TestHostBindingIntegration:
         # Test import from app.py perspective
         try:
             from app.config import get_host_for_environment
+
             assert callable(get_host_for_environment)
         except ImportError:
             pytest.fail("Could not import get_host_for_environment function")
@@ -122,8 +130,12 @@ class TestSecurityDocumentation:
         docstring = get_host_for_environment.__doc__
         assert docstring is not None, "Function should have documentation"
         assert "security" in docstring.lower(), "Documentation should mention security"
-        assert "production" in docstring.lower(), "Documentation should explain production behavior"
-        assert "development" in docstring.lower(), "Documentation should explain development behavior"
+        assert (
+            "production" in docstring.lower()
+        ), "Documentation should explain production behavior"
+        assert (
+            "development" in docstring.lower()
+        ), "Documentation should explain development behavior"
 
     @pytest.mark.unit
     def test_function_signature_has_type_hints(self):
@@ -135,8 +147,10 @@ class TestSecurityDocumentation:
         signature = inspect.signature(get_host_for_environment)
 
         # Check parameter type hint
-        config_name_param = signature.parameters['config_name']
-        assert config_name_param.annotation is str, "Parameter should have str type hint"
+        config_name_param = signature.parameters["config_name"]
+        assert (
+            config_name_param.annotation is str
+        ), "Parameter should have str type hint"
 
         # Check return type hint
         assert signature.return_annotation is str, "Return should have str type hint"

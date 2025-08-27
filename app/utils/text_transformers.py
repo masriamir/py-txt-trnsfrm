@@ -510,7 +510,9 @@ class TextTransformer:
         for char in text:
             if char.isalpha():
                 result.append(
-                    char.upper() if secrets.SystemRandom().random() < 0.5 else char.lower()
+                    char.upper()
+                    if secrets.SystemRandom().random() < 0.5
+                    else char.lower()
                 )  # Secure random for consistent security practices
             else:
                 result.append(char)

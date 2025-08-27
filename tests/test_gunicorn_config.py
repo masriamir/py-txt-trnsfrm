@@ -97,7 +97,9 @@ class TestGunicornPidfileConfiguration:
         namespace = exec_gunicorn_config()
 
         # Ensure result doesn't contain /tmp
-        assert "/tmp" not in namespace["pidfile"]  # noqa: S108  # Testing avoidance of /tmp
+        assert (
+            "/tmp" not in namespace["pidfile"]
+        )  # noqa: S108  # Testing avoidance of /tmp
 
     def test_gunicorn_config_imports_successfully(self):
         """Test that gunicorn.conf.py imports without errors."""
