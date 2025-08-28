@@ -27,12 +27,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 from app import create_app
 from app.config import config, get_host_for_environment
 from app.env_config import (
+    FlaskEnvironment,
     get_flask_env_for_wsgi,
     get_logging_config,
     get_port,
     get_web_concurrency,
     is_heroku_environment,
-    FlaskEnvironment,
 )
 from app.logging_config import get_logger, setup_logging
 
