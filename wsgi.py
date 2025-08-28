@@ -26,12 +26,18 @@ sys.path.insert(0, str(Path(__file__).parent))
 # Local imports after sys.path manipulation
 from app import create_app
 from app.config import config, get_host_for_environment
+from app.env_config import (
+    get_flask_env_for_wsgi,
+    get_logging_config,
+    get_port,
+    get_web_concurrency,
+    is_heroku_environment,
+)
 from app.logging_config import get_logger, setup_logging
 
-# Initialize logging based on LOG_LEVEL environment variable
-log_level = os.environ.get("LOG_LEVEL", "info").upper()
-debug_mode = log_level == "DEBUG"
-setup_logging(debug=debug_mode, log_level=log_level)
+# Initialize logging using centralized environment configuration
+logging_config = get_logging_config()
+setup_logging(logging_config)
 
 # Get logger for WSGI startup
 logger = get_logger("wsgi")
@@ -42,14 +48,14 @@ logger.info("🚀 Starting py-txt-trnsfrm Flask Application")
 logger.info("=" * 60)
 
 # Detect environment and select appropriate configuration
-config_name = os.environ.get("FLASK_ENV", "production")
+config_name = get_flask_env_for_wsgi()
 
 # Log configuration details
 logger.info("📋 Configuration Details:")
 logger.info(f"   • Environment: {config_name}")
-logger.info(f"   • Log Level: {log_level}")
-logger.info(f"   • Port: {os.environ.get('PORT', '5000')}")
-logger.info(f"   • Workers: {os.environ.get('WEB_CONCURRENCY', 'auto')}")
+logger.info(f"   • Log Level: {logging_config.log_level}")
+logger.info(f"   • Port: {get_port()}")
+logger.info(f"   • Workers: {get_web_concurrency()}")
 
 # Log system information for debugging
 logger.info("🖥️  System Information:")
@@ -62,7 +68,7 @@ logger.info(f"   • Working Directory: {Path.cwd()}")
 logger.info(f"   • WSGI File Path: {Path(__file__).resolve()}")
 
 # Log Python path information (debug only)
-if debug_mode:
+if logging_config.debug_mode:
     logger.debug("🔍 Python Path Details:")
     for i, path in enumerate(sys.path[:10]):  # Show first 10 paths
         logger.debug(f"   [{i}] {path}")
@@ -70,7 +76,7 @@ if debug_mode:
         logger.debug(f"   ... and {len(sys.path) - 10} more paths")
 
 # Log environment variables (debug only, exclude sensitive ones)
-if debug_mode:
+if logging_config.debug_mode:
     logger.debug("🌍 Environment Variables:")
     sensitive_vars = {"SECRET_KEY", "DATABASE_URL", "API_KEY", "PASSWORD", "TOKEN"}
     for key, value in sorted(os.environ.items()):
@@ -80,7 +86,7 @@ if debug_mode:
             logger.debug(f"   • {key}: {value}")
 
 # Handle Heroku-specific configuration if running on Heroku
-if os.environ.get("DYNO"):  # Running on Heroku
+if is_heroku_environment():  # Running on Heroku
     try:
         # Import here is necessary because heroku_config may not exist in all deployments
         from heroku_config import HerokuConfig
@@ -151,7 +157,7 @@ if __name__ == "__main__":
     # For development/testing when running wsgi.py directly
     logger.info("🧪 Running WSGI application directly (development mode)")
     host = get_host_for_environment(config_name)
-    port = int(os.environ.get("PORT", 5000))
+    port = get_port()
     debug = config_name == "development"
 
     logger.info(f"Direct WSGI execution - Host: {host}, Port: {port}, Debug: {debug}")

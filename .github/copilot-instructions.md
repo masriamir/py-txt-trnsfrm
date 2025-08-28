@@ -22,6 +22,7 @@ Always reference these instructions first and fallback to search or bash command
 - **UI Components**: Five pastel color themes with accessibility-first design
 - **API Endpoints**: RESTful API for text transformations with JSON responses
 - **Health Monitoring**: Built-in health check endpoint for deployment monitoring
+- **Centralized Configuration**: Environment variable handling in `app/env_config.py` for consistent configuration across all entry points
 
 ## Working Effectively
 
@@ -312,6 +313,37 @@ Closes #23, #34, #45
 - **Start with deploy script**: `SECRET_KEY=your-secret-key ./deploy.sh start` 
 - **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
 - **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
+
+### Centralized Environment Configuration
+
+The application uses a centralized configuration system located in `app/env_config.py` that provides a single source of truth for environment variable handling across all entry points (`app.py`, `wsgi.py`, `app/__init__.py`).
+
+#### Key Functions
+- `get_logging_config()`: Returns validated logging configuration with `log_level` and `debug_mode`
+- `get_flask_env()`: Gets Flask environment with development default
+- `get_flask_env_for_wsgi()`: Gets Flask environment with production default for WSGI contexts
+- `is_heroku_environment()`: Detects Heroku deployment via DYNO environment variable
+- `get_port()`: Gets port number with integer conversion
+
+#### Usage Examples
+```python
+from app.env_config import get_logging_config, is_heroku_environment
+
+# Get logging configuration
+config = get_logging_config()
+setup_logging(debug=config.debug_mode, log_level=config.log_level)
+
+# Check deployment environment
+if is_heroku_environment():
+    # Heroku-specific configuration
+    pass
+```
+
+#### Benefits
+- **Single source of truth**: All environment variable logic centralized
+- **Consistent behavior**: Same configuration across all entry points
+- **Validation**: Automatic validation and fallbacks for invalid values
+- **Type safety**: Structured configuration with proper typing
 
 ## Validation
 
