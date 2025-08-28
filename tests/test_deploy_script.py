@@ -55,24 +55,27 @@ dependencies = [
                     "python3",
                     "-c",
                     f"""
-import tomllib
 import re
+import sys
+import tomllib
 
 try:
-    with open('{temp_file.name}', 'rb') as f:
+    with open("{temp_file.name}", "rb") as f:
         data = tomllib.load(f)
-    
-    deps = data.get('project', {{}}).get('dependencies', [])
+
+    deps = data.get("project", {{}}).get("dependencies", [])
     for dep in deps:
-        if dep.startswith('gunicorn'):
-            match = re.search(r'gunicorn[>=<!=~]*([0-9]+\\.[0-9]+\\.[0-9]+)', dep)
+        if dep.startswith("gunicorn"):
+            match = re.search(r"gunicorn[>=<!=~]*([0-9]+\\.[0-9]+\\.[0-9]+)", dep)
             if match:
                 print(match.group(1))
-                exit(0)
-    
-    print('unknown')
+                sys.exit(0)
+
+    print("unknown")
+    sys.exit(0)
 except Exception:
-    print('unknown')
+    print("unknown")
+    sys.exit(0)
 """,
                 ],
                 capture_output=True,
@@ -116,24 +119,27 @@ dependencies = [
                         "python3",
                         "-c",
                         f"""
-import tomllib
 import re
+import sys
+import tomllib
 
 try:
-    with open('{temp_file.name}', 'rb') as f:
+    with open("{temp_file.name}", "rb") as f:
         data = tomllib.load(f)
-    
-    deps = data.get('project', {{}}).get('dependencies', [])
+
+    deps = data.get("project", {{}}).get("dependencies", [])
     for dep in deps:
-        if dep.startswith('gunicorn'):
-            match = re.search(r'gunicorn[>=<!=~]*([0-9]+\\.[0-9]+\\.[0-9]+)', dep)
+        if dep.startswith("gunicorn"):
+            match = re.search(r"gunicorn[>=<!=~]*([0-9]+\\.[0-9]+\\.[0-9]+)", dep)
             if match:
                 print(match.group(1))
-                exit(0)
-    
-    print('unknown')
+                sys.exit(0)
+
+    print("unknown")
+    sys.exit(0)
 except Exception:
-    print('unknown')
+    print("unknown")
+    sys.exit(0)
 """,
                     ],
                     capture_output=True,
@@ -195,24 +201,27 @@ dependencies = [
                     "python3",
                     "-c",
                     f"""
-import tomllib
 import re
+import sys
+import tomllib
 
 try:
-    with open('{temp_file.name}', 'rb') as f:
+    with open("{temp_file.name}", "rb") as f:
         data = tomllib.load(f)
-    
-    deps = data.get('project', {{}}).get('dependencies', [])
+
+    deps = data.get("project", {{}}).get("dependencies", [])
     for dep in deps:
-        if dep.startswith('gunicorn'):
-            match = re.search(r'gunicorn[>=<!=~]*([0-9]+\\.[0-9]+\\.[0-9]+)', dep)
+        if dep.startswith("gunicorn"):
+            match = re.search(r"gunicorn[>=<!=~]*([0-9]+\\.[0-9]+\\.[0-9]+)", dep)
             if match:
                 print(match.group(1))
-                exit(0)
-    
-    print('unknown')
+                sys.exit(0)
+
+    print("unknown")
+    sys.exit(0)
 except Exception:
-    print('unknown')
+    print("unknown")
+    sys.exit(0)
 """,
                 ],
                 capture_output=True,
