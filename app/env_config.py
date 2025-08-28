@@ -117,3 +117,13 @@ def get_port() -> int:
         int: Port number from PORT environment variable, defaults to 5000
     """
     return int(os.environ.get("PORT", 5000))
+
+
+def get_web_concurrency() -> str:
+    """Get web concurrency setting from environment.
+
+    Returns:
+        str: Web concurrency setting from WEB_CONCURRENCY environment variable,
+             defaults to 'auto' for Gunicorn auto-detection
+    """
+    return os.environ.get("WEB_CONCURRENCY", "auto")

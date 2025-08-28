@@ -29,6 +29,8 @@ from app.config import config, get_host_for_environment
 from app.env_config import (
     get_flask_env_for_wsgi,
     get_logging_config,
+    get_port,
+    get_web_concurrency,
     is_heroku_environment,
 )
 from app.logging_config import get_logger, setup_logging
@@ -52,8 +54,8 @@ config_name = get_flask_env_for_wsgi()
 logger.info("📋 Configuration Details:")
 logger.info(f"   • Environment: {config_name}")
 logger.info(f"   • Log Level: {logging_config.log_level}")
-logger.info(f"   • Port: {os.environ.get('PORT', '5000')}")
-logger.info(f"   • Workers: {os.environ.get('WEB_CONCURRENCY', 'auto')}")
+logger.info(f"   • Port: {get_port()}")
+logger.info(f"   • Workers: {get_web_concurrency()}")
 
 # Log system information for debugging
 logger.info("🖥️  System Information:")
@@ -155,7 +157,7 @@ if __name__ == "__main__":
     # For development/testing when running wsgi.py directly
     logger.info("🧪 Running WSGI application directly (development mode)")
     host = get_host_for_environment(config_name)
-    port = int(os.environ.get("PORT", 5000))
+    port = get_port()
     debug = config_name == "development"
 
     logger.info(f"Direct WSGI execution - Host: {host}, Port: {port}, Debug: {debug}")

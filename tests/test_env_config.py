@@ -11,6 +11,7 @@ from app.env_config import (
     get_flask_env_for_wsgi,
     get_logging_config,
     get_port,
+    get_web_concurrency,
     is_heroku_environment,
 )
 
@@ -188,6 +189,27 @@ class TestPortConfiguration:
             assert isinstance(port, int)
             assert port == 3000
 
+    @pytest.mark.unit
+    def test_get_web_concurrency_with_environment_variable(self):
+        """Test get_web_concurrency with WEB_CONCURRENCY environment variable set."""
+        with patch.dict(os.environ, {"WEB_CONCURRENCY": "4"}):
+            assert get_web_concurrency() == "4"
+
+    @pytest.mark.unit
+    def test_get_web_concurrency_default(self):
+        """Test get_web_concurrency default value."""
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("WEB_CONCURRENCY", None)
+            assert get_web_concurrency() == "auto"
+
+    @pytest.mark.unit
+    def test_get_web_concurrency_string_type(self):
+        """Test get_web_concurrency returns string type."""
+        with patch.dict(os.environ, {"WEB_CONCURRENCY": "2"}):
+            concurrency = get_web_concurrency()
+            assert isinstance(concurrency, str)
+            assert concurrency == "2"
+
 
 @pytest.mark.integration
 class TestEnvironmentConfigIntegration:
@@ -208,16 +230,24 @@ class TestEnvironmentConfigIntegration:
     def test_production_environment_configuration(self):
         """Test production environment configuration."""
         with patch.dict(
-            os.environ, {"LOG_LEVEL": "info", "FLASK_ENV": "production", "PORT": "80"}
+            os.environ,
+            {
+                "LOG_LEVEL": "info",
+                "FLASK_ENV": "production",
+                "PORT": "80",
+                "WEB_CONCURRENCY": "4",
+            },
         ):
             config = get_logging_config()
             flask_env = get_flask_env_for_wsgi()
             port = get_port()
+            web_concurrency = get_web_concurrency()
 
             assert config.log_level == "INFO"
             assert config.debug_mode is False
             assert flask_env == "production"
             assert port == 80
+            assert web_concurrency == "4"
 
     @pytest.mark.integration
     def test_heroku_environment_configuration(self):
