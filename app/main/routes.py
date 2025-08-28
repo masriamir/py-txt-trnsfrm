@@ -9,6 +9,7 @@ from flask import jsonify, render_template, request
 from app.logging_config import get_logger
 from app.main import bp
 from app.utils.text_transformers import TextTransformer
+from app.utils.version import get_application_version
 
 logger = get_logger(__name__)
 
@@ -32,16 +33,20 @@ def health_check():
     """Health check endpoint for load balancers and monitoring.
 
     Returns basic application health status for Docker health checks,
-    load balancers, and monitoring systems.
+    load balancers, and monitoring systems. Version is dynamically
+    loaded from pyproject.toml.
 
     Returns:
         tuple: JSON response with status and HTTP status code.
     """
     try:
+        # Get dynamic version from pyproject.toml
+        version = get_application_version()
+
         # Basic health check - could be expanded with database checks, etc.
         return (
             jsonify(
-                {"status": "healthy", "service": "py-txt-trnsfrm", "version": "0.1.0"}
+                {"status": "healthy", "service": "py-txt-trnsfrm", "version": version}
             ),
             200,
         )
