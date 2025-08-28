@@ -22,11 +22,13 @@ def setup_logging(logging_config: LoggingConfig) -> None:
     console and file logging with automatic detection of container environments.
 
     Args:
-        logging_config: LoggingConfig object containing validated log_level and debug_mode
+        logging_config: LoggingConfig object containing validated LogLevel enum and debug_mode
     """
     # Extract configuration values
     debug = logging_config.debug_mode
-    log_level = logging_config.log_level
+    log_level = (
+        logging_config.log_level.value
+    )  # Convert enum to string for logging.config
 
     # Determine log file path - use logs directory in container, current directory otherwise
     logs_dir = Path("/app/logs") if Path("/app/logs").exists() else Path.cwd()

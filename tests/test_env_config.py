@@ -7,6 +7,7 @@ import pytest
 
 from app.env_config import (
     LoggingConfig,
+    LogLevel,
     get_flask_env,
     get_flask_env_for_wsgi,
     get_logging_config,
@@ -22,20 +23,20 @@ class TestLoggingConfig:
 
     def test_logging_config_tuple_structure(self):
         """Test LoggingConfig named tuple structure."""
-        config = LoggingConfig(log_level="INFO", debug_mode=False)
-        assert config.log_level == "INFO"
+        config = LoggingConfig(log_level=LogLevel.INFO, debug_mode=False)
+        assert config.log_level == LogLevel.INFO
         assert config.debug_mode is False
 
         # Test that it's immutable
         with pytest.raises(AttributeError):
-            config.log_level = "DEBUG"
+            config.log_level = LogLevel.DEBUG
 
     @pytest.mark.unit
     def test_get_logging_config_debug_level(self):
         """Test get_logging_config with DEBUG level."""
         with patch.dict(os.environ, {"LOG_LEVEL": "debug"}):
             config = get_logging_config()
-            assert config.log_level == "DEBUG"
+            assert config.log_level == LogLevel.DEBUG
             assert config.debug_mode is True
 
     @pytest.mark.unit
@@ -43,7 +44,7 @@ class TestLoggingConfig:
         """Test get_logging_config with INFO level."""
         with patch.dict(os.environ, {"LOG_LEVEL": "info"}):
             config = get_logging_config()
-            assert config.log_level == "INFO"
+            assert config.log_level == LogLevel.INFO
             assert config.debug_mode is False
 
     @pytest.mark.unit
@@ -51,7 +52,7 @@ class TestLoggingConfig:
         """Test get_logging_config with WARNING level."""
         with patch.dict(os.environ, {"LOG_LEVEL": "warning"}):
             config = get_logging_config()
-            assert config.log_level == "WARNING"
+            assert config.log_level == LogLevel.WARNING
             assert config.debug_mode is False
 
     @pytest.mark.unit
@@ -59,7 +60,7 @@ class TestLoggingConfig:
         """Test get_logging_config with ERROR level."""
         with patch.dict(os.environ, {"LOG_LEVEL": "error"}):
             config = get_logging_config()
-            assert config.log_level == "ERROR"
+            assert config.log_level == LogLevel.ERROR
             assert config.debug_mode is False
 
     @pytest.mark.unit
@@ -67,18 +68,18 @@ class TestLoggingConfig:
         """Test get_logging_config with CRITICAL level."""
         with patch.dict(os.environ, {"LOG_LEVEL": "critical"}):
             config = get_logging_config()
-            assert config.log_level == "CRITICAL"
+            assert config.log_level == LogLevel.CRITICAL
             assert config.debug_mode is False
 
     @pytest.mark.unit
     def test_get_logging_config_case_insensitive(self):
         """Test get_logging_config handles case variations."""
         test_cases = [
-            ("Debug", "DEBUG", True),
-            ("INFO", "INFO", False),
-            ("Warning", "WARNING", False),
-            ("ERROR", "ERROR", False),
-            ("Critical", "CRITICAL", False),
+            ("Debug", LogLevel.DEBUG, True),
+            ("INFO", LogLevel.INFO, False),
+            ("Warning", LogLevel.WARNING, False),
+            ("ERROR", LogLevel.ERROR, False),
+            ("Critical", LogLevel.CRITICAL, False),
         ]
 
         for input_level, expected_level, expected_debug in test_cases:
@@ -95,7 +96,7 @@ class TestLoggingConfig:
         for invalid_level in invalid_levels:
             with patch.dict(os.environ, {"LOG_LEVEL": invalid_level}):
                 config = get_logging_config()
-                assert config.log_level == "INFO"
+                assert config.log_level == LogLevel.INFO
                 assert config.debug_mode is False
 
     @pytest.mark.unit
@@ -105,8 +106,57 @@ class TestLoggingConfig:
             # Remove LOG_LEVEL if it exists
             os.environ.pop("LOG_LEVEL", None)
             config = get_logging_config()
-            assert config.log_level == "INFO"
+            assert config.log_level == LogLevel.INFO
             assert config.debug_mode is False
+
+
+@pytest.mark.unit
+class TestLogLevelEnum:
+    """Test LogLevel enum functionality."""
+
+    @pytest.mark.unit
+    def test_log_level_enum_values(self):
+        """Test LogLevel enum has correct values."""
+        assert LogLevel.DEBUG.value == "DEBUG"
+        assert LogLevel.INFO.value == "INFO"
+        assert LogLevel.WARNING.value == "WARNING"
+        assert LogLevel.ERROR.value == "ERROR"
+        assert LogLevel.CRITICAL.value == "CRITICAL"
+
+    @pytest.mark.unit
+    def test_log_level_enum_comparison(self):
+        """Test LogLevel enum comparison works correctly."""
+        debug_config = LoggingConfig(log_level=LogLevel.DEBUG, debug_mode=True)
+        info_config = LoggingConfig(log_level=LogLevel.INFO, debug_mode=False)
+
+        assert debug_config.log_level == LogLevel.DEBUG
+        assert info_config.log_level == LogLevel.INFO
+        assert debug_config.log_level != info_config.log_level
+
+    @pytest.mark.unit
+    def test_log_level_enum_string_conversion(self):
+        """Test LogLevel enum can be converted to string."""
+        assert str(LogLevel.DEBUG.value) == "DEBUG"
+        assert str(LogLevel.INFO.value) == "INFO"
+
+    @pytest.mark.unit
+    def test_log_level_enum_from_string_valid(self):
+        """Test LogLevel enum creation from valid strings."""
+        assert LogLevel("DEBUG") == LogLevel.DEBUG
+        assert LogLevel("INFO") == LogLevel.INFO
+        assert LogLevel("WARNING") == LogLevel.WARNING
+        assert LogLevel("ERROR") == LogLevel.ERROR
+        assert LogLevel("CRITICAL") == LogLevel.CRITICAL
+
+    @pytest.mark.unit
+    def test_log_level_enum_from_string_invalid(self):
+        """Test LogLevel enum raises ValueError for invalid strings."""
+        with pytest.raises(ValueError):
+            LogLevel("INVALID")
+        with pytest.raises(ValueError):
+            LogLevel("TRACE")
+        with pytest.raises(ValueError):
+            LogLevel("VERBOSE")
 
 
 @pytest.mark.unit
@@ -222,7 +272,7 @@ class TestEnvironmentConfigIntegration:
             config = get_logging_config()
             flask_env = get_flask_env()
 
-            assert config.log_level == "DEBUG"
+            assert config.log_level == LogLevel.DEBUG
             assert config.debug_mode is True
             assert flask_env == "development"
 
@@ -243,7 +293,7 @@ class TestEnvironmentConfigIntegration:
             port = get_port()
             web_concurrency = get_web_concurrency()
 
-            assert config.log_level == "INFO"
+            assert config.log_level == LogLevel.INFO
             assert config.debug_mode is False
             assert flask_env == "production"
             assert port == 80
@@ -260,7 +310,7 @@ class TestEnvironmentConfigIntegration:
             port = get_port()
 
             assert is_heroku is True
-            assert config.log_level == "INFO"
+            assert config.log_level == LogLevel.INFO
             assert config.debug_mode is False
             assert port == 5000
 
@@ -282,7 +332,7 @@ class TestEnvironmentConfigIntegration:
             is_heroku = is_heroku_environment()
 
             # Verify all functions return expected values
-            assert config.log_level == "WARNING"
+            assert config.log_level == LogLevel.WARNING
             assert config.debug_mode is False
             assert flask_env == "testing"
             assert flask_env_wsgi == "testing"
