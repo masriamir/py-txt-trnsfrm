@@ -23,6 +23,7 @@ from app.env_config import (
     get_logging_config,
     get_port,
     is_heroku_environment,
+    FlaskEnvironment,
 )
 from app.logging_config import get_logger, setup_logging
 
@@ -72,7 +73,7 @@ def main():
         app = create_app(config[config_name])
 
         port = get_port()
-        debug = config_name == "development"
+        debug = config_name == FlaskEnvironment.DEVELOPMENT
         host = get_host_for_environment(config_name)
 
         logger.info(f"Starting server on host: {host}, port: {port}")

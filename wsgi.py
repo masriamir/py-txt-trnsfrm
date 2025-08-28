@@ -32,6 +32,7 @@ from app.env_config import (
     get_port,
     get_web_concurrency,
     is_heroku_environment,
+    FlaskEnvironment,
 )
 from app.logging_config import get_logger, setup_logging
 
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     logger.info("🧪 Running WSGI application directly (development mode)")
     host = get_host_for_environment(config_name)
     port = get_port()
-    debug = config_name == "development"
+    debug = config_name == FlaskEnvironment.DEVELOPMENT
 
     logger.info(f"Direct WSGI execution - Host: {host}, Port: {port}, Debug: {debug}")
 

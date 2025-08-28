@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from app.env_config import (
+    FlaskEnvironment,
     LoggingConfig,
     get_flask_env,
     get_flask_env_for_wsgi,
@@ -110,6 +111,57 @@ class TestLoggingConfig:
 
 
 @pytest.mark.unit
+class TestFlaskEnvironmentEnum:
+    """Test FlaskEnvironment enum functionality."""
+
+    @pytest.mark.unit
+    def test_flask_environment_enum_values(self):
+        """Test FlaskEnvironment enum has correct values."""
+        assert FlaskEnvironment.DEVELOPMENT.value == "development"
+        assert FlaskEnvironment.TESTING.value == "testing"
+        assert FlaskEnvironment.PRODUCTION.value == "production"
+
+    @pytest.mark.unit
+    def test_flask_environment_from_string_valid(self):
+        """Test FlaskEnvironment.from_string with valid values."""
+        test_cases = [
+            ("development", FlaskEnvironment.DEVELOPMENT),
+            ("testing", FlaskEnvironment.TESTING),
+            ("production", FlaskEnvironment.PRODUCTION),
+            ("DEVELOPMENT", FlaskEnvironment.DEVELOPMENT),
+            ("Testing", FlaskEnvironment.TESTING),
+            ("PRODUCTION", FlaskEnvironment.PRODUCTION),
+        ]
+
+        for input_str, expected_enum in test_cases:
+            result = FlaskEnvironment.from_string(input_str)
+            assert result == expected_enum
+            assert isinstance(result, FlaskEnvironment)
+
+    @pytest.mark.unit
+    def test_flask_environment_from_string_invalid(self):
+        """Test FlaskEnvironment.from_string with invalid values."""
+        invalid_values = ["invalid", "staging", "local", "123", "", None]
+
+        for invalid_value in invalid_values:
+            with pytest.raises(ValueError) as exc_info:
+                FlaskEnvironment.from_string(invalid_value)
+            assert "Invalid Flask environment" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_flask_environment_from_string_error_message(self):
+        """Test FlaskEnvironment.from_string error message includes valid values."""
+        with pytest.raises(ValueError) as exc_info:
+            FlaskEnvironment.from_string("invalid")
+
+        error_message = str(exc_info.value)
+        assert "Invalid Flask environment: 'invalid'" in error_message
+        assert "development" in error_message
+        assert "testing" in error_message
+        assert "production" in error_message
+
+
+@pytest.mark.unit
 class TestFlaskEnvironmentConfig:
     """Test Flask environment configuration."""
 
@@ -117,27 +169,71 @@ class TestFlaskEnvironmentConfig:
     def test_get_flask_env_with_environment_variable(self):
         """Test get_flask_env with FLASK_ENV set."""
         with patch.dict(os.environ, {"FLASK_ENV": "production"}):
-            assert get_flask_env() == "production"
+            result = get_flask_env()
+            assert result == FlaskEnvironment.PRODUCTION
+            assert isinstance(result, FlaskEnvironment)
 
     @pytest.mark.unit
     def test_get_flask_env_default(self):
         """Test get_flask_env default value."""
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("FLASK_ENV", None)
-            assert get_flask_env() == "development"
+            result = get_flask_env()
+            assert result == FlaskEnvironment.DEVELOPMENT
+            assert isinstance(result, FlaskEnvironment)
 
     @pytest.mark.unit
     def test_get_flask_env_for_wsgi_with_environment_variable(self):
         """Test get_flask_env_for_wsgi with FLASK_ENV set."""
         with patch.dict(os.environ, {"FLASK_ENV": "development"}):
-            assert get_flask_env_for_wsgi() == "development"
+            result = get_flask_env_for_wsgi()
+            assert result == FlaskEnvironment.DEVELOPMENT
+            assert isinstance(result, FlaskEnvironment)
 
     @pytest.mark.unit
     def test_get_flask_env_for_wsgi_default(self):
         """Test get_flask_env_for_wsgi default value."""
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("FLASK_ENV", None)
-            assert get_flask_env_for_wsgi() == "production"
+            result = get_flask_env_for_wsgi()
+            assert result == FlaskEnvironment.PRODUCTION
+            assert isinstance(result, FlaskEnvironment)
+
+    @pytest.mark.unit
+    def test_get_flask_env_case_insensitive(self):
+        """Test get_flask_env handles case variations."""
+        test_cases = [
+            ("Development", FlaskEnvironment.DEVELOPMENT),
+            ("PRODUCTION", FlaskEnvironment.PRODUCTION),
+            ("Testing", FlaskEnvironment.TESTING),
+        ]
+
+        for input_env, expected_enum in test_cases:
+            with patch.dict(os.environ, {"FLASK_ENV": input_env}):
+                result = get_flask_env()
+                assert result == expected_enum
+                assert isinstance(result, FlaskEnvironment)
+
+    @pytest.mark.unit
+    def test_get_flask_env_invalid_value(self):
+        """Test get_flask_env with invalid environment value raises ValueError."""
+        invalid_environments = ["invalid", "staging", "local", "123", ""]
+
+        for invalid_env in invalid_environments:
+            with patch.dict(os.environ, {"FLASK_ENV": invalid_env}):
+                with pytest.raises(ValueError) as exc_info:
+                    get_flask_env()
+                assert "Invalid Flask environment" in str(exc_info.value)
+                assert invalid_env in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_get_flask_env_for_wsgi_invalid_value(self):
+        """Test get_flask_env_for_wsgi with invalid environment value raises ValueError."""
+        with patch.dict(os.environ, {"FLASK_ENV": "invalid"}):
+            with pytest.raises(ValueError) as exc_info:
+                get_flask_env_for_wsgi()
+            assert "Invalid Flask environment" in str(exc_info.value)
+            assert "invalid" in str(exc_info.value)
 
 
 @pytest.mark.unit
@@ -224,7 +320,8 @@ class TestEnvironmentConfigIntegration:
 
             assert config.log_level == "DEBUG"
             assert config.debug_mode is True
-            assert flask_env == "development"
+            assert flask_env == FlaskEnvironment.DEVELOPMENT
+            assert isinstance(flask_env, FlaskEnvironment)
 
     @pytest.mark.integration
     def test_production_environment_configuration(self):
@@ -245,7 +342,8 @@ class TestEnvironmentConfigIntegration:
 
             assert config.log_level == "INFO"
             assert config.debug_mode is False
-            assert flask_env == "production"
+            assert flask_env == FlaskEnvironment.PRODUCTION
+            assert isinstance(flask_env, FlaskEnvironment)
             assert port == 80
             assert web_concurrency == "4"
 
@@ -284,7 +382,19 @@ class TestEnvironmentConfigIntegration:
             # Verify all functions return expected values
             assert config.log_level == "WARNING"
             assert config.debug_mode is False
-            assert flask_env == "testing"
-            assert flask_env_wsgi == "testing"
+            assert flask_env == FlaskEnvironment.TESTING
+            assert isinstance(flask_env, FlaskEnvironment)
+            assert flask_env_wsgi == FlaskEnvironment.TESTING
+            assert isinstance(flask_env_wsgi, FlaskEnvironment)
             assert port == 8000
             assert is_heroku is True
+
+    @pytest.mark.integration
+    def test_flask_app_creation_with_enum_environment(self):
+        """Test Flask app creation works with enum environment values."""
+        from app import create_app
+
+        with patch.dict(os.environ, {"FLASK_ENV": "testing", "LOG_LEVEL": "info"}):
+            app = create_app()
+            assert app is not None
+            assert app.config["TESTING"] is True  # TestConfig should be loaded

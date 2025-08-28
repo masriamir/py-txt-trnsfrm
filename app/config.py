@@ -7,8 +7,10 @@ application settings and environment-specific configurations.
 
 import os
 
+from app.env_config import FlaskEnvironment
 
-def get_host_for_environment(config_name: str) -> str:
+
+def get_host_for_environment(config_name: str | FlaskEnvironment) -> str:
     """Determine the appropriate host address based on the deployment environment.
 
     Returns '0.0.0.0' for production environments to allow external access,
@@ -20,29 +22,35 @@ def get_host_for_environment(config_name: str) -> str:
     - Preventing accidental exposure of development servers
 
     Args:
-        config_name: The configuration environment name (e.g., 'development', 'production', 'heroku')
+        config_name: The configuration environment name (str or FlaskEnvironment enum)
+                    e.g., 'development', FlaskEnvironment.PRODUCTION, etc.
 
     Returns:
         str: Host address to bind to ('127.0.0.1' for dev, '0.0.0.0' for production)
 
     Production environments (bind to 0.0.0.0):
-        - config_name == "production"
-        - config_name == "heroku"
+        - config_name == "production" or FlaskEnvironment.PRODUCTION
+        - config_name == "heroku" (legacy string support)
         - DYNO environment variable is set (Heroku detection)
 
     Development environments (bind to 127.0.0.1):
-        - config_name == "development"
-        - config_name == "testing"
+        - config_name == "development" or FlaskEnvironment.DEVELOPMENT
+        - config_name == "testing" or FlaskEnvironment.TESTING
         - All other environments
     """
     # Check for Heroku environment first (most specific)
     if os.environ.get("DYNO"):
         return "0.0.0.0"  # noqa: S104  # Intentional production binding
 
-    # Check config name for production environments
-    production_configs = {"production", "heroku"}
-    if config_name in production_configs:
-        return "0.0.0.0"  # noqa: S104  # Intentional production binding
+    # Handle FlaskEnvironment enum values
+    if isinstance(config_name, FlaskEnvironment):
+        if config_name in {FlaskEnvironment.PRODUCTION}:
+            return "0.0.0.0"  # noqa: S104  # Intentional production binding
+    else:
+        # Handle legacy string values for backward compatibility
+        production_configs = {"production", "heroku"}
+        if config_name in production_configs:
+            return "0.0.0.0"  # noqa: S104  # Intentional production binding
 
     # Default to localhost for development/testing environments
     return "127.0.0.1"
@@ -136,8 +144,11 @@ class ProductionConfig(Config):
         logger.info("Production configuration initialized successfully")
 
 
-config: dict[str, type[Config]] = {
+config: dict[str | FlaskEnvironment, type[Config]] = {
     "development": DevelopmentConfig,
     "testing": TestConfig,
     "production": ProductionConfig,
+    FlaskEnvironment.DEVELOPMENT: DevelopmentConfig,
+    FlaskEnvironment.TESTING: TestConfig,
+    FlaskEnvironment.PRODUCTION: ProductionConfig,
 }
