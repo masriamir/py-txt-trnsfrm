@@ -37,7 +37,7 @@ from app.logging_config import get_logger, setup_logging
 
 # Initialize logging using centralized environment configuration
 logging_config = get_logging_config()
-setup_logging(debug=logging_config.debug_mode, log_level=logging_config.log_level)
+setup_logging(logging_config)
 
 # Get logger for WSGI startup
 logger = get_logger("wsgi")

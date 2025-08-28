@@ -11,8 +11,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+from app.env_config import LoggingConfig
 
-def setup_logging(debug: bool = False, log_level: str = "INFO") -> None:
+
+def setup_logging(logging_config: LoggingConfig) -> None:
     """Setup centralized logging configuration for the application.
 
     Configures logging with appropriate handlers, formatters, and log levels
@@ -20,20 +22,11 @@ def setup_logging(debug: bool = False, log_level: str = "INFO") -> None:
     console and file logging with automatic detection of container environments.
 
     Args:
-        debug: If True, enables DEBUG level logging with detailed formatting
-            and forces log_level to 'DEBUG'.
-        log_level: Logging level to use ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL').
-            Defaults to 'INFO'. Ignored if debug=True.
+        logging_config: LoggingConfig object containing validated log_level and debug_mode
     """
-    # Force DEBUG level if debug mode is enabled
-    if debug:
-        log_level = "DEBUG"
-    else:
-        # Ensure log_level is valid and uppercase
-        log_level = log_level.upper()
-        valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-        if log_level not in valid_levels:
-            log_level = "INFO"
+    # Extract configuration values
+    debug = logging_config.debug_mode
+    log_level = logging_config.log_level
 
     # Determine log file path - use logs directory in container, current directory otherwise
     logs_dir = Path("/app/logs") if Path("/app/logs").exists() else Path.cwd()

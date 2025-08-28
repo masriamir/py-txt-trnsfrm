@@ -52,7 +52,7 @@ def create_app(config_class=None):
 
     # Initialize logging using centralized environment configuration
     logging_config = get_logging_config()
-    setup_logging(debug=logging_config.debug_mode, log_level=logging_config.log_level)
+    setup_logging(logging_config)
 
     logger = get_logger(__name__)
     logger.info(f"Starting application with config: {config_class.__name__}")
