@@ -16,12 +16,14 @@ import yaml
 class TestDockerComposePortConfiguration:
     """Test Docker Compose port configuration with environment variables."""
 
+    @pytest.mark.unit
     def test_docker_compose_file_exists(self):
         """Test that docker-compose.yml file exists."""
         repo_root = Path(__file__).parent.parent
         compose_file = repo_root / "docker-compose.yml"
         assert compose_file.exists(), "docker-compose.yml should exist"
 
+    @pytest.mark.unit
     def test_docker_compose_valid_yaml(self):
         """Test that docker-compose.yml is valid YAML."""
         repo_root = Path(__file__).parent.parent
@@ -35,6 +37,7 @@ class TestDockerComposePortConfiguration:
         assert config is not None, "docker-compose.yml should be valid YAML"
         assert "services" in config, "docker-compose.yml should have services section"
 
+    @pytest.mark.unit
     def test_web_service_port_mapping_uses_environment_variable(self):
         """Test that web service uses environment variable for port mapping."""
         repo_root = Path(__file__).parent.parent
@@ -48,6 +51,7 @@ class TestDockerComposePortConfiguration:
             "${PORT:-5000}:${PORT:-5000}" in content
         ), "Port mapping should use environment variable substitution"
 
+    @pytest.mark.unit
     def test_web_service_healthcheck_uses_environment_variable(self):
         """Test that web service healthcheck uses environment variable for port."""
         repo_root = Path(__file__).parent.parent
@@ -61,6 +65,7 @@ class TestDockerComposePortConfiguration:
             "http://localhost:${PORT:-5000}/health" in content
         ), "Healthcheck URL should use environment variable substitution"
 
+    @pytest.mark.unit
     def test_web_service_environment_port_uses_substitution(self):
         """Test that web service environment PORT uses substitution syntax."""
         repo_root = Path(__file__).parent.parent
@@ -74,6 +79,7 @@ class TestDockerComposePortConfiguration:
             "PORT=${PORT:-5000}" in content
         ), "Environment PORT should use substitution syntax"
 
+    @pytest.mark.integration
     def test_docker_compose_config_validation(self):
         """Test that docker-compose config validation passes."""
         repo_root = Path(__file__).parent.parent
@@ -100,6 +106,7 @@ class TestDockerComposePortConfiguration:
             "5000:5000" in config_output
         ), "Default port 5000 should be used when PORT not set"
 
+    @pytest.mark.integration
     def test_docker_compose_config_with_custom_port(self):
         """Test that docker-compose config works with custom PORT."""
         repo_root = Path(__file__).parent.parent
@@ -129,6 +136,7 @@ class TestDockerComposePortConfiguration:
             f"http://localhost:{custom_port}/health" in config_output
         ), f"Healthcheck should use custom port {custom_port}"
 
+    @pytest.mark.unit
     def test_docker_compose_environment_variable_format(self):
         """Test that environment variable substitution uses correct format."""
         repo_root = Path(__file__).parent.parent
@@ -147,6 +155,7 @@ class TestDockerComposePortConfiguration:
             len(matches) >= 3
         ), f"Should find at least 3 occurrences of ${{PORT:-5000}}, found {len(matches)}"
 
+    @pytest.mark.unit
     def test_docker_compose_backward_compatibility(self):
         """Test that configuration maintains backward compatibility."""
         repo_root = Path(__file__).parent.parent

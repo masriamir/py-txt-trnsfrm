@@ -32,7 +32,7 @@ class TestHostBinding:
         """Test that production environment binds to 0.0.0.0."""
         host = get_host_for_environment("production")
         assert (
-            host == "0.0.0.0"
+            host == "0.0.0.0"  # noqa: S104
         ), "Production should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit
@@ -54,7 +54,7 @@ class TestHostBinding:
         # Should return 0.0.0.0 regardless of config_name when DYNO is set
         host = get_host_for_environment("development")
         assert (
-            host == "0.0.0.0"
+            host == "0.0.0.0"  # noqa: S104
         ), "Heroku DYNO environment should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit
@@ -63,7 +63,7 @@ class TestHostBinding:
         """Test that worker dynos also bind to 0.0.0.0."""
         host = get_host_for_environment("testing")
         assert (
-            host == "0.0.0.0"
+            host == "0.0.0.0"  # noqa: S104
         ), "Heroku worker dyno should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit

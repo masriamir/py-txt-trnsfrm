@@ -40,7 +40,7 @@ def exec_gunicorn_config(env_vars=None):
         with open(config_path) as f:
             config_code = f.read()
 
-        exec(config_code, namespace)
+        exec(config_code, namespace)  # noqa: S102
         return namespace
     finally:
         # Restore original environment
@@ -98,7 +98,7 @@ class TestGunicornPidfileConfiguration:
 
         # Ensure result doesn't contain /tmp
         assert (
-            "/tmp" not in namespace["pidfile"]
+            "/tmp" not in namespace["pidfile"]  # noqa: S108
         )  # noqa: S108  # Testing avoidance of /tmp
 
     def test_gunicorn_config_imports_successfully(self):
@@ -148,7 +148,7 @@ class TestGunicornPidfileConfiguration:
         # Test that the current configuration doesn't trigger security warnings
         config_path = Path(__file__).parent.parent / "gunicorn.conf.py"
 
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: S603
             [sys.executable, "-m", "ruff", "check", "--select=S108", str(config_path)],
             capture_output=True,
             text=True,
