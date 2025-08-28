@@ -269,6 +269,43 @@ The application supports `.env` files for convenient environment configuration. 
 
 The application will automatically search for `.env` files in the current directory and parent directories.
 
+### Centralized Configuration Management
+
+The application uses a centralized configuration system for consistent environment variable handling across all entry points (`app.py`, `wsgi.py`, production deployments).
+
+#### Configuration Module
+
+The `app/env_config.py` module provides a single source of truth for environment variable processing:
+
+```python
+from app.env_config import get_logging_config, is_heroku_environment
+
+# Get validated logging configuration
+config = get_logging_config()
+print(f"Log level: {config.log_level}")
+print(f"Debug mode: {config.debug_mode}")
+
+# Check deployment environment
+if is_heroku_environment():
+    print("Running on Heroku")
+```
+
+#### Benefits
+
+- **Single source of truth**: All environment variable logic centralized in one module
+- **Consistent behavior**: Same configuration logic across all entry points
+- **Validation**: Automatic validation and fallback for invalid values
+- **Type safety**: Structured configuration objects with proper typing
+- **Easy testing**: Comprehensive test coverage for configuration logic
+
+#### Available Functions
+
+- `get_logging_config()`: Returns validated logging configuration
+- `get_flask_env()`: Gets Flask environment for development contexts  
+- `get_flask_env_for_wsgi()`: Gets Flask environment for production/WSGI contexts
+- `is_heroku_environment()`: Detects Heroku deployment environment
+- `get_port()`: Gets port number with proper type conversion
+
 ### Editor Setup
 
 The project includes an `.editorconfig` file that provides consistent editor settings across different IDEs and editors. This ensures uniform code formatting and helps maintain code quality standards.
