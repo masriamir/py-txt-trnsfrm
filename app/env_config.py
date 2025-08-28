@@ -7,18 +7,41 @@ configuration management.
 """
 
 import os
+from enum import Enum
 from typing import NamedTuple
+
+
+class LogLevel(Enum):
+    """Enumeration of standard logging levels.
+
+    Provides type-safe logging level constants that correspond to Python's
+    standard logging levels. This enum ensures consistent usage and enables
+    IDE autocompletion while maintaining compatibility with logging.config.
+
+    Attributes:
+        DEBUG: Debug level logging
+        INFO: Informational level logging
+        WARNING: Warning level logging
+        ERROR: Error level logging
+        CRITICAL: Critical level logging
+    """
+
+    DEBUG = "DEBUG"
+    INFO = "INFO"
+    WARNING = "WARNING"
+    ERROR = "ERROR"
+    CRITICAL = "CRITICAL"
 
 
 class LoggingConfig(NamedTuple):
     """Configuration tuple for logging settings.
 
     Attributes:
-        log_level: Validated log level string (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        log_level: Validated log level from LogLevel enum
         debug_mode: Boolean flag indicating if debug mode should be enabled
     """
 
-    log_level: str
+    log_level: LogLevel
     debug_mode: bool
 
 
@@ -31,7 +54,7 @@ def get_logging_config() -> LoggingConfig:
 
     Logic:
     1. Check LOG_LEVEL environment variable first
-    2. Validate LOG_LEVEL against known values
+    2. Validate LOG_LEVEL against LogLevel enum values
     3. If LOG_LEVEL is "DEBUG", enable debug mode
     4. If LOG_LEVEL is invalid/missing, fall back to INFO level
     5. Return consistent configuration tuple
@@ -41,38 +64,35 @@ def get_logging_config() -> LoggingConfig:
                   Case-insensitive. Defaults to 'info' if not set or invalid.
 
     Returns:
-        LoggingConfig: Named tuple with validated log_level and debug_mode
+        LoggingConfig: Named tuple with validated LogLevel enum and debug_mode
 
     Examples:
         >>> # With LOG_LEVEL=debug
         >>> config = get_logging_config()
         >>> config.log_level
-        'DEBUG'
+        <LogLevel.DEBUG: 'DEBUG'>
         >>> config.debug_mode
         True
 
         >>> # With LOG_LEVEL=info or no LOG_LEVEL
         >>> config = get_logging_config()
         >>> config.log_level
-        'INFO'
+        <LogLevel.INFO: 'INFO'>
         >>> config.debug_mode
         False
     """
     # Get LOG_LEVEL from environment with default
     log_level_env = os.environ.get("LOG_LEVEL", "info").upper()
 
-    # Valid logging levels
-    valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
-
-    # Validate and set log level
-    if log_level_env in valid_levels:
-        log_level = log_level_env
-    else:
+    # Try to convert string to LogLevel enum
+    try:
+        log_level = LogLevel(log_level_env)
+    except ValueError:
         # Default to INFO for invalid values
-        log_level = "INFO"
+        log_level = LogLevel.INFO
 
     # Enable debug mode only for DEBUG level
-    debug_mode = log_level == "DEBUG"
+    debug_mode = log_level == LogLevel.DEBUG
 
     return LoggingConfig(log_level=log_level, debug_mode=debug_mode)
 
