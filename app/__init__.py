@@ -14,11 +14,10 @@ except ImportError:
     # python-dotenv not available, skip loading
     pass
 
-import os
-
 from flask import Flask
 
 from app.config import config
+from app.env_config import get_flask_env, get_logging_config
 from app.logging_config import get_logger, setup_logging
 from app.main import bp as main_bp
 from app.middleware import setup_request_logging
@@ -46,28 +45,19 @@ def create_app(config_class=None):
 
     # Use default config if none provided
     if config_class is None:
-        config_name = os.environ.get("FLASK_ENV", "development")
+        config_name = get_flask_env()
         config_class = config.get(config_name, config["development"])
 
     app.config.from_object(config_class)
 
-    # Initialize logging based on LOG_LEVEL environment variable
-    # LOG_LEVEL takes precedence over DEBUG setting for logging configuration
-    log_level_env = os.environ.get("LOG_LEVEL", "").upper()
-    if log_level_env in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]:
-        debug_mode = log_level_env == "DEBUG"
-        setup_logging(debug=debug_mode, log_level=log_level_env)
-    else:
-        # Fall back to Flask config DEBUG setting if LOG_LEVEL is not set or invalid
-        debug_mode = app.config.get("DEBUG", False)
-        setup_logging(debug=debug_mode, log_level="DEBUG" if debug_mode else "INFO")
+    # Initialize logging using centralized environment configuration
+    logging_config = get_logging_config()
+    setup_logging(debug=logging_config.debug_mode, log_level=logging_config.log_level)
 
     logger = get_logger(__name__)
     logger.info(f"Starting application with config: {config_class.__name__}")
-    logger.info(
-        f"Log level: {log_level_env if log_level_env else ('DEBUG' if debug_mode else 'INFO')}"
-    )
-    logger.debug(f"Debug mode: {debug_mode}")
+    logger.info(f"Log level: {logging_config.log_level}")
+    logger.debug(f"Debug mode: {logging_config.debug_mode}")
 
     # Initialize the config (this will validate production settings if needed)
     config_class.init_app(app)
