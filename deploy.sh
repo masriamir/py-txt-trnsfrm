@@ -9,24 +9,24 @@ import sys
 import tomllib
 
 try:
-    with open(\"pyproject.toml\", \"rb\") as f:
+    with open('pyproject.toml', 'rb') as f:
         data = tomllib.load(f)
 
     # Look for gunicorn in dependencies
-    deps = data.get(\"project\", {}).get(\"dependencies\", [])
+    deps = data.get('project', {}).get('dependencies', [])
     for dep in deps:
-        if dep.startswith(\"gunicorn\"):
+        if dep.startswith('gunicorn'):
             # Extract version requirement (e.g., 'gunicorn>=23.0.0' -> '23.0.0')
-            match = re.search(r\"gunicorn[>=<!=~]*([0-9]+\.[0-9]+\.[0-9]+)\", dep)
+            match = re.search(r'gunicorn[>=<!=~]*([0-9]+\.[0-9]+\.[0-9]+)', dep)
             if match:
                 print(match.group(1))
                 sys.exit(0)
 
     # Fallback version if not found
-    print(\"unknown\")
+    print('unknown')
     sys.exit(0)
 except Exception:
-    print(\"unknown\")
+    print('unknown')
     sys.exit(0)
 " 2>/dev/null)
     echo "${version:-unknown}"
