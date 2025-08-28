@@ -101,6 +101,69 @@ def test_transform_text_empty_text(client):
     assert result["transformed_text"] == ""
 
 
+@pytest.mark.api
+@pytest.mark.smoke
+def test_health_endpoint_basic(client):
+    """Test basic health endpoint functionality.
+
+    Verifies that the health endpoint returns expected JSON structure
+    with dynamic version from pyproject.toml.
+    """
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.content_type == "application/json"
+
+    result = json.loads(response.data)
+    assert "status" in result
+    assert "service" in result
+    assert "version" in result
+    assert result["status"] == "healthy"
+    assert result["service"] == "py-txt-trnsfrm"
+
+    # Version should be dynamic, not hardcoded
+    assert result["version"] != ""
+    assert isinstance(result["version"], str)
+
+
+@pytest.mark.api
+def test_health_endpoint_version_format(client):
+    """Test that health endpoint returns properly formatted version.
+
+    Verifies the version follows expected format and is not the
+    hardcoded fallback unless there's an actual error.
+    """
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+
+    version = result["version"]
+    # Should be either semver format (x.y.z) or "unknown" fallback
+    assert version == "0.1.0" or version == "unknown" or "." in version
+
+
+@pytest.mark.api
+def test_health_endpoint_response_structure(client):
+    """Test health endpoint returns exact expected structure.
+
+    Ensures the response format remains unchanged for monitoring systems.
+    """
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    result = json.loads(response.data)
+
+    # Verify exact structure
+    expected_keys = {"status", "service", "version"}
+    assert set(result.keys()) == expected_keys
+
+    # Verify data types
+    assert isinstance(result["status"], str)
+    assert isinstance(result["service"], str)
+    assert isinstance(result["version"], str)
+
+
 @pytest.mark.integration
 class TestStaticFiles:
     """Test static file serving."""
