@@ -77,25 +77,25 @@ help: ## Show this help message with colored output
 	@echo "$(CYAN)═══════════════════════════════════════════════$(RESET)"
 	@echo ""
 	@echo "$(BOLD)Core Workflow Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(setup|install|sync|clean|fresh):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(setup|install|sync|clean|fresh):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)Code Quality Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(format|lint|fix|check|types):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(format|lint|fix|check|types):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)Testing Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(test|test-unit|test-api|test-all|test-fast|coverage|test-perf):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(test|test-unit|test-api|test-all|test-fast|coverage|test-perf):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)Application Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(run|run-prod|health|demo):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(run|run-prod|health|demo):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)Security Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(security|security-quick):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(security|security-quick):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)Docker Commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(docker-build|docker-run|docker-stop|docker-clean):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(docker-build|docker-run|docker-stop|docker-clean):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)CI/CD & Deployment:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^(ci|deploy):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^(ci|deploy):.*?##/ { printf "  $(CYAN)%-15s$(RESET) %s\n", $$1, $$2 }' Makefile
 	@echo ""
 	@echo "$(BOLD)Environment Variables:$(RESET)"
 	@echo "  $(YELLOW)PORT$(RESET)              Server port (default: 5000)"

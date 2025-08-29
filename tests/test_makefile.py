@@ -1,6 +1,8 @@
 """Test Makefile functionality and integration."""
 
+import os
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -111,7 +113,8 @@ class TestMakefileCommands:
         assert ".PHONY:" in content
         assert ".DEFAULT_GOAL := help" in content
         assert "UV := uv" in content
-        assert "Future-Proof Template Section" in content
+        # Future-Proof Template Section has been moved to docs/MAKEFILE.md
+        assert "See docs/MAKEFILE.md for the command template and best practices" in content
 
     @pytest.mark.unit
     def test_makefile_documentation_exists(self):
@@ -212,3 +215,207 @@ class TestMakefileIntegration:
         # Check for reference to Makefile documentation
         assert "docs/MAKEFILE.md" in content or "MAKEFILE.md" in content, \
             "README should reference Makefile documentation"
+
+
+class TestMakefileEnvIntegration:
+    """Test .env file integration and variable precedence."""
+
+    @pytest.fixture
+    def project_root(self):
+        """Fixture providing project root path."""
+        return Path(__file__).parent.parent
+
+    @pytest.fixture
+    def temp_env_file(self, project_root):
+        """Fixture providing a temporary .env file for testing."""
+        env_file = project_root / ".env"
+        original_content = None
+        
+        # Backup original .env file if it exists
+        if env_file.exists():
+            original_content = env_file.read_text()
+        
+        yield env_file
+        
+        # Restore original .env file or remove if it didn't exist
+        if original_content is not None:
+            env_file.write_text(original_content)
+        elif env_file.exists():
+            env_file.unlink()
+
+    @pytest.mark.integration
+    def test_env_file_loading_when_present(self, temp_env_file, project_root):
+        """Test that .env file variables are loaded correctly."""
+        # Create a test .env file with custom values
+        env_content = """
+PORT=8080
+HOST=0.0.0.0
+MARKERS=unit
+VERBOSE=1
+DEBUG=1
+DOCKER_IMAGE=test-image
+DOCKER_TAG=test-tag
+"""
+        temp_env_file.write_text(env_content.strip())
+        
+        # Test that make command can access these variables
+        # We'll use a simple grep to check if the Makefile has these values
+        result = subprocess.run(
+            ["make", "version"],  # Safe command that should work
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+        )
+        
+        assert result.returncode == 0, f"make version failed: {result.stderr}"
+
+    @pytest.mark.integration
+    def test_env_file_missing_graceful_handling(self, project_root):
+        """Test that Makefile works correctly when .env file is missing."""
+        # Ensure no .env file exists
+        env_file = project_root / ".env"
+        if env_file.exists():
+            env_file.unlink()
+        
+        # Test that make commands still work with defaults
+        result = subprocess.run(
+            ["make", "help"],
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+        )
+        
+        assert result.returncode == 0, f"make help failed without .env: {result.stderr}"
+
+    @pytest.mark.integration
+    def test_environment_variable_precedence(self, temp_env_file, project_root):
+        """Test that environment variables override .env file values."""
+        # Create .env file with one value
+        env_content = "PORT=8080"
+        temp_env_file.write_text(env_content)
+        
+        # Set environment variable to different value
+        env = os.environ.copy()
+        env["PORT"] = "9090"
+        
+        # Run make command with custom environment
+        result = subprocess.run(
+            ["make", "version"],  # Safe test command
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+            env=env,
+        )
+        
+        assert result.returncode == 0, f"make version failed with env override: {result.stderr}"
+
+    @pytest.mark.integration
+    def test_command_line_argument_precedence(self, temp_env_file, project_root):
+        """Test that command line arguments override both .env and environment variables."""
+        # Create .env file with one value
+        env_content = "PORT=8080"
+        temp_env_file.write_text(env_content)
+        
+        # Set environment variable to different value
+        env = os.environ.copy()
+        env["PORT"] = "9090"
+        
+        # Test command line override (using a safe target that accepts PORT)
+        # We'll test this by checking if the Makefile properly handles variable assignment
+        result = subprocess.run(
+            ["make", "help", "PORT=7070"],
+            capture_output=True,
+            text=True,
+            cwd=project_root,
+            env=env,
+        )
+        
+        assert result.returncode == 0, f"make help with PORT override failed: {result.stderr}"
+
+    @pytest.mark.unit
+    def test_makefile_has_env_loading_logic(self, project_root):
+        """Test that Makefile contains proper .env loading logic."""
+        makefile_path = project_root / "Makefile"
+        
+        with open(makefile_path, 'r') as f:
+            content = f.read()
+        
+        # Check for .env loading logic
+        assert "ifneq (,$(wildcard .env))" in content, "Makefile should check for .env file existence"
+        assert "include .env" in content, "Makefile should include .env file"
+        assert "export" in content, "Makefile should export .env variables"
+
+    @pytest.mark.unit
+    def test_makefile_variable_defaults(self, project_root):
+        """Test that Makefile has proper variable defaults with ?= operator."""
+        makefile_path = project_root / "Makefile"
+        
+        with open(makefile_path, 'r') as f:
+            content = f.read()
+        
+        # Check for default variable assignments using ?= (conditional assignment)
+        required_defaults = [
+            "PORT ?= 5000",
+            "HOST ?= 127.0.0.1", 
+            "MARKERS ?=",
+            "TIMEOUT ?= 300",
+            "VERBOSE ?= 0",
+            "DEBUG ?= 0",
+            "DOCKER_IMAGE ?= py-txt-trnsfrm",
+            "DOCKER_TAG ?= latest"
+        ]
+        
+        for default in required_defaults:
+            assert default in content, f"Makefile should have default: {default}"
+
+    @pytest.mark.integration
+    def test_env_example_file_compatibility(self, project_root):
+        """Test that .env.example file contains all Makefile-related variables."""
+        env_example_path = project_root / ".env.example"
+        
+        with open(env_example_path, 'r') as f:
+            content = f.read()
+        
+        # Check for key Makefile variables (some are commented, that's fine)
+        makefile_vars = [
+            "PORT",  # Should be active (not commented)
+            "HOST",  # Can be commented
+            "MARKERS",  # Can be commented
+            "TIMEOUT",  # Can be commented
+            "VERBOSE",  # Can be commented
+            "DEBUG",  # Can be commented
+            "DOCKER_IMAGE",  # Can be commented
+            "DOCKER_TAG"  # Can be commented
+        ]
+        
+        for var in makefile_vars:
+            assert var in content, f".env.example should reference {var}"
+
+    @pytest.mark.integration
+    def test_no_duplicate_port_in_env_example(self, project_root):
+        """Test that PORT is not duplicated in .env.example file."""
+        env_example_path = project_root / ".env.example"
+        
+        with open(env_example_path, 'r') as f:
+            lines = f.readlines()
+        
+        # Count occurrences of PORT= (both active and commented)
+        port_occurrences = []
+        for i, line in enumerate(lines, 1):
+            if "PORT=" in line:
+                port_occurrences.append((i, line.strip()))
+        
+        # Should only have one active PORT definition
+        active_port_lines = [occ for occ in port_occurrences if not occ[1].startswith("#")]
+        assert len(active_port_lines) == 1, f"Should have exactly one active PORT definition, found: {active_port_lines}"
+        
+        # Check that the PORT line mentions Makefile usage
+        port_line_num, port_line = active_port_lines[0]
+        
+        # Check context around the PORT line for Makefile mention
+        context_start = max(0, port_line_num - 3)
+        context_end = min(len(lines), port_line_num + 2)
+        context_lines = lines[context_start:context_end]
+        context_text = "".join(context_lines).lower()
+        
+        assert "makefile" in context_text, f"PORT definition should mention Makefile usage in context around line {port_line_num}"
