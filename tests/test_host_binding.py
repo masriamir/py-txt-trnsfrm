@@ -61,9 +61,7 @@ class TestHostBinding:
 
         # Test production enum
         host = get_host_for_environment(FlaskEnvironment.PRODUCTION)
-        assert (
-            host == "0.0.0.0"
-        ), "Production enum should bind to all interfaces"  # noqa: S104
+        assert host == "0.0.0.0", "Production enum should bind to all interfaces"  # noqa: S104
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "web.1"})
@@ -137,9 +135,7 @@ class TestHostBindingIntegration:
 
         # Test with enum values
         assert get_host_for_environment(FlaskEnvironment.DEVELOPMENT) == "127.0.0.1"
-        assert (
-            get_host_for_environment(FlaskEnvironment.PRODUCTION) == "0.0.0.0"
-        )  # noqa: S104
+        assert get_host_for_environment(FlaskEnvironment.PRODUCTION) == "0.0.0.0"  # noqa: S104
 
     @pytest.mark.integration
     def test_host_binding_function_import_in_modules(self):
@@ -164,12 +160,12 @@ class TestSecurityDocumentation:
         docstring = get_host_for_environment.__doc__
         assert docstring is not None, "Function should have documentation"
         assert "security" in docstring.lower(), "Documentation should mention security"
-        assert (
-            "production" in docstring.lower()
-        ), "Documentation should explain production behavior"
-        assert (
-            "development" in docstring.lower()
-        ), "Documentation should explain development behavior"
+        assert "production" in docstring.lower(), (
+            "Documentation should explain production behavior"
+        )
+        assert "development" in docstring.lower(), (
+            "Documentation should explain development behavior"
+        )
 
     @pytest.mark.unit
     def test_function_signature_has_type_hints(self):
@@ -183,9 +179,9 @@ class TestSecurityDocumentation:
         # Check parameter type hint
         config_name_param = signature.parameters["config_name"]
         # The annotation should be Union[str, FlaskEnvironment]
-        assert (
-            config_name_param.annotation is not None
-        ), "Parameter should have type hint"
+        assert config_name_param.annotation is not None, (
+            "Parameter should have type hint"
+        )
 
         # Check return type hint
         assert signature.return_annotation is str, "Return should have str type hint"

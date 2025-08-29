@@ -76,6 +76,28 @@ A Flask web application for creative text transformations inspired by early 90s 
 - **Organized Test Data**: Centralized test data management with faker and pytest-datadir
 - **Test Markers**: Organized test categorization (unit, integration, api, smoke, slow, security)
 
+### 🛠️ Developer Productivity
+
+- **Comprehensive Makefile**: Streamlined development workflows with colored output and progress indicators
+- **Local CI Mirroring**: Run the same checks locally that run in GitHub Actions
+- **Docker Integration**: Build, run, and manage containers with simple commands
+- **Security Automation**: Integrated security scanning with comprehensive reporting
+- **Smart Help System**: Self-documenting commands with examples and troubleshooting
+- **Environment Flexibility**: Configurable via environment variables for different setups
+
+#### Key Makefile Commands
+```bash
+make help          # Show all available commands with examples
+make setup         # Complete development environment setup
+make ci            # Run full local CI pipeline (lint, test, security, coverage)
+make test          # Run test suite with intelligent defaults
+make run           # Start development server
+make docker-build  # Build Docker image
+make deploy        # Deploy to production
+```
+
+See [docs/MAKEFILE.md](docs/MAKEFILE.md) for complete documentation.
+
 ### 🚀 CI/CD & Automation
 - **Comprehensive CI Pipeline**: Multi-job GitHub Actions workflow with fast-fail quality checks
 - **Automated Security Scanning**: Nightly security analysis with automatic issue creation

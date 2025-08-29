@@ -92,9 +92,9 @@ class TestAPIPerformance:
         status_codes = [result[0] for result in results]
 
         # All requests should succeed
-        assert all(
-            code == 200 for code in status_codes
-        ), f"Some requests failed: {status_codes}"
+        assert all(code == 200 for code in status_codes), (
+            f"Some requests failed: {status_codes}"
+        )
 
         # Response times should be reasonable
         avg_response_time = statistics.mean(response_times)
@@ -102,17 +102,15 @@ class TestAPIPerformance:
 
         print(f"Average response time: {avg_response_time:.3f}s")  # noqa: T201
         print(f"Max response time: {max_response_time:.3f}s")  # noqa: T201
-        print(
-            f"95th percentile: {statistics.quantiles(response_times, n=20)[18]:.3f}s"
-        )  # noqa: T201
+        print(f"95th percentile: {statistics.quantiles(response_times, n=20)[18]:.3f}s")  # noqa: T201
 
         # Performance assertions
-        assert (
-            avg_response_time < 2.0
-        ), f"Average response time too high: {avg_response_time:.3f}s"
-        assert (
-            max_response_time < 5.0
-        ), f"Max response time too high: {max_response_time:.3f}s"
+        assert avg_response_time < 2.0, (
+            f"Average response time too high: {avg_response_time:.3f}s"
+        )
+        assert max_response_time < 5.0, (
+            f"Max response time too high: {max_response_time:.3f}s"
+        )
 
     @pytest.mark.load
     def test_sustained_load(self):
