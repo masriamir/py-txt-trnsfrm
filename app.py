@@ -19,6 +19,7 @@ except ImportError:
 from app import create_app
 from app.config import config, get_host_for_environment
 from app.env_config import (
+    FlaskEnvironment,
     get_flask_env,
     get_logging_config,
     get_port,
@@ -72,7 +73,7 @@ def main():
         app = create_app(config[config_name])
 
         port = get_port()
-        debug = config_name == "development"
+        debug = config_name == FlaskEnvironment.DEVELOPMENT
         host = get_host_for_environment(config_name)
 
         logger.info(f"Starting server on host: {host}, port: {port}")

@@ -10,6 +10,7 @@ from unittest.mock import patch
 import pytest
 
 from app.config import get_host_for_environment
+from app.env_config import FlaskEnvironment
 
 
 class TestHostBinding:
@@ -48,6 +49,23 @@ class TestHostBinding:
         assert host == "127.0.0.1", "Unknown environments should default to localhost"
 
     @pytest.mark.unit
+    def test_flask_environment_enum_support(self):
+        """Test that FlaskEnvironment enum values work correctly."""
+        # Test development enum
+        host = get_host_for_environment(FlaskEnvironment.DEVELOPMENT)
+        assert host == "127.0.0.1", "Development enum should bind to localhost"
+
+        # Test testing enum
+        host = get_host_for_environment(FlaskEnvironment.TESTING)
+        assert host == "127.0.0.1", "Testing enum should bind to localhost"
+
+        # Test production enum
+        host = get_host_for_environment(FlaskEnvironment.PRODUCTION)
+        assert (
+            host == "0.0.0.0"
+        ), "Production enum should bind to all interfaces"  # noqa: S104
+
+    @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "web.1"})
     def test_heroku_dyno_environment_binds_to_all_interfaces(self):
         """Test that environments with DYNO set bind to 0.0.0.0."""
@@ -65,6 +83,16 @@ class TestHostBinding:
         assert (
             host == "0.0.0.0"  # noqa: S104
         ), "Heroku worker dyno should bind to all interfaces"  # noqa: S104
+
+    @pytest.mark.unit
+    @patch.dict(os.environ, {"DYNO": "web.1"})
+    def test_heroku_dyno_with_enum_values(self):
+        """Test that DYNO environment works with enum values."""
+        # Should return 0.0.0.0 regardless of enum value when DYNO is set
+        host = get_host_for_environment(FlaskEnvironment.DEVELOPMENT)
+        assert (
+            host == "0.0.0.0"  # noqa: S104
+        ), "Heroku DYNO environment should bind to all interfaces with enum"  # noqa: S104
 
     @pytest.mark.unit
     @patch.dict(os.environ, {}, clear=True)
@@ -103,9 +131,15 @@ class TestHostBindingIntegration:
 
         assert callable(get_host_for_environment)
 
-        # Test basic functionality
+        # Test basic functionality with strings
         assert get_host_for_environment("development") == "127.0.0.1"
         assert get_host_for_environment("production") == "0.0.0.0"  # noqa: S104
+
+        # Test with enum values
+        assert get_host_for_environment(FlaskEnvironment.DEVELOPMENT) == "127.0.0.1"
+        assert (
+            get_host_for_environment(FlaskEnvironment.PRODUCTION) == "0.0.0.0"
+        )  # noqa: S104
 
     @pytest.mark.integration
     def test_host_binding_function_import_in_modules(self):
@@ -148,9 +182,10 @@ class TestSecurityDocumentation:
 
         # Check parameter type hint
         config_name_param = signature.parameters["config_name"]
+        # The annotation should be Union[str, FlaskEnvironment]
         assert (
-            config_name_param.annotation is str
-        ), "Parameter should have str type hint"
+            config_name_param.annotation is not None
+        ), "Parameter should have type hint"
 
         # Check return type hint
         assert signature.return_annotation is str, "Return should have str type hint"

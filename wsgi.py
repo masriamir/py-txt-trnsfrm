@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from app import create_app
 from app.config import config, get_host_for_environment
 from app.env_config import (
+    FlaskEnvironment,
     get_flask_env_for_wsgi,
     get_logging_config,
     get_port,
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     logger.info("🧪 Running WSGI application directly (development mode)")
     host = get_host_for_environment(config_name)
     port = get_port()
-    debug = config_name == "development"
+    debug = config_name == FlaskEnvironment.DEVELOPMENT
 
     logger.info(f"Direct WSGI execution - Host: {host}, Port: {port}, Debug: {debug}")
 

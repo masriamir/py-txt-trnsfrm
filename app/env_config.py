@@ -33,6 +33,64 @@ class LogLevel(Enum):
     CRITICAL = "CRITICAL"
 
 
+class FlaskEnvironment(Enum):
+    """Enum for Flask environment configuration.
+
+    This enum provides type-safe environment values with validation,
+    improving IDE autocompletion and catching invalid environment
+    values early in the development process.
+
+    Values:
+        DEVELOPMENT: Development environment with debugging enabled
+        TESTING: Testing environment for automated tests
+        PRODUCTION: Production environment with security hardening
+    """
+
+    DEVELOPMENT = "development"
+    TESTING = "testing"
+    PRODUCTION = "production"
+
+    @classmethod
+    def from_string(cls, value: str) -> "FlaskEnvironment":
+        """Convert string environment value to FlaskEnvironment enum.
+
+        Provides backward compatibility for string environment variables
+        while adding validation for invalid values.
+
+        Args:
+            value: String environment value (case-insensitive)
+
+        Returns:
+            FlaskEnvironment: Corresponding enum value
+
+        Raises:
+            ValueError: If the environment value is not valid
+
+        Examples:
+            >>> FlaskEnvironment.from_string("development")
+            FlaskEnvironment.DEVELOPMENT
+            >>> FlaskEnvironment.from_string("PRODUCTION")
+            FlaskEnvironment.PRODUCTION
+            >>> FlaskEnvironment.from_string("invalid")
+            ValueError: Invalid Flask environment: 'invalid'
+        """
+        try:
+            # Convert to lowercase and try to match enum values
+            normalized_value = value.lower()
+            for env in cls:
+                if env.value == normalized_value:
+                    return env
+            # If no match found, raise ValueError
+            raise ValueError(
+                f"Invalid Flask environment: '{value}'. Valid values are: {', '.join([e.value for e in cls])}"
+            )
+        except (AttributeError, TypeError) as err:
+            # Handle None or non-string inputs
+            raise ValueError(
+                f"Invalid Flask environment: '{value}'. Valid values are: {', '.join([e.value for e in cls])}"
+            ) from err
+
+
 class LoggingConfig(NamedTuple):
     """Configuration tuple for logging settings.
 
@@ -97,28 +155,54 @@ def get_logging_config() -> LoggingConfig:
     return LoggingConfig(log_level=log_level, debug_mode=debug_mode)
 
 
-def get_flask_env() -> str:
-    """Get Flask environment configuration.
+def get_flask_env() -> FlaskEnvironment:
+    """Get Flask environment configuration using FlaskEnvironment enum.
 
-    Returns the FLASK_ENV environment variable with appropriate default.
+    Returns the FLASK_ENV environment variable with appropriate default,
+    converted to a type-safe FlaskEnvironment enum value.
 
     Returns:
-        str: Flask environment ('development', 'production', etc.)
-             Defaults to 'development' for app.py, 'production' for wsgi.py
+        FlaskEnvironment: Flask environment enum value
+                         Defaults to FlaskEnvironment.DEVELOPMENT for app.py
+
+    Raises:
+        ValueError: If FLASK_ENV contains an invalid environment value
+
+    Examples:
+        >>> # With FLASK_ENV=production
+        >>> get_flask_env()
+        FlaskEnvironment.PRODUCTION
+        >>> # With no FLASK_ENV set
+        >>> get_flask_env()
+        FlaskEnvironment.DEVELOPMENT
     """
-    return os.environ.get("FLASK_ENV", "development")
+    env_value = os.environ.get("FLASK_ENV", "development")
+    return FlaskEnvironment.from_string(env_value)
 
 
-def get_flask_env_for_wsgi() -> str:
-    """Get Flask environment configuration for WSGI deployment.
+def get_flask_env_for_wsgi() -> FlaskEnvironment:
+    """Get Flask environment configuration for WSGI deployment using FlaskEnvironment enum.
 
     Returns the FLASK_ENV environment variable with production default,
-    appropriate for WSGI server deployments.
+    appropriate for WSGI server deployments, converted to a type-safe enum.
 
     Returns:
-        str: Flask environment, defaults to 'production' for WSGI contexts
+        FlaskEnvironment: Flask environment enum value,
+                         defaults to FlaskEnvironment.PRODUCTION for WSGI contexts
+
+    Raises:
+        ValueError: If FLASK_ENV contains an invalid environment value
+
+    Examples:
+        >>> # With FLASK_ENV=development
+        >>> get_flask_env_for_wsgi()
+        FlaskEnvironment.DEVELOPMENT
+        >>> # With no FLASK_ENV set
+        >>> get_flask_env_for_wsgi()
+        FlaskEnvironment.PRODUCTION
     """
-    return os.environ.get("FLASK_ENV", "production")
+    env_value = os.environ.get("FLASK_ENV", "production")
+    return FlaskEnvironment.from_string(env_value)
 
 
 def is_heroku_environment() -> bool:
