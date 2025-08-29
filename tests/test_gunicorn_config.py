@@ -156,7 +156,7 @@ class TestGunicornPidfileConfiguration:
         )
 
         # Should not have S108 (insecure temp file usage) warnings
-        assert (
-            "S108" not in result.stdout
-        ), f"Security warning S108 still present: {result.stdout}"
+        assert "S108" not in result.stdout, (
+            f"Security warning S108 still present: {result.stdout}"
+        )
         assert result.returncode == 0, f"Ruff check failed: {result.stdout}"

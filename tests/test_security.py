@@ -24,9 +24,9 @@ class TestSecurityMeasures:
                 assert (
                     config.SECRET_KEY != "dev"  # noqa: S105
                 ), "SECRET_KEY should not be 'dev' in production"  # noqa: S105
-                assert (
-                    len(config.SECRET_KEY) > 10
-                ), "SECRET_KEY should be sufficiently long"
+                assert len(config.SECRET_KEY) > 10, (
+                    "SECRET_KEY should be sufficiently long"
+                )
 
     @pytest.mark.api
     def test_json_input_validation(self, client):
@@ -114,15 +114,15 @@ class TestSecurityMeasures:
             ]
 
             # Fail if there are critical security issues
-            assert (
-                len(high_severity_issues) == 0
-            ), f"Found {len(high_severity_issues)} high-severity security issues"
+            assert len(high_severity_issues) == 0, (
+                f"Found {len(high_severity_issues)} high-severity security issues"
+            )
 
         if safety_results and isinstance(safety_results, list):
             # Fail if there are any known vulnerabilities
-            assert (
-                len(safety_results) == 0
-            ), f"Found {len(safety_results)} known vulnerabilities in dependencies"
+            assert len(safety_results) == 0, (
+                f"Found {len(safety_results)} known vulnerabilities in dependencies"
+            )
 
     @pytest.mark.api
     def test_http_headers_security(self, client):
@@ -149,9 +149,9 @@ class TestSecurityMeasures:
         """Ensure debug mode is not enabled in production config."""
         from app.config import ProductionConfig
 
-        assert not getattr(
-            ProductionConfig, "DEBUG", False
-        ), "Debug should be False in production"
-        assert not getattr(
-            ProductionConfig, "TESTING", False
-        ), "Testing should be False in production"
+        assert not getattr(ProductionConfig, "DEBUG", False), (
+            "Debug should be False in production"
+        )
+        assert not getattr(ProductionConfig, "TESTING", False), (
+            "Testing should be False in production"
+        )
