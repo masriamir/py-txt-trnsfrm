@@ -35,14 +35,14 @@ DOCKER_TAG ?= latest
 DOCKER_FULL_NAME := $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 # Colors for output
-RESET := \033[0m
-BOLD := \033[1m
-RED := \033[31m
-GREEN := \033[32m
-YELLOW := \033[33m
-BLUE := \033[34m
-MAGENTA := \033[35m
-CYAN := \033[36m
+RESET := $(shell printf '\033[0m')
+BOLD := $(shell printf '\033[1m')
+RED := $(shell printf '\033[31m')
+GREEN := $(shell printf '\033[32m')
+YELLOW := $(shell printf '\033[33m')
+BLUE := $(shell printf '\033[34m')
+MAGENTA := $(shell printf '\033[35m')
+CYAN := $(shell printf '\033[36m')
 
 # Progress indicators
 define progress
@@ -337,7 +337,7 @@ version: ## Show version information
 	@echo "Python: $$($(PYTHON) --version 2>&1)"
 	@echo "UV: $$($(UV) --version 2>&1)"
 	@echo "Flask: $$($(PYTHON) -c 'import flask; print(flask.__version__)' 2>/dev/null || echo 'Not available')"
-	@echo "Application: $$($(PYTHON) -c 'import app; print(getattr(app, \"__version__\", \"0.1.0\"))' 2>/dev/null || echo '0.1.0')"
+	@echo "Application: $$($(PYTHON) -c 'from app.utils.version import get_application_version; print(get_application_version())' 2>/dev/null || echo 'Unknown')"
 
 uv-check: ## Internal utility to check UV installation
 	@if ! command -v uv >/dev/null 2>&1; then \
