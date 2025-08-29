@@ -253,7 +253,43 @@ Continuous integration and deployment operations:
 
 ## Environment Variables
 
-The Makefile supports several environment variables for customization:
+The Makefile supports several environment variables for customization and includes automatic integration with `.env` files for local development convenience.
+
+### .env File Integration
+
+The Makefile automatically loads environment variables from a `.env` file if it exists in the project root. This provides a convenient way to set default values for local development without modifying the Makefile or using command-line arguments repeatedly.
+
+#### Setting up .env File
+
+1. Copy the example file: `cp .env.example .env`
+2. Edit `.env` with your preferred values
+3. The Makefile will automatically load these values
+
+#### Variable Precedence
+
+Variables are resolved in the following order (highest to lowest priority):
+1. **Command line arguments**: `make run PORT=8000`
+2. **Environment variables**: `export PORT=8000; make run`
+3. **.env file values**: Values set in your local `.env` file
+4. **Makefile defaults**: Default values defined in the Makefile
+
+#### Example .env Configuration
+
+```bash
+# Server configuration
+PORT=8000
+HOST=0.0.0.0
+
+# Testing configuration
+MARKERS=unit
+VERBOSE=1
+DEBUG=1
+TIMEOUT=600
+
+# Docker configuration
+DOCKER_IMAGE=my-custom-image
+DOCKER_TAG=dev
+```
 
 ### Core Variables
 
@@ -380,13 +416,63 @@ All commands use UV for:
 
 ### Adding New Commands
 
-The Makefile includes a template section for new commands:
+The Makefile includes a structured approach for adding new commands. Use the following template and best practices:
+
+#### Command Template
 
 ```makefile
 new-command: uv-check ## Description of new command
 	$(call progress,Starting new command...)
 	# Add your command implementation here
 	$(call success,New command complete!)
+```
+
+#### Best Practices for New Commands
+
+When adding new commands to the Makefile, follow these guidelines:
+
+1. **Add proper dependencies**: Most commands should depend on `uv-check` to ensure UV is available
+2. **Use progress indicators**: Provide user feedback with `$(call progress,...)` and `$(call success,...)`
+3. **Include meaningful help text**: Add descriptive help text after `##` for the help system
+4. **Follow naming conventions**: Use lowercase with hyphens (kebab-case) for command names
+5. **Add to help sections**: If creating a new category, update the help target to include it
+6. **Handle errors gracefully**: Use proper error handling and meaningful error messages
+7. **Use environment variables**: Make commands configurable through environment variables when appropriate
+
+#### Command Categories
+
+Organize new commands into these existing categories:
+- **Core Workflow**: Setup, installation, dependency management
+- **Code Quality**: Formatting, linting, type checking
+- **Testing**: Various test execution modes and coverage
+- **Application**: Running, health checks, demonstrations
+- **Security**: Security analysis and vulnerability scanning
+- **Docker**: Container operations and management
+- **CI/CD**: Continuous integration and deployment
+
+#### Examples of Well-Formed Commands
+
+```makefile
+# Simple command with basic structure
+docs-build: uv-check ## Build documentation with Sphinx
+	$(call progress,Building documentation...)
+	$(UV) run sphinx-build -b html docs/ docs/_build/html/
+	$(call success,Documentation built in docs/_build/html/)
+
+# Command with environment variable support
+serve-docs: uv-check ## Serve documentation locally
+	$(call progress,Starting documentation server on port $(DOCS_PORT)...)
+	$(UV) run python -m http.server $(DOCS_PORT) --directory docs/_build/html/
+
+# Command with error handling
+deploy-staging: uv-check ## Deploy to staging environment
+	$(call progress,Deploying to staging...)
+	@if [ -z "$$STAGING_URL" ]; then \
+		$(call error,STAGING_URL environment variable is required); \
+		exit 1; \
+	fi
+	# Deployment commands here
+	$(call success,Deployed to staging: $$STAGING_URL)
 ```
 
 ### Best Practices for Extensions

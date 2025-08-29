@@ -3,6 +3,14 @@
 # Developer Productivity & CI/CD Workflows
 # =============================================================================
 
+# Environment Configuration
+# =============================================================================
+# Load .env file if it exists (for local development)
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
+
 # Variables and Configuration
 # =============================================================================
 SHELL := /bin/bash
@@ -96,6 +104,12 @@ help: ## Show this help message with colored output
 	@echo "  $(YELLOW)TIMEOUT$(RESET)           Command timeout (default: 300)"
 	@echo "  $(YELLOW)VERBOSE$(RESET)           Verbose output (0/1, default: 0)"
 	@echo "  $(YELLOW)DEBUG$(RESET)             Debug mode (0/1, default: 0)"
+	@echo "  $(YELLOW)DOCKER_IMAGE$(RESET)      Docker image name (default: py-txt-trnsfrm)"
+	@echo "  $(YELLOW)DOCKER_TAG$(RESET)        Docker image tag (default: latest)"
+	@echo ""
+	@echo "$(BOLD)Configuration:$(RESET)"
+	@echo "  $(CYAN)Copy .env.example to .env and customize for local development$(RESET)"
+	@echo "  $(CYAN)Variables can be set via command line, .env file, or environment$(RESET)"
 	@echo ""
 	@echo "$(BOLD)Examples:$(RESET)"
 	@echo "  $(GREEN)make test MARKERS=unit$(RESET)                    # Run unit tests only"
@@ -338,19 +352,6 @@ progress-test: ## Test progress indicators and colors
 	@printf "$(RED)❌$(RESET) $(BOLD)%s$(RESET)\n" "This is an error message"
 
 # =============================================================================
-# Future-Proof Template Section
-# =============================================================================
-# Add new commands below this section following the established patterns:
-# 
-# new-command: uv-check ## Description of new command
-# 	$(call progress,Starting new command...)
-# 	# Add your command implementation here
-# 	$(call success,New command complete!)
-#
-# Remember to:
-# 1. Add proper dependencies (typically uv-check)
-# 2. Use progress indicators for user feedback
-# 3. Include meaningful help text with ##
-# 4. Follow the established naming conventions
-# 5. Add to appropriate section in help output if needed
+# Additional commands can be added here following established patterns.
+# See docs/MAKEFILE.md for the command template and best practices.
 # =============================================================================
