@@ -130,25 +130,25 @@ class TestTransformationEnginePerformance:
         # Categorize transformations by algorithmic complexity
         complexity_categories = {
             "simple": [
-                "backwards",      # text[::-1] - single operation
-                "alternate_case", # simple character iteration
-                "rot13"          # character substitution with math
+                "backwards",  # text[::-1] - single operation
+                "alternate_case",  # simple character iteration
+                "rot13",  # character substitution with math
             ],
             "medium": [
-                "l33t_speak",     # dictionary-based replacement
-                "morse_code",     # dictionary lookup per character  
-                "binary",         # character to binary conversion
-                "upside_down",    # dictionary mapping + reversal
-                "stutter",        # character duplication logic
-                "spongebob_case", # random case alternation
-                "wave_text",      # positioning with sine calculations
+                "l33t_speak",  # dictionary-based replacement
+                "morse_code",  # dictionary lookup per character
+                "binary",  # character to binary conversion
+                "upside_down",  # dictionary mapping + reversal
+                "stutter",  # character duplication logic
+                "spongebob_case",  # random case alternation
+                "wave_text",  # positioning with sine calculations
                 "reverse_words",  # word-level operations
-                "zalgo"          # light diacritical mark addition
+                "zalgo",  # light diacritical mark addition
             ],
             "complex": [
-                "shizzle",        # ~120 lines: regex, plural detection, vowel analysis
-                "rainbow_html"    # HTML generation with color calculations
-            ]
+                "shizzle",  # ~120 lines: regex, plural detection, vowel analysis
+                "rainbow_html",  # HTML generation with color calculations
+            ],
         }
 
         performance_results = {}
@@ -182,17 +182,17 @@ class TestTransformationEnginePerformance:
         for category, results in category_results.items():
             if not results:  # Skip empty categories
                 continue
-                
+
             max_time = max(results.values())
             min_time = min(results.values())
-            
+
             # Within each category, performance should be reasonably similar
             # Simple transformations: 5x ratio (should be very similar)
-            # Medium transformations: 10x ratio (some variation expected)  
+            # Medium transformations: 10x ratio (some variation expected)
             # Complex transformations: 20x ratio (algorithmic differences)
             max_ratios = {"simple": 5, "medium": 10, "complex": 20}
             max_ratio = max_ratios[category]
-            
+
             actual_ratio = max_time / min_time if min_time > 0 else 1
             assert actual_ratio < max_ratio, (
                 f"{category.title()} transformation performance varies too much: "
@@ -500,7 +500,7 @@ class TestConcurrentLoadPerformance:
         assert len(results) == expected_operations
 
         # Verify results are correct
-        for text, result in results:
+        for _text, result in results:
             assert isinstance(result, str)
             assert len(result) > 0
 
@@ -587,7 +587,7 @@ class TestMemoryAndResourcePerformance:
         weak_refs = []
 
         # Create many transformer instances
-        for i in range(100):
+        for _i in range(100):
             transformer = TextTransformer()
             transformers.append(transformer)
             weak_refs.append(weakref.ref(transformer))

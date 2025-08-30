@@ -28,8 +28,8 @@ class TestBaseConfig:
     @pytest.mark.unit
     def test_base_config_defaults(self):
         """Test that base Config class has correct default values."""
-        assert Config.DEBUG == False  # Should default to False for security
-        assert Config.TESTING == False
+        assert not Config.DEBUG  # Should default to False for security
+        assert not Config.TESTING
         assert hasattr(Config, "SECRET_KEY")
 
     @pytest.mark.unit
