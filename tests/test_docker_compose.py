@@ -85,13 +85,17 @@ class TestDockerComposePortConfiguration:
         repo_root = Path(__file__).parent.parent
 
         # Test with default PORT (not set)
-        result = subprocess.run(
-            ["docker-compose", "config"],
-            capture_output=True,
-            text=True,
-            cwd=repo_root,
-            env={**os.environ, "PORT": ""},  # Ensure PORT is not set
-        )
+        try:
+            result = subprocess.run(
+                ["docker-compose", "config"],
+                capture_output=True,
+                text=True,
+                cwd=repo_root,
+                env={**os.environ, "PORT": ""},  # Ensure PORT is not set
+            )
+        except FileNotFoundError:
+            # docker-compose command not found, skip this test
+            pytest.skip("docker-compose not available in test environment")
 
         # docker-compose config should succeed (exit code 0)
         # If docker-compose is not available, skip this test
@@ -113,13 +117,17 @@ class TestDockerComposePortConfiguration:
 
         # Test with custom PORT
         custom_port = "8080"
-        result = subprocess.run(
-            ["docker-compose", "config"],
-            capture_output=True,
-            text=True,
-            cwd=repo_root,
-            env={**os.environ, "PORT": custom_port},
-        )
+        try:
+            result = subprocess.run(
+                ["docker-compose", "config"],
+                capture_output=True,
+                text=True,
+                cwd=repo_root,
+                env={**os.environ, "PORT": custom_port},
+            )
+        except FileNotFoundError:
+            # docker-compose command not found, skip this test
+            pytest.skip("docker-compose not available in test environment")
 
         # If docker-compose is not available, skip this test
         if result.returncode == 127:  # Command not found
@@ -184,13 +192,17 @@ class TestDockerComposePortConfiguration:
 
         for port in test_ports:
             # Test docker-compose config with different ports
-            result = subprocess.run(
-                ["docker-compose", "config"],
-                capture_output=True,
-                text=True,
-                cwd=repo_root,
-                env={**os.environ, "PORT": port},
-            )
+            try:
+                result = subprocess.run(
+                    ["docker-compose", "config"],
+                    capture_output=True,
+                    text=True,
+                    cwd=repo_root,
+                    env={**os.environ, "PORT": port},
+                )
+            except FileNotFoundError:
+                # docker-compose command not found, skip this test
+                pytest.skip("docker-compose not available in test environment")
 
             # If docker-compose is not available, skip this test
             if result.returncode == 127:  # Command not found

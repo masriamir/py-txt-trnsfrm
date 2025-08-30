@@ -152,7 +152,7 @@ class TestTextTransformationWorkflow:
             data = response.get_json()
             assert data["success"] is True
             assert data["original_text"] == "Hello World"
-            assert data["transformed_text"] == "HeLLo WoRLd"
+            assert data["transformed_text"] == "HeLlO wOrLd"
             assert data["transformation"] == "alternate_case"
 
     @pytest.mark.integration
@@ -477,7 +477,7 @@ class TestEndToEndWorkflow:
     @pytest.mark.parametrize(
         "text,transformation,expected_start",
         [
-            ("Hello", "alternate_case", "HeLLo"),
+            ("Hello", "alternate_case", "HeLlO"),
             ("World", "backwards", "dlroW"),
             ("Python", "l33t_speak", "Py7h0n"),
         ],
