@@ -76,6 +76,28 @@ A Flask web application for creative text transformations inspired by early 90s 
 - **Organized Test Data**: Centralized test data management with faker and pytest-datadir
 - **Test Markers**: Organized test categorization (unit, integration, api, smoke, slow, security)
 
+### 🛠️ Developer Productivity
+
+- **Comprehensive Makefile**: Streamlined development workflows with colored output and progress indicators
+- **Local CI Mirroring**: Run the same checks locally that run in GitHub Actions
+- **Docker Integration**: Build, run, and manage containers with simple commands
+- **Security Automation**: Integrated security scanning with comprehensive reporting
+- **Smart Help System**: Self-documenting commands with examples and troubleshooting
+- **Environment Flexibility**: Configurable via environment variables for different setups
+
+#### Key Makefile Commands
+```bash
+make help          # Show all available commands with examples
+make setup         # Complete development environment setup
+make ci            # Run full local CI pipeline (lint, test, security, coverage)
+make test          # Run test suite with intelligent defaults
+make run           # Start development server
+make docker-build  # Build Docker image
+make deploy        # Deploy to production
+```
+
+See [`docs/MAKEFILE.md`](docs/MAKEFILE.md) for complete documentation.
+
 ### 🚀 CI/CD & Automation
 - **Comprehensive CI Pipeline**: Multi-job GitHub Actions workflow with fast-fail quality checks
 - **Automated Security Scanning**: Nightly security analysis with automatic issue creation
@@ -176,7 +198,7 @@ uv sync --group test         # Testing framework (pytest, coverage, etc.)
 uv sync --group security     # Security analysis tools (bandit, safety)
 ```
 
-> **💡 Troubleshooting:** If you encounter issues with `uv sync`, see the [UV Troubleshooting Guide](docs/UV_TROUBLESHOOTING.md) for solutions.
+> **💡 Troubleshooting:** If you encounter issues with `uv sync`, see [`docs/UV_TROUBLESHOOTING.md`](docs/UV_TROUBLESHOOTING.md) for solutions.
 
 3. **Configure environment (optional)**
 ```bash
@@ -268,6 +290,43 @@ The application supports `.env` files for convenient environment configuration. 
 3. Application defaults (lowest priority)
 
 The application will automatically search for `.env` files in the current directory and parent directories.
+
+### Centralized Configuration Management
+
+The application uses a centralized configuration system for consistent environment variable handling across all entry points (`app.py`, `wsgi.py`, production deployments).
+
+#### Configuration Module
+
+The `app/env_config.py` module provides a single source of truth for environment variable processing:
+
+```python
+from app.env_config import get_logging_config, is_heroku_environment
+
+# Get validated logging configuration
+config = get_logging_config()
+print(f"Log level: {config.log_level}")
+print(f"Debug mode: {config.debug_mode}")
+
+# Check deployment environment
+if is_heroku_environment():
+    print("Running on Heroku")
+```
+
+#### Benefits
+
+- **Single source of truth**: All environment variable logic centralized in one module
+- **Consistent behavior**: Same configuration logic across all entry points
+- **Validation**: Automatic validation and fallback for invalid values
+- **Type safety**: Structured configuration objects with proper typing
+- **Easy testing**: Comprehensive test coverage for configuration logic
+
+#### Available Functions
+
+- `get_logging_config()`: Returns validated logging configuration
+- `get_flask_env()`: Gets Flask environment for development contexts  
+- `get_flask_env_for_wsgi()`: Gets Flask environment for production/WSGI contexts
+- `is_heroku_environment()`: Detects Heroku deployment environment
+- `get_port()`: Gets port number with proper type conversion
 
 ### Editor Setup
 
@@ -519,11 +578,11 @@ py-txt-trnsfrm/
 - **Release Automation**: Tagged releases automatically deploy to production
 - **Quality Gates**: Zero-tolerance policy for linting and security issues
 
-See `docs/CI_CD_PIPELINE.md` for detailed workflow documentation.
+See [`docs/CI_CD_PIPELINE.md`](docs/CI_CD_PIPELINE.md) for detailed workflow documentation.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License—see the [`LICENSE`](LICENSE) file for details.
 
 ## 🎯 Roadmap
 

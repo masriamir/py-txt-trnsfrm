@@ -15,16 +15,21 @@ except ImportError:
     pass
 
 # Set up centralized logging for main entry point
-import os
 
 from app import create_app
 from app.config import config, get_host_for_environment
+from app.env_config import (
+    FlaskEnvironment,
+    get_flask_env,
+    get_logging_config,
+    get_port,
+    is_heroku_environment,
+)
 from app.logging_config import get_logger, setup_logging
 
-# Initialize logging based on LOG_LEVEL environment variable
-log_level = os.environ.get("LOG_LEVEL", "info").upper()
-debug_mode = log_level == "DEBUG"
-setup_logging(debug=debug_mode, log_level=log_level)
+# Initialize logging using centralized environment configuration
+logging_config = get_logging_config()
+setup_logging(logging_config)
 
 # Get logger for main startup
 logger = get_logger("main")
@@ -53,12 +58,12 @@ def main():
         Run with specific configuration:
             $ FLASK_ENV=production LOG_LEVEL=info python app.py
     """
-    config_name = os.environ.get("FLASK_ENV", "development")
+    config_name = get_flask_env()
     logger.info(f"Starting application with config: {config_name}")
-    logger.info(f"Log level: {os.environ.get('LOG_LEVEL', 'default')}")
+    logger.info(f"Log level: {logging_config.log_level}")
 
     try:
-        if os.environ.get("DYNO"):  # Running on Heroku
+        if is_heroku_environment():  # Running on Heroku
             from heroku_config import HerokuConfig
 
             config["heroku"] = HerokuConfig
@@ -67,8 +72,8 @@ def main():
 
         app = create_app(config[config_name])
 
-        port = int(os.environ.get("PORT", 5000))
-        debug = config_name == "development"
+        port = get_port()
+        debug = config_name == FlaskEnvironment.DEVELOPMENT
         host = get_host_for_environment(config_name)
 
         logger.info(f"Starting server on host: {host}, port: {port}")

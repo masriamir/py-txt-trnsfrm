@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""
-Gunicorn configuration file for production deployment.
+"""Gunicorn configuration file for production deployment.
+
 Optimized for Gunicorn 23.0.0 with modern best practices.
 """
 

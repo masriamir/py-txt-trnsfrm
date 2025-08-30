@@ -1,7 +1,41 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Deploying py-txt-trnsfrm with Gunicorn 23.0.0"
+# Function to get Gunicorn version from pyproject.toml
+get_gunicorn_version() {
+    local version=$(python3 -c "
+import re
+import sys
+import tomllib
+
+try:
+    with open('pyproject.toml', 'rb') as f:
+        data = tomllib.load(f)
+
+    # Look for gunicorn in dependencies
+    deps = data.get('project', {}).get('dependencies', [])
+    for dep in deps:
+        if dep.startswith('gunicorn'):
+            # Extract version requirement (e.g., 'gunicorn>=23.0.0' -> '23.0.0')
+            match = re.search(r'gunicorn[>=<!=~]*([0-9]+\.[0-9]+\.[0-9]+)', dep)
+            if match:
+                print(match.group(1))
+                sys.exit(0)
+
+    # Fallback version if not found
+    print('unknown')
+    sys.exit(0)
+except Exception:
+    print('unknown')
+    sys.exit(0)
+" 2>/dev/null)
+    echo "${version:-unknown}"
+}
+
+# Get dynamic Gunicorn version
+GUNICORN_VERSION=$(get_gunicorn_version)
+
+echo "🚀 Deploying py-txt-trnsfrm with Gunicorn ${GUNICORN_VERSION}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -46,7 +80,7 @@ check_port() {
 
 # Function to start Gunicorn with monitoring
 start_gunicorn() {
-    echo -e "${GREEN}Starting Gunicorn 23.0.0 server...${NC}"
+    echo -e "${GREEN}Starting Gunicorn ${GUNICORN_VERSION} server...${NC}"
 
     # Install/update dependencies first
     echo -e "${BLUE}Installing dependencies...${NC}"

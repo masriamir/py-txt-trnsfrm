@@ -22,6 +22,7 @@ Always reference these instructions first and fallback to search or bash command
 - **UI Components**: Five pastel color themes with accessibility-first design
 - **API Endpoints**: RESTful API for text transformations with JSON responses
 - **Health Monitoring**: Built-in health check endpoint for deployment monitoring
+- **Centralized Configuration**: Environment variable handling in `app/env_config.py` for consistent configuration across all entry points
 
 ## Working Effectively
 
@@ -257,6 +258,49 @@ When creating a PR to address an issue, **all metadata from the originating issu
 
 This ensures continuous tracking from issue creation through PR completion and maintains accuracy in sprint management, story point tracking, and milestone progress for the Retro Text Transformer project.
 
+#### Closing Issues with Pull Requests (MANDATORY)
+
+**All pull requests MUST use GitHub's closing keywords to automatically close their associated issues.** This ensures proper issue tracking and prevents issues from remaining open after work completion.
+
+##### Required Closing Keywords
+Use one of these GitHub closing keywords in your PR description or commit messages:
+- `Closes #123` - Standard closing syntax
+- `Fixes #456` - For bug fixes 
+- `Resolves #789` - For general issue resolution
+- `Closes: #123` - Alternative syntax with colon
+
+##### Examples for Single Issues
+```
+# In PR description:
+This PR adds the new text transformation feature.
+
+Closes #45
+
+# In commit message:
+git commit -m "Add zalgo text transformation - Fixes #67"
+```
+
+##### Examples for Multiple Issues
+```
+# In PR description:
+This PR refactors the transformation engine and fixes several bugs.
+
+Closes #23
+Fixes #34  
+Resolves #45
+
+# Alternative syntax:
+Closes #23, #34, #45
+```
+
+##### Placement Requirements
+- **PR Description**: Include closing keywords in the PR description (recommended)
+- **Commit Messages**: Alternative placement in commit messages
+- **Issue References**: Always reference specific issue numbers with `#` prefix
+- **Verification**: Ensure the referenced issues exist and are related to the PR content
+
+**Note**: This is a mandatory requirement for all PRs. PRs without proper issue closing keywords will be rejected during review.
+
 ### Running the Application
 
 #### Development Mode
@@ -269,6 +313,37 @@ This ensures continuous tracking from issue creation through PR completion and m
 - **Start with deploy script**: `SECRET_KEY=your-secret-key ./deploy.sh start` 
 - **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
 - **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
+
+### Centralized Environment Configuration
+
+The application uses a centralized configuration system located in `app/env_config.py` that provides a single source of truth for environment variable handling across all entry points (`app.py`, `wsgi.py`, `app/__init__.py`).
+
+#### Key Functions
+- `get_logging_config()`: Returns validated logging configuration with `log_level` and `debug_mode`
+- `get_flask_env()`: Gets Flask environment with development default
+- `get_flask_env_for_wsgi()`: Gets Flask environment with production default for WSGI contexts
+- `is_heroku_environment()`: Detects Heroku deployment via DYNO environment variable
+- `get_port()`: Gets port number with integer conversion
+
+#### Usage Examples
+```python
+from app.env_config import get_logging_config, is_heroku_environment
+
+# Get logging configuration
+config = get_logging_config()
+setup_logging(debug=config.debug_mode, log_level=config.log_level)
+
+# Check deployment environment
+if is_heroku_environment():
+    # Heroku-specific configuration
+    pass
+```
+
+#### Benefits
+- **Single source of truth**: All environment variable logic centralized
+- **Consistent behavior**: Same configuration across all entry points
+- **Validation**: Automatic validation and fallbacks for invalid values
+- **Type safety**: Structured configuration with proper typing
 
 ## Validation
 
@@ -311,6 +386,11 @@ This ensures continuous tracking from issue creation through PR completion and m
      - Confirm labels (priority, story points, version tags) are copied to the PR
      - Ensure milestone and project assignments match the originating issue
      - Validate any custom field values from the project board are inherited
+  10. **Issue Closing Keywords Verification** (MANDATORY for all PRs):
+     - Ensure PR description includes proper GitHub closing keywords (Closes #123, Fixes #456, Resolves #789)
+     - Verify all referenced issue numbers exist and are related to the PR content
+     - Confirm closing keywords use correct syntax with `#` prefix for issue numbers
+     - Validate that multiple issues use proper syntax (separate lines or comma-separated)
 
 ## Mandatory Pre-Pull Request Requirements
 
@@ -331,7 +411,11 @@ This ensures continuous tracking from issue creation through PR completion and m
    - New endpoints must have API tests with `@pytest.mark.api`
    - Complex workflows must have integration tests with `@pytest.mark.integration`
 4. **Verification commands MUST pass** before PR submission
-5. **This is a mandatory requirement**, not a suggestion
+5. **Issue closing keywords MUST be included** in PR description (MANDATORY):
+   - Use proper GitHub closing syntax: `Closes #123`, `Fixes #456`, `Resolves #789`
+   - Reference all related issues that the PR addresses
+   - Ensure issue numbers exist and are related to the PR content
+6. **This is a mandatory requirement**, not a suggestion
 
 ### Test Creation Requirements (MANDATORY)
 - **Unit Tests**: Every new function/method must have dedicated unit tests
@@ -343,12 +427,13 @@ This ensures continuous tracking from issue creation through PR completion and m
 - **Proper Markers**: All tests must use appropriate pytest markers for categorization
 
 ### Mandatory Workflow
-The required workflow is: **implement → test → fix → verify → commit**
+The required workflow is: **implement → test → fix → verify → close → commit**
 - **Step 1**: Implement functionality with corresponding tests
 - **Step 2**: Apply proper pytest markers and ensure coverage
 - **Step 3**: Fix all linting and formatting issues using the fix commands
 - **Step 4**: Verify all fixes and test requirements using the verification commands  
-- **Step 5**: Only then proceed with commit and PR submission
+- **Step 5**: Add proper issue closing keywords to PR description (Closes #123, Fixes #456, Resolves #789)
+- **Step 6**: Only then proceed with commit and PR submission
 
 **Note**: PRs with linting, formatting, or test coverage failures will be automatically rejected.
 
