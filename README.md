@@ -96,7 +96,7 @@ make docker-build  # Build Docker image
 make deploy        # Deploy to production
 ```
 
-See [docs/MAKEFILE.md](docs/MAKEFILE.md) for complete documentation.
+See [`docs/MAKEFILE.md`](docs/MAKEFILE.md) for complete documentation.
 
 ### 🚀 CI/CD & Automation
 - **Comprehensive CI Pipeline**: Multi-job GitHub Actions workflow with fast-fail quality checks
@@ -198,7 +198,7 @@ uv sync --group test         # Testing framework (pytest, coverage, etc.)
 uv sync --group security     # Security analysis tools (bandit, safety)
 ```
 
-> **💡 Troubleshooting:** If you encounter issues with `uv sync`, see the [UV Troubleshooting Guide](docs/UV_TROUBLESHOOTING.md) for solutions.
+> **💡 Troubleshooting:** If you encounter issues with `uv sync`, see [`docs/UV_TROUBLESHOOTING.md`](docs/UV_TROUBLESHOOTING.md) for solutions.
 
 3. **Configure environment (optional)**
 ```bash
@@ -578,11 +578,11 @@ py-txt-trnsfrm/
 - **Release Automation**: Tagged releases automatically deploy to production
 - **Quality Gates**: Zero-tolerance policy for linting and security issues
 
-See [docs/CI_CD_PIPELINE.md](docs/CI_CD_PIPELINE.md) for detailed workflow documentation.
+See [`docs/CI_CD_PIPELINE.md`](docs/CI_CD_PIPELINE.md) for detailed workflow documentation.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License—see the [`LICENSE`](LICENSE) file for details.
 
 ## 🎯 Roadmap
 
