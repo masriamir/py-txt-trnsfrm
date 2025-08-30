@@ -26,25 +26,23 @@ class TestGoogleStyleGuideCompliance:
         assert result.returncode == 0, f"Docstring issues found: {result.stdout}"
 
     @pytest.mark.unit
-    def test_docstring_compliance_main_files(self):
+    @pytest.mark.parametrize("filename", ["app.py", "wsgi.py", "gunicorn.conf.py"])
+    def test_docstring_compliance_main_files(self, filename):
         """Test that main Python files follow Google docstring format."""
-        # Check specific main files
-        main_files = ["app.py", "wsgi.py", "gunicorn.conf.py"]
         project_root = Path(__file__).parent.parent
+        file_path = project_root / filename
 
-        for filename in main_files:
-            file_path = project_root / filename
-            if file_path.exists():
-                result = subprocess.run(
-                    ["uv", "run", "pydocstyle", "--convention=google", str(file_path)],
-                    capture_output=True,
-                    text=True,
-                    cwd=project_root,
-                )
+        if file_path.exists():
+            result = subprocess.run(
+                ["uv", "run", "pydocstyle", "--convention=google", str(file_path)],
+                capture_output=True,
+                text=True,
+                cwd=project_root,
+            )
 
-                assert (
-                    result.returncode == 0
-                ), f"Docstring issues in {filename}: {result.stdout}"
+            assert (
+                result.returncode == 0
+            ), f"Docstring issues in {filename}: {result.stdout}"
 
     @pytest.mark.unit
     def test_ruff_linting_passes(self):
