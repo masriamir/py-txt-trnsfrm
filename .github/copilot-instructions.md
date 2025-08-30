@@ -73,8 +73,6 @@ When creating or managing issues for sprint planning:
 
 ## 3. Development with Makefile
 
-### Development with Makefile
-
 The project includes a comprehensive `Makefile` for streamlined workflows:
 
 #### Quick Commands
@@ -94,8 +92,6 @@ The project includes a comprehensive `Makefile` for streamlined workflows:
 See `docs/MAKEFILE.md` for complete documentation.
 
 ## 4. Code Formatting Standards (MANDATORY)
-
-### Code Formatting Standards (MANDATORY)
 
 **CRITICAL**: These formatting standards are enforced by CI and must be followed:
 
@@ -404,9 +400,7 @@ Closes #23, #34, #45
 - **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
 - **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
 
-## 5. Centralized Environment Configuration Updates
-
-### Centralized Environment Configuration
+## 5. Centralized Environment Configuration
 
 The application uses a centralized configuration system located in `app/env_config.py` that provides a single source of truth for environment variable handling across all entry points (`app.py`, `wsgi.py`, `app/__init__.py`).
 
@@ -445,8 +439,6 @@ if is_heroku_environment():
 
 ## 6. Common Mistakes to Avoid
 
-### Common Mistakes to Avoid
-
 1. **URL Modifications in uv.lock**
    - ❌ NEVER change `pkgs.safetycli.com` URLs to `pypi.org` or `files.pythonhosted.org`
    - ✅ Always preserve safety registry URLs when running `uv sync`
@@ -468,8 +460,6 @@ if is_heroku_environment():
    - ✅ Call `.upper()` once when retrieving: `os.environ.get("LOG_LEVEL", "info").upper()`
 
 ## 7. Pull Request Standards
-
-### Pull Request Standards
 
 When creating pull requests:
 
@@ -507,8 +497,6 @@ Closes #11
 
 ## 8. Performance Expectations and Timeouts
 
-### Performance Expectations and Timeouts
-
 **Set appropriate timeouts for long-running operations:**
 - `uv sync`: 3-4 minutes → Set timeout to 10+ minutes
 - `./run_security_analysis.sh`: 5+ minutes → Set timeout to 10+ minutes  
@@ -523,7 +511,6 @@ result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
 
 ## 9. Pre-Commit Checklist (MANDATORY)
 
-### Pre-Commit Checklist (MANDATORY)
 - [ ] Ran `make fix` to fix all formatting/linting issues
 - [ ] Ran `make test` and all tests pass
 - [ ] Updated tests for any new functionality
@@ -533,7 +520,6 @@ result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
 
 ## 10. Copy-Paste Commands
 
-### Copy-Paste Commands
 ```bash
 # Before any commit
 make fix && make test && make check
