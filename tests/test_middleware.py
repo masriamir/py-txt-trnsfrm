@@ -18,12 +18,9 @@ class TestMiddlewareSetup:
     """Test suite for middleware setup functionality."""
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_setup_request_logging_registers_handlers(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_setup_request_logging_registers_handlers(self, mock_logger):
         """Test that setup_request_logging registers all required handlers."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
-
         app = Flask(__name__)
 
         setup_request_logging(app)
@@ -51,13 +48,11 @@ class TestRequestLogging:
     """Test suite for request logging functionality."""
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
+    @patch("app.middleware.logger")
     @patch("time.time")
-    def test_log_request_start_basic_logging(self, mock_time, mock_get_logger):
+    def test_log_request_start_basic_logging(self, mock_time, mock_logger):
         """Test basic request start logging functionality."""
         mock_time.return_value = 123456789.0
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -75,12 +70,9 @@ class TestRequestLogging:
             mock_logger.info.assert_called_with("Request started: GET /test")
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_start_client_ip_extraction(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_start_client_ip_extraction(self, mock_logger):
         """Test client IP extraction from headers."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
-
         app = Flask(__name__)
         setup_request_logging(app)
 
@@ -94,11 +86,9 @@ class TestRequestLogging:
             mock_logger.debug.assert_any_call("Client IP: 192.168.1.1")
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_start_query_parameters(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_start_query_parameters(self, mock_logger):
         """Test logging of query parameters."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -109,15 +99,13 @@ class TestRequestLogging:
 
             # Should log query parameters
             mock_logger.debug.assert_any_call(
-                "Query params: {'param1': ['value1'], 'param2': ['value2']}"
+                "Query params: {'param1': 'value1', 'param2': 'value2'}"
             )
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_start_headers_in_debug(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_start_headers_in_debug(self, mock_logger):
         """Test that headers are logged in debug mode."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         app.debug = True
@@ -147,11 +135,9 @@ class TestRequestLogging:
             assert "User-Agent" in headers_call
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_start_user_agent_logging(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_start_user_agent_logging(self, mock_logger):
         """Test User-Agent header logging."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -164,11 +150,9 @@ class TestRequestLogging:
             mock_logger.debug.assert_any_call("User Agent: Mozilla/5.0 TestBrowser")
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_start_referrer_logging(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_start_referrer_logging(self, mock_logger):
         """Test Referrer header logging."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -188,19 +172,17 @@ class TestResponseLogging:
     """Test suite for response logging functionality."""
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
+    @patch("app.middleware.logger")
     @patch("time.time")
-    def test_log_request_end_basic_logging(self, mock_time, mock_get_logger):
+    def test_log_request_end_basic_logging(self, mock_time, mock_logger):
         """Test basic request end logging functionality."""
-        mock_time.side_effect = [123456789.0, 123456789.5]  # 0.5 second duration
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        mock_time.return_value = 123456789.5
 
         app = Flask(__name__)
         setup_request_logging(app)
 
         with app.test_request_context("/test", method="POST"):
-            # Set start time
+            # Set start time to simulate 0.5 second duration
             g.start_time = 123456789.0
 
             # Create mock response
@@ -225,13 +207,11 @@ class TestResponseLogging:
     @pytest.mark.parametrize(
         "status_code,expected_level", [(200, "info"), (404, "warning"), (500, "error")]
     )
-    @patch("app.middleware.get_logger")
+    @patch("app.middleware.logger")
     def test_log_request_end_status_code_log_levels(
-        self, mock_get_logger, status_code, expected_level
+        self, mock_logger, status_code, expected_level
     ):
         """Test that different status codes use appropriate log levels."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -277,11 +257,9 @@ class TestResponseLogging:
             mock_logger.debug.assert_any_call("Response size: 1024 bytes")
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_end_client_ip_extraction(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_end_client_ip_extraction(self, mock_logger):
         """Test client IP extraction in response logging."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -309,11 +287,10 @@ class TestErrorHandlers:
     """Test suite for error handler functionality."""
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_404_error_handler(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_404_error_handler(self, mock_logger):
         """Test 404 error handler functionality."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        from werkzeug.exceptions import NotFound
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -321,7 +298,7 @@ class TestErrorHandlers:
         headers = {"User-Agent": "TestAgent"}
         with app.test_request_context("/nonexistent", headers=headers):
             # Get 404 error handler
-            error_handler = app.error_handler_spec[None][404][Exception]
+            error_handler = app.error_handler_spec[None][404][NotFound]
 
             error = Mock()
             response, status_code = error_handler(error)
@@ -337,18 +314,17 @@ class TestErrorHandlers:
             assert "TestAgent" in log_call
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_500_error_handler(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_500_error_handler(self, mock_logger):
         """Test 500 error handler functionality."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        from werkzeug.exceptions import InternalServerError
 
         app = Flask(__name__)
         setup_request_logging(app)
 
         with app.test_request_context("/error"):
             # Get 500 error handler
-            error_handler = app.error_handler_spec[None][500][Exception]
+            error_handler = app.error_handler_spec[None][500][InternalServerError]
 
             error = Exception("Test error message")
             response, status_code = error_handler(error)
@@ -364,11 +340,10 @@ class TestErrorHandlers:
             assert "Test error message" in log_call
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_error_handlers_client_ip_extraction(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_error_handlers_client_ip_extraction(self, mock_logger):
         """Test that error handlers properly extract client IP."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        from werkzeug.exceptions import NotFound
 
         app = Flask(__name__)
         setup_request_logging(app)
@@ -376,7 +351,7 @@ class TestErrorHandlers:
         headers = {"X-Forwarded-For": "192.168.1.1, 10.0.0.1"}
         with app.test_request_context("/test", headers=headers):
             # Test 404 handler
-            error_handler_404 = app.error_handler_spec[None][404][Exception]
+            error_handler_404 = app.error_handler_spec[None][404][NotFound]
             error_handler_404(Mock())
 
             # Should log client IP
@@ -384,17 +359,16 @@ class TestErrorHandlers:
             assert "IP: 192.168.1.1" in log_call
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_error_handlers_missing_user_agent(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_error_handlers_missing_user_agent(self, mock_logger):
         """Test error handlers handle missing User-Agent gracefully."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
+        from werkzeug.exceptions import NotFound
 
         app = Flask(__name__)
         setup_request_logging(app)
 
         with app.test_request_context("/test"):  # No User-Agent header
-            error_handler = app.error_handler_spec[None][404][Exception]
+            error_handler = app.error_handler_spec[None][404][NotFound]
             error_handler(Mock())
 
             # Should handle missing User-Agent gracefully
