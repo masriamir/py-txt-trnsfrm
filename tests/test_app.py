@@ -194,9 +194,9 @@ class TestProjectConfiguration:
         editorconfig_path = project_root / ".editorconfig"
 
         # Check file exists
-        assert editorconfig_path.exists(), (
-            ".editorconfig file should exist in project root"
-        )
+        assert (
+            editorconfig_path.exists()
+        ), ".editorconfig file should exist in project root"
 
         # Check file content contains key settings
         content = editorconfig_path.read_text(encoding="utf-8")
@@ -205,24 +205,24 @@ class TestProjectConfiguration:
         assert "root = true" in content, ".editorconfig should declare itself as root"
 
         # Verify Python settings (4 spaces, 88 char limit)
-        assert "[*.py]" in content, (
-            ".editorconfig should have Python file configuration"
-        )
-        assert "indent_size = 4" in content, (
-            ".editorconfig should set 4 spaces for Python files"
-        )
-        assert "max_line_length = 88" in content, (
-            ".editorconfig should set 88 char limit for Python files"
-        )
+        assert (
+            "[*.py]" in content
+        ), ".editorconfig should have Python file configuration"
+        assert (
+            "indent_size = 4" in content
+        ), ".editorconfig should set 4 spaces for Python files"
+        assert (
+            "max_line_length = 88" in content
+        ), ".editorconfig should set 88 char limit for Python files"
 
         # Verify web file settings (2 spaces)
-        assert "[*.{css,js,html,htm,json}]" in content, (
-            ".editorconfig should configure web files"
-        )
+        assert (
+            "[*.{css,js,html,htm,json}]" in content
+        ), ".editorconfig should configure web files"
 
         # Verify global settings
         assert "charset = utf-8" in content, ".editorconfig should set UTF-8 encoding"
         assert "end_of_line = lf" in content, ".editorconfig should set LF line endings"
-        assert "insert_final_newline = true" in content, (
-            ".editorconfig should require final newline"
-        )
+        assert (
+            "insert_final_newline = true" in content
+        ), ".editorconfig should require final newline"

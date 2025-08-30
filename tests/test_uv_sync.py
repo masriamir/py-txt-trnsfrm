@@ -87,9 +87,9 @@ def test_uv_sync_all_groups():
     pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
     pyproject_content = pyproject_path.read_text()
 
-    assert "[dependency-groups]" in pyproject_content, (
-        "Dependency groups section should exist"
-    )
+    assert (
+        "[dependency-groups]" in pyproject_content
+    ), "Dependency groups section should exist"
     assert "dev = [" in pyproject_content, "Dev group should be defined"
     assert "test = [" in pyproject_content, "Test group should be defined"
     assert "security = [" in pyproject_content, "Security group should be defined"
