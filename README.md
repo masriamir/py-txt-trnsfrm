@@ -578,7 +578,7 @@ py-txt-trnsfrm/
 - **Release Automation**: Tagged releases automatically deploy to production
 - **Quality Gates**: Zero-tolerance policy for linting and security issues
 
-See `docs/CI_CD_PIPELINE.md` for detailed workflow documentation.
+See [docs/CI_CD_PIPELINE.md](docs/CI_CD_PIPELINE.md) for detailed workflow documentation.
 
 ## 📝 License
 
