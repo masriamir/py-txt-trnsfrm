@@ -19,8 +19,6 @@ Always reference these instructions first and fallback to search or bash command
 
 ## 1. Sprint Management and Issue Creation
 
-### Sprint Management and Issue Creation
-
 When creating or managing issues for sprint planning:
 
 #### Issue Creation Standards
@@ -45,13 +43,10 @@ When creating or managing issues for sprint planning:
 - **Use checkboxes** for prerequisites and blocked work
 - **Update issue status** when dependencies are resolved
 
-## 2. Technology Stack Update
-
-## Project Overview
+## 2. Technology Stack and Dependencies
 
 **py-txt-trnsfrm** is a Flask web application that provides creative text transformations inspired by early 90s internet culture. This is a Python 3.13+ project using modern tools and practices.
-
-### Technology Stack and Dependencies
+### Core Stack
 - **Python**: 3.13+ (specified in .python-version)
 - **Backend Framework**: Flask `3.1.1+` with Gunicorn for production deployment
 - **Frontend**: Bootstrap 5 with vanilla JavaScript, Jinja2 templates for server-side rendering
@@ -68,6 +63,13 @@ When creating or managing issues for sprint planning:
 - **API Endpoints**: RESTful API for text transformations with JSON responses
 - **Health Monitoring**: Built-in health check endpoint for deployment monitoring
 - **Centralized Configuration**: Environment variable handling in `app/env_config.py` for consistent configuration across all entry points
+
+### Available Text Transformations
+- **Case Transformations**: alternate_case, spongebob_case
+- **Visual Effects**: rainbow_html, wave_text, zalgo_text
+- **Linguistic**: leet_speak, shizzle_speak, stutter
+- **Encoding**: morse_code, binary, rot13
+- **Directional**: backwards, upside_down
 
 ## 3. Development with Makefile
 
@@ -682,10 +684,6 @@ The required workflow is: **implement → test → fix → verify → close → 
 - **deploy.sh**: Deployment script with multiple modes
 - **run_security_analysis.sh**: Security analysis automation
 
-### Text Transformations Available
-- alternate_case, rainbow_html, leet_speak, backwards, upside_down
-- stutter, zalgo_text, morse_code, binary, rot13
-- spongebob_case, wave_text, shizzle_speak
 
 ## Common Commands Reference
 
