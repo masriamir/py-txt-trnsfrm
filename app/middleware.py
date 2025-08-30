@@ -1,5 +1,4 @@
-"""
-Request logging middleware for capturing web request details.
+"""Request logging middleware for capturing web request details.
 
 This module provides comprehensive request and response logging middleware
 for Flask applications. It captures detailed information about incoming

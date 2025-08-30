@@ -182,12 +182,14 @@ fix: uv-check ## Fix all auto-fixable issues (ruff + black)
 	$(UV) run black .
 	$(call success,Auto-fixes applied!)
 
-check: uv-check ## Run all quality checks (lint + format check + types)
+check: uv-check ## Run all quality checks (lint + format check + types + docstrings)
 	$(call progress,Running comprehensive quality checks...)
 	$(call progress,Checking code formatting...)
 	$(UV) run black --check .
 	$(call progress,Running lint checks...)
 	$(UV) run ruff check .
+	$(call progress,Checking docstring compliance (Google style)...)
+	$(UV) run pydocstyle --convention=google app/ *.py || $(call warning,Docstring issues found)
 	$(call progress,Running type checks...)
 	$(UV) run mypy . || $(call warning,Type checking found issues (expected in current state))
 	$(call success,Quality checks complete!)
@@ -195,6 +197,11 @@ check: uv-check ## Run all quality checks (lint + format check + types)
 types: uv-check ## Run mypy type checking
 	$(call progress,Running type checks...)
 	$(UV) run mypy . || $(call warning,Type checking found issues (expected in current state))
+
+docstrings: uv-check ## Check docstring compliance (Google style)
+	$(call progress,Checking docstring compliance...)
+	$(UV) run pydocstyle --convention=google app/ *.py
+	$(call success,Docstring check complete!)
 
 # =============================================================================
 # Testing Commands

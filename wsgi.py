@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""
-WSGI entry point for the Flask application.
+"""WSGI entry point for the Flask application.
+
 This file is used by Gunicorn to serve the application in production environments.
 It handles environment detection and proper configuration selection.
 """
