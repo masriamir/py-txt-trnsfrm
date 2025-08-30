@@ -2,58 +2,13 @@
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
-## Quick Reference Card
-
-**Every PR Must Have:**
-- ✅ Zero ruff/black errors (`make fix`)
-- ✅ All tests passing (`make test`)
-- ✅ Closing keywords (Closes #XX)
-- ✅ All issue metadata copied
-- ✅ Safety URLs preserved in `uv.lock`
-
-**Never Do:**
-- ❌ Change pkgs.safetycli.com URLs
-- ❌ Use basic logging setup
-- ❌ Manually fix formatting
-- ❌ Commit without running tests
-
-## 1. Sprint Management and Issue Creation
-
-### Sprint Management and Issue Creation
-
-When creating or managing issues for sprint planning:
-
-#### Issue Creation Standards
-- **Title Format**: "Action verb + description - context" (e.g., "Fix all ruff linting errors - code quality foundation")
-- **Required Metadata**:
-  - **Project**: Always assign to "Retro Text Transformer" project
-  - **Epic**: Categorize appropriately (Code Quality Foundation, Logging Infrastructure, Developer Productivity, etc.)
-  - **Story Points**: Use Fibonacci sequence (1, 2, 3, 5, 8)
-  - **Time Estimate**: Provide realistic hours estimate
-  - **Risk Level**: Low/Medium/High
-  - **Priority Labels**: P0 (Critical), P1 (High), P2 (Medium), P3 (Low), P4 (Enhancement)
-  - **Version Tags**: v1.0, v1.1, etc.
-  - **Sprint Assignment**: Maximum 8 points per one-week sprint
-
-#### Sprint Capacity
-- **Sprint Duration**: 1 week
-- **Max Capacity**: 8 story points per sprint
-- **Velocity Tracking**: Monitor completed points vs planned
-
-#### Dependencies
-- **Always document blocking relationships** between issues
-- **Use checkboxes** for prerequisites and blocked work
-- **Update issue status** when dependencies are resolved
-
-## 2. Technology Stack Update
-
 ## Project Overview
 
 **py-txt-trnsfrm** is a Flask web application that provides creative text transformations inspired by early 90s internet culture. This is a Python 3.13+ project using modern tools and practices.
 
 ### Technology Stack and Dependencies
 - **Python**: 3.13+ (specified in .python-version)
-- **Backend Framework**: Flask `3.1.1+` with Gunicorn for production deployment
+- **Backend Framework**: Flask 3.0+ with Gunicorn for production deployment
 - **Frontend**: Bootstrap 5 with vanilla JavaScript, Jinja2 templates for server-side rendering
 - **Package Management**: uv (modern, fast Python package management replacement for pip/pipenv)
 - **Security**: Bandit for static analysis, Safety for dependency vulnerability scanning
@@ -68,49 +23,6 @@ When creating or managing issues for sprint planning:
 - **API Endpoints**: RESTful API for text transformations with JSON responses
 - **Health Monitoring**: Built-in health check endpoint for deployment monitoring
 - **Centralized Configuration**: Environment variable handling in `app/env_config.py` for consistent configuration across all entry points
-
-## 3. Development with Makefile
-
-### Development with Makefile
-
-The project includes a comprehensive `Makefile` for streamlined workflows:
-
-#### Quick Commands
-- **Initial setup**: `make setup` (installs uv and all dependencies)
-- **Run tests**: `make test` (standard suite) or `make test-unit`, `make test-api`, etc.
-- **Code quality**: `make fix` (auto-fix issues), `make check` (verify quality)
-- **Run server**: `make run` (development) or `make run-prod` (production)
-- **Local CI**: `make ci` (mirrors GitHub Actions locally)
-- **Docker**: `make docker-build`, `make docker-run`, `make docker-stop`
-
-#### Configuration via .env
-- Copy `.env.example` to `.env` for local configuration
-- Variables: `PORT`, `HOST`, `MARKERS`, `DOCKER_IMAGE`, etc.
-- Precedence: Command line > Environment > `.env` file > `Makefile` defaults
-- Example: `make run PORT=8000` or set `PORT=8000` in `.env`
-
-See `docs/MAKEFILE.md` for complete documentation.
-
-## 4. Code Formatting Standards (MANDATORY)
-
-### Code Formatting Standards (MANDATORY)
-
-**CRITICAL**: These formatting standards are enforced by CI and must be followed:
-
-1. **Line Length**: Maximum 88 characters (`black`/`ruff` standard)
-2. **Multi-line Formatting**: When breaking long lines:
-   ```python
-   # CORRECT - Parentheses on separate lines for multi-line
-   assert (
-       some_long_condition_here
-   ), "Error message here"
-   
-   # INCORRECT - Don't put opening parenthesis on same line as closing
-   assert (some_long_condition_here), "Error message"
-   ```
-3. **Import Organization**: Let `ruff` handle import sorting - never manually reorder
-4. **String Quotes**: Use double quotes consistently (enforced by `black`)
-5. **Trailing Commas**: Add trailing commas in multi-line structures
 
 ## Working Effectively
 
@@ -402,8 +314,6 @@ Closes #23, #34, #45
 - **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
 - **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
 
-## 5. Centralized Environment Configuration Updates
-
 ### Centralized Environment Configuration
 
 The application uses a centralized configuration system located in `app/env_config.py` that provides a single source of truth for environment variable handling across all entry points (`app.py`, `wsgi.py`, `app/__init__.py`).
@@ -414,12 +324,6 @@ The application uses a centralized configuration system located in `app/env_conf
 - `get_flask_env_for_wsgi()`: Gets Flask environment with production default for WSGI contexts
 - `is_heroku_environment()`: Detects Heroku deployment via DYNO environment variable
 - `get_port()`: Gets port number with integer conversion
-- `get_host_for_environment()`: Returns appropriate host binding based on environment
-
-#### Log Level Processing
-- **ALWAYS use `.upper()`** on log level environment variables for consistency
-- Compare against uppercase values: `log_level == "DEBUG"`
-- Pass uppercase values to setup functions: `setup_logging(debug=debug_mode, log_level=log_level)`
 
 #### Usage Examples
 ```python
@@ -441,112 +345,12 @@ if is_heroku_environment():
 - **Validation**: Automatic validation and fallbacks for invalid values
 - **Type safety**: Structured configuration with proper typing
 
-## 6. Common Mistakes to Avoid
-
-### Common Mistakes to Avoid
-
-1. **URL Modifications in uv.lock**
-   - ❌ NEVER change `pkgs.safetycli.com` URLs to `pypi.org` or `files.pythonhosted.org`
-   - ✅ Always preserve safety registry URLs when running `uv sync`
-
-2. **Logging Configuration**
-   - ❌ Don't use basic logging setup: `logging.basicConfig(...)`
-   - ✅ Use centralized logging: `from app.logging_config import get_logger, setup_logging`
-
-3. **Code Formatting**
-   - ❌ Don't manually fix formatting issues
-   - ✅ Always use `uv run black .` and `uv run ruff check --fix .`
-
-4. **Test Execution**
-   - ❌ Don't use `-n 0` for regular tests (disables parallel execution)
-   - ✅ Only use `-n 0` with `--benchmark-only` for performance tests
-
-5. **Environment Variables**
-   - ❌ Don't use `.lower()` then `.upper()` on the same variable
-   - ✅ Call `.upper()` once when retrieving: `os.environ.get("LOG_LEVEL", "info").upper()`
-
-## 7. Pull Request Standards
-
-### Pull Request Standards
-
-When creating pull requests:
-
-1. **Title**: Clear, action-oriented description
-2. **Description MUST include**:
-   - Summary of changes
-   - Testing performed (with specific commands)
-   - Verification steps
-   - Related issue references with closing keywords
-3. **Metadata**: Copy ALL labels, milestones, and project assignments from related issues
-4. **Closing Keywords**: ALWAYS use `Closes #XX`, `Fixes #XX`, or `Resolves #XX`
-
-Example PR description:
-```
-This PR implements centralized logging configuration for `app.py` and fixes `wsgi.py` log level handling.
-
-## Changes
-- Updated `app.py` to use centralized logging from `app.logging_config`
-- Fixed `wsgi.py` to properly handle `LOG_LEVEL` environment variable
-- Optimized log level processing to avoid redundant string operations
-
-## Testing
-- ✅ `uv run ruff check .` - passes cleanly
-- ✅ `uv run black --check .` - no formatting issues
-- ✅ `uv run pytest` - all tests pass
-- ✅ Manual testing with `FLASK_ENV=development uv run python app.py`
-
-## Verification
-- Confirmed logging outputs at correct levels
-- Verified `LOG_LEVEL` environment variable is respected
-- Tested both development and production configurations
-
-Closes #11
-```
-
-## 8. Performance Expectations and Timeouts
-
-### Performance Expectations and Timeouts
-
-**Set appropriate timeouts for long-running operations:**
-- `uv sync`: 3-4 minutes → Set timeout to 10+ minutes
-- `./run_security_analysis.sh`: 5+ minutes → Set timeout to 10+ minutes  
-- `./deploy.sh test`: 2+ minutes → Set timeout to 5+ minutes
-- `make ci`: 2-3 minutes → Set timeout to 5+ minutes
-
-**When running commands programmatically:**
-```python
-# Set appropriate timeout
-result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
-```
-
-## 9. Pre-Commit Checklist (MANDATORY)
-
-### Pre-Commit Checklist (MANDATORY)
-- [ ] Ran `make fix` to fix all formatting/linting issues
-- [ ] Ran `make test` and all tests pass
-- [ ] Updated tests for any new functionality
-- [ ] Verified uv.lock URLs still use pkgs.safetycli.com
-- [ ] Checked PR includes closing keywords
-- [ ] Copied all metadata from related issues
-
-## 10. Copy-Paste Commands
-
-### Copy-Paste Commands
-```bash
-# Before any commit
-make fix && make test && make check
-
-# Verify safety URLs
-grep -c "pkgs.safetycli.com" uv.lock
-
-# Check formatting without fixing
-uv run black --check . && uv run ruff check .
-```
-
 ## Validation
+
 ### Acceptance Criteria Verification
 - **When working on issues with Acceptance Criteria, ALWAYS verify each criterion before considering work complete**:
   1. **Review Original Issue**: Confirm you understand all Acceptance Criteria
+  2. **Test Each Criterion**: Create specific tests or perform manual verification for each criterion
   3. **Check Off Completed Items**: Mark each verified criterion as complete in the GitHub issue
   4. **Document Verification**: Add comments or evidence showing how each criterion was verified
   5. **Final Validation**: Ensure all criteria are checked off before submitting PR
