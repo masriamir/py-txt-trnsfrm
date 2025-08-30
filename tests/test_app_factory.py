@@ -5,12 +5,13 @@ function and related initialization logic, ensuring proper application configura
 logging setup, middleware registration, and blueprint registration.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 from flask import Flask
 
 from app import create_app
-from app.config import Config, DevelopmentConfig, TestConfig, ProductionConfig
+from app.config import DevelopmentConfig, ProductionConfig, TestConfig
 from app.env_config import FlaskEnvironment, LoggingConfig, LogLevel
 
 
@@ -37,7 +38,7 @@ class TestFlaskApplicationFactory:
         """Test that create_app with None config class uses default configuration."""
         with patch("app.get_flask_env") as mock_get_env:
             mock_get_env.return_value = FlaskEnvironment.DEVELOPMENT
-            app = create_app(None)
+            app = create_app()
             assert isinstance(app, Flask)
             mock_get_env.assert_called_once()
 
@@ -48,9 +49,9 @@ class TestFlaskApplicationFactory:
         """Test that logging is properly configured during app creation."""
         mock_logging_config = LoggingConfig(LogLevel.INFO, False)
         mock_get_logging_config.return_value = mock_logging_config
-        
+
         app = create_app(TestConfig)
-        
+
         mock_get_logging_config.assert_called_once()
         mock_setup_logging.assert_called_once_with(mock_logging_config)
 
@@ -59,14 +60,14 @@ class TestFlaskApplicationFactory:
     def test_middleware_setup_called(self, mock_setup_request_logging):
         """Test that request logging middleware is properly set up."""
         app = create_app(TestConfig)
-        
+
         mock_setup_request_logging.assert_called_once_with(app)
 
     @pytest.mark.unit
     def test_blueprint_registration(self):
         """Test that main blueprint is properly registered."""
         app = create_app(TestConfig)
-        
+
         # Check that main blueprint is registered
         blueprint_names = [bp.name for bp in app.blueprints.values()]
         assert "main" in blueprint_names
@@ -77,9 +78,9 @@ class TestFlaskApplicationFactory:
         """Test that appropriate logging calls are made during initialization."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = create_app(TestConfig)
-        
+
         # Verify logger was called for initialization steps
         mock_get_logger.assert_called()
         mock_logger.info.assert_called()
@@ -92,15 +93,15 @@ class TestFlaskApplicationFactory:
             mock_init_app.assert_called_once_with(app)
 
     @pytest.mark.unit
-    def test_create_app_with_different_config_classes(self):
+    @pytest.mark.parametrize(
+        "config_class", [DevelopmentConfig, TestConfig, ProductionConfig]
+    )
+    def test_create_app_with_different_config_classes(self, config_class):
         """Test create_app works with different configuration classes."""
-        configs_to_test = [DevelopmentConfig, TestConfig, ProductionConfig]
-        
-        for config_class in configs_to_test:
-            with patch.object(config_class, "init_app"):
-                app = create_app(config_class)
-                assert isinstance(app, Flask)
-                assert app.config.from_object.__name__ == "from_object"
+        with patch.object(config_class, "init_app"):
+            app = create_app(config_class)
+            assert isinstance(app, Flask)
+            assert app.config.from_object.__name__ == "from_object"
 
     @pytest.mark.unit
     @patch("app.load_dotenv")
@@ -110,6 +111,7 @@ class TestFlaskApplicationFactory:
         # Note: The actual import happens at module load time
         # This test verifies the pattern is in place
         from app import create_app
+
         # The load_dotenv should have been called during module import
         # We can't easily test this without reimporting, so we test the function exists
         assert callable(create_app)
@@ -131,16 +133,16 @@ class TestFlaskApplicationFactoryIntegration:
     def test_complete_app_initialization_workflow(self):
         """Test complete application initialization workflow with real components."""
         app = create_app(TestConfig)
-        
+
         # Test that all components are properly integrated
         assert isinstance(app, Flask)
         assert app.config["TESTING"] is True
-        
+
         # Test that routes are accessible
         with app.test_client() as client:
             response = client.get("/health")
             assert response.status_code == 200
-            
+
             response = client.get("/")
             assert response.status_code == 200
 
@@ -148,40 +150,42 @@ class TestFlaskApplicationFactoryIntegration:
     def test_logging_integration_with_real_config(self):
         """Test that logging integration works with real configuration."""
         app = create_app(TestConfig)
-        
+
         with app.app_context():
             from app.logging_config import get_logger
+
             logger = get_logger(__name__)
-            
+
             # Test that logger is properly configured
             assert logger is not None
             assert logger.name.startswith("app.")
 
-    @pytest.mark.integration 
+    @pytest.mark.integration
     def test_middleware_integration_with_real_requests(self):
         """Test that middleware properly handles real requests."""
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             # Test that middleware doesn't interfere with normal requests
             response = client.get("/health")
             assert response.status_code == 200
-            
+
             # Test POST request with middleware
-            response = client.post("/transform", 
-                                 json={"text": "test", "transformation": "alternate_case"})
+            response = client.post(
+                "/transform", json={"text": "test", "transformation": "alternate_case"}
+            )
             assert response.status_code == 200
 
     @pytest.mark.integration
     def test_error_handlers_integration(self):
         """Test that error handlers are properly integrated via middleware."""
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             # Test 404 error handling
             response = client.get("/nonexistent")
             assert response.status_code == 404
-            
+
             # Test that JSON error response is returned
             data = response.get_json()
             assert "error" in data

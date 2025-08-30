@@ -6,16 +6,17 @@ validation functionality.
 """
 
 import os
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
 
 from app.config import (
-    Config, 
-    DevelopmentConfig, 
-    TestConfig, 
+    Config,
+    DevelopmentConfig,
     ProductionConfig,
+    TestConfig,
+    config,
     get_host_for_environment,
-    config
 )
 from app.env_config import FlaskEnvironment
 
@@ -37,9 +38,11 @@ class TestBaseConfig:
         """Test that SECRET_KEY is loaded from environment variable."""
         # Test that environment variable is accessible
         assert os.environ.get("SECRET_KEY") == "test-secret"
-        
+
         # Test that Config class can access it
-        secret_key = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
+        secret_key = (
+            os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
+        )
         assert secret_key == "test-secret"
 
     @pytest.mark.unit
@@ -49,7 +52,7 @@ class TestBaseConfig:
         # Test the logic pattern that Config uses
         debug_value = os.environ.get("FLASK_DEBUG", "False")
         is_debug = debug_value.lower() in ["true", "1", "yes"]
-        assert is_debug is True
+        assert is_debug
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"FLASK_DEBUG": "False"})
@@ -58,7 +61,7 @@ class TestBaseConfig:
         # Test the logic pattern that Config uses
         debug_value = os.environ.get("FLASK_DEBUG", "False")
         is_debug = debug_value.lower() in ["true", "1", "yes"]
-        assert is_debug is False
+        assert not is_debug
 
     @pytest.mark.unit
     def test_init_app_method_exists(self):
@@ -150,10 +153,10 @@ class TestProductionConfig:
         """Test ProductionConfig init_app works with SECRET_KEY set."""
         mock_app = Mock()
         mock_app.config = {}
-        
+
         # Should not raise exception
         ProductionConfig.init_app(mock_app)
-        
+
         # Should set SECRET_KEY on app config
         assert mock_app.config["SECRET_KEY"] == "production-secret"
 
@@ -162,8 +165,10 @@ class TestProductionConfig:
     def test_production_config_init_app_without_secret_key(self):
         """Test ProductionConfig init_app fails without SECRET_KEY."""
         mock_app = Mock()
-        
-        with pytest.raises(ValueError, match="No SECRET_KEY set for production environment"):
+
+        with pytest.raises(
+            ValueError, match="No SECRET_KEY set for production environment"
+        ):
             ProductionConfig.init_app(mock_app)
 
 
@@ -255,19 +260,20 @@ class TestConfigurationMapping:
     """Test suite for configuration mapping dictionary."""
 
     @pytest.mark.unit
-    def test_config_mapping_contains_all_environments(self):
-        """Test that config mapping contains all expected environments."""
-        expected_keys = [
+    @pytest.mark.parametrize(
+        "expected_key",
+        [
             "development",
-            "testing", 
+            "testing",
             "production",
             FlaskEnvironment.DEVELOPMENT,
             FlaskEnvironment.TESTING,
-            FlaskEnvironment.PRODUCTION
-        ]
-        
-        for key in expected_keys:
-            assert key in config
+            FlaskEnvironment.PRODUCTION,
+        ],
+    )
+    def test_config_mapping_contains_all_environments(self, expected_key):
+        """Test that config mapping contains all expected environments."""
+        assert expected_key in config
 
     @pytest.mark.unit
     def test_config_mapping_values_are_classes(self):
@@ -299,7 +305,7 @@ class TestConfigurationIntegration:
     def test_development_config_integration(self):
         """Test DevelopmentConfig integration with Flask app."""
         from app import create_app
-        
+
         app = create_app(DevelopmentConfig)
         assert app.config["DEBUG"] is True
         assert app.config["TESTING"] is False
@@ -308,7 +314,7 @@ class TestConfigurationIntegration:
     def test_test_config_integration(self):
         """Test TestConfig integration with Flask app."""
         from app import create_app
-        
+
         app = create_app(TestConfig)
         assert app.config["DEBUG"] is False
         assert app.config["TESTING"] is True
@@ -319,7 +325,7 @@ class TestConfigurationIntegration:
     def test_production_config_integration(self):
         """Test ProductionConfig integration with Flask app."""
         from app import create_app
-        
+
         app = create_app(ProductionConfig)
         assert app.config["DEBUG"] is False
         assert app.config["TESTING"] is False
@@ -329,9 +335,11 @@ class TestConfigurationIntegration:
     def test_config_selection_by_environment(self):
         """Test that config selection works with different environments."""
         from app import create_app
-        
+
         # Test with various config classes (excluding ProductionConfig due to SECRET_KEY requirement)
         for env_key, config_class in config.items():
-            if isinstance(env_key, str) and env_key != "production":  # Test string keys except production
+            if (
+                isinstance(env_key, str) and env_key != "production"
+            ):  # Test string keys except production
                 app = create_app(config_class)
                 assert isinstance(app, type(create_app(TestConfig)))

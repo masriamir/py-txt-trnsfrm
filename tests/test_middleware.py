@@ -5,7 +5,8 @@ error handlers, request/response logging, timing, and client information capture
 """
 
 import time
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
+
 import pytest
 from flask import Flask, g
 
@@ -22,15 +23,15 @@ class TestMiddlewareSetup:
         """Test that setup_request_logging registers all required handlers."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
-        
+
         setup_request_logging(app)
-        
+
         # Should have registered before_request and after_request handlers
         assert len(app.before_request_funcs) > 0
         assert len(app.after_request_funcs) > 0
-        
+
         # Should have registered error handlers
         assert 404 in app.error_handler_spec[None]
         assert 500 in app.error_handler_spec[None]
@@ -41,15 +42,15 @@ class TestMiddlewareSetup:
         """Test that middleware properly initializes logger."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         mock_get_logger.assert_called_with("app.middleware")
         mock_logger.info.assert_called_with("Request logging middleware initialized")
 
 
-@pytest.mark.unit 
+@pytest.mark.unit
 class TestRequestLogging:
     """Test suite for request logging functionality."""
 
@@ -61,19 +62,19 @@ class TestRequestLogging:
         mock_time.return_value = 123456789.0
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         with app.test_request_context("/test", method="GET"):
             # Trigger before_request handler
             for func in app.before_request_funcs[None]:
                 func()
-            
+
             # Should set start time in g
             assert hasattr(g, "start_time")
             assert g.start_time == 123456789.0
-            
+
             # Should log request start
             mock_logger.info.assert_called_with("Request started: GET /test")
 
@@ -83,16 +84,16 @@ class TestRequestLogging:
         """Test client IP extraction from headers."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         # Test with X-Forwarded-For header
         headers = {"X-Forwarded-For": "192.168.1.1, 10.0.0.1"}
         with app.test_request_context("/test", headers=headers):
             for func in app.before_request_funcs[None]:
                 func()
-            
+
             # Should extract first IP from X-Forwarded-For
             mock_logger.debug.assert_any_call("Client IP: 192.168.1.1")
 
@@ -102,14 +103,14 @@ class TestRequestLogging:
         """Test logging of query parameters."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         with app.test_request_context("/test?param1=value1&param2=value2"):
             for func in app.before_request_funcs[None]:
                 func()
-            
+
             # Should log query parameters
             mock_logger.debug.assert_any_call(
                 "Query params: {'param1': ['value1'], 'param2': ['value2']}"
@@ -121,26 +122,29 @@ class TestRequestLogging:
         """Test that headers are logged in debug mode."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         app.debug = True
         setup_request_logging(app)
-        
+
         headers = {
             "User-Agent": "TestAgent",
             "Authorization": "Bearer secret",  # Should be filtered out
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        
+
         with app.test_request_context("/test", headers=headers):
             for func in app.before_request_funcs[None]:
                 func()
-            
+
             # Should log safe headers only
-            debug_calls = [call for call in mock_logger.debug.call_args_list 
-                          if "Request headers:" in str(call)]
+            debug_calls = [
+                call
+                for call in mock_logger.debug.call_args_list
+                if "Request headers:" in str(call)
+            ]
             assert len(debug_calls) > 0
-            
+
             # Authorization header should be filtered out
             headers_call = str(debug_calls[0])
             assert "Authorization" not in headers_call
@@ -152,15 +156,15 @@ class TestRequestLogging:
         """Test User-Agent header logging."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         headers = {"User-Agent": "Mozilla/5.0 TestBrowser"}
         with app.test_request_context("/test", headers=headers):
             for func in app.before_request_funcs[None]:
                 func()
-            
+
             mock_logger.debug.assert_any_call("User Agent: Mozilla/5.0 TestBrowser")
 
     @pytest.mark.unit
@@ -169,16 +173,18 @@ class TestRequestLogging:
         """Test Referrer header logging."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         headers = {"Referer": "https://example.com/previous-page"}
         with app.test_request_context("/test", headers=headers):
             for func in app.before_request_funcs[None]:
                 func()
-            
-            mock_logger.debug.assert_any_call("Referrer: https://example.com/previous-page")
+
+            mock_logger.debug.assert_any_call(
+                "Referrer: https://example.com/previous-page"
+            )
 
 
 @pytest.mark.unit
@@ -193,65 +199,61 @@ class TestResponseLogging:
         mock_time.side_effect = [123456789.0, 123456789.5]  # 0.5 second duration
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         with app.test_request_context("/test", method="POST"):
             # Set start time
             g.start_time = 123456789.0
-            
+
             # Create mock response
             response = Mock()
             response.status_code = 200
             response.headers = {}
             response.content_length = None
-            
+
             # Trigger after_request handler
             for func in app.after_request_funcs[None]:
                 result = func(response)
-            
+
             # Should return original response
             assert result is response
-            
+
             # Should log request completion
             mock_logger.info.assert_called_with(
                 "Request completed: POST /test - Status: 200 - Duration: 0.500s - IP: None"
             )
 
     @pytest.mark.unit
+    @pytest.mark.parametrize(
+        "status_code,expected_level", [(200, "info"), (404, "warning"), (500, "error")]
+    )
     @patch("app.middleware.get_logger")
-    def test_log_request_end_status_code_log_levels(self, mock_get_logger):
+    def test_log_request_end_status_code_log_levels(
+        self, mock_get_logger, status_code, expected_level
+    ):
         """Test that different status codes use appropriate log levels."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
-        test_cases = [
-            (200, "info"),
-            (404, "warning"),
-            (500, "error")
-        ]
-        
-        for status_code, expected_level in test_cases:
-            mock_logger.reset_mock()
-            
-            with app.test_request_context("/test"):
-                g.start_time = time.time()
-                
-                response = Mock()
-                response.status_code = status_code
-                response.headers = {}
-                response.content_length = None
-                
-                for func in app.after_request_funcs[None]:
-                    func(response)
-                
-                # Check that appropriate log level was used
-                log_method = getattr(mock_logger, expected_level)
-                assert log_method.called
+
+        with app.test_request_context("/test"):
+            g.start_time = time.time()
+
+            response = Mock()
+            response.status_code = status_code
+            response.headers = {}
+            response.content_length = None
+
+            for func in app.after_request_funcs[None]:
+                func(response)
+
+            # Check that appropriate log level was used
+            log_method = getattr(mock_logger, expected_level)
+            assert log_method.called
 
     @pytest.mark.unit
     @patch("app.middleware.get_logger")
@@ -259,24 +261,26 @@ class TestResponseLogging:
         """Test that response details are logged in debug mode."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         app.debug = True
         setup_request_logging(app)
-        
+
         with app.test_request_context("/test"):
             g.start_time = time.time()
-            
+
             response = Mock()
             response.status_code = 200
             response.headers = {"Content-Type": "application/json"}
             response.content_length = 1024
-            
+
             for func in app.after_request_funcs[None]:
                 func(response)
-            
+
             # Should log response headers and size in debug mode
-            mock_logger.debug.assert_any_call("Response headers: {'Content-Type': 'application/json'}")
+            mock_logger.debug.assert_any_call(
+                "Response headers: {'Content-Type': 'application/json'}"
+            )
             mock_logger.debug.assert_any_call("Response size: 1024 bytes")
 
     @pytest.mark.unit
@@ -285,22 +289,22 @@ class TestResponseLogging:
         """Test client IP extraction in response logging."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         headers = {"X-Forwarded-For": "192.168.1.1, 10.0.0.1"}
         with app.test_request_context("/test", headers=headers):
             g.start_time = time.time()
-            
+
             response = Mock()
             response.status_code = 200
             response.headers = {}
             response.content_length = None
-            
+
             for func in app.after_request_funcs[None]:
                 func(response)
-            
+
             # Should extract first IP from X-Forwarded-For
             log_calls = mock_logger.info.call_args_list
             log_message = str(log_calls[-1])
@@ -317,21 +321,21 @@ class TestErrorHandlers:
         """Test 404 error handler functionality."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         headers = {"User-Agent": "TestAgent"}
         with app.test_request_context("/nonexistent", headers=headers):
             # Get 404 error handler
             error_handler = app.error_handler_spec[None][404][Exception]
-            
+
             error = Mock()
             response, status_code = error_handler(error)
-            
+
             assert status_code == 404
             assert response == {"error": "Not found"}
-            
+
             # Should log 404 error with details
             mock_logger.warning.assert_called()
             log_call = mock_logger.warning.call_args[0][0]
@@ -345,20 +349,20 @@ class TestErrorHandlers:
         """Test 500 error handler functionality."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         with app.test_request_context("/error"):
             # Get 500 error handler
             error_handler = app.error_handler_spec[None][500][Exception]
-            
+
             error = Exception("Test error message")
             response, status_code = error_handler(error)
-            
+
             assert status_code == 500
             assert response == {"error": "Internal server error"}
-            
+
             # Should log 500 error with details
             mock_logger.error.assert_called()
             log_call = mock_logger.error.call_args[0][0]
@@ -372,16 +376,16 @@ class TestErrorHandlers:
         """Test that error handlers properly extract client IP."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         headers = {"X-Forwarded-For": "192.168.1.1, 10.0.0.1"}
         with app.test_request_context("/test", headers=headers):
             # Test 404 handler
             error_handler_404 = app.error_handler_spec[None][404][Exception]
             error_handler_404(Mock())
-            
+
             # Should log client IP
             log_call = mock_logger.warning.call_args[0][0]
             assert "IP: 192.168.1.1" in log_call
@@ -392,14 +396,14 @@ class TestErrorHandlers:
         """Test error handlers handle missing User-Agent gracefully."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
-        
+
         app = Flask(__name__)
         setup_request_logging(app)
-        
+
         with app.test_request_context("/test"):  # No User-Agent header
             error_handler = app.error_handler_spec[None][404][Exception]
             error_handler(Mock())
-            
+
             # Should handle missing User-Agent gracefully
             log_call = mock_logger.warning.call_args[0][0]
             assert "User Agent: Unknown" in log_call
@@ -414,17 +418,18 @@ class TestMiddlewareIntegration:
         """Test middleware integration with real Flask requests."""
         from app import create_app
         from app.config import TestConfig
-        
+
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             # Test successful request
             response = client.get("/health")
             assert response.status_code == 200
-            
+
             # Test POST request
-            response = client.post("/transform", 
-                                 json={"text": "test", "transformation": "alternate_case"})
+            response = client.post(
+                "/transform", json={"text": "test", "transformation": "alternate_case"}
+            )
             assert response.status_code == 200
 
     @pytest.mark.integration
@@ -432,13 +437,13 @@ class TestMiddlewareIntegration:
         """Test middleware 404 error handling integration."""
         from app import create_app
         from app.config import TestConfig
-        
+
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             response = client.get("/nonexistent-endpoint")
             assert response.status_code == 404
-            
+
             data = response.get_json()
             assert data["error"] == "Not found"
 
@@ -447,14 +452,14 @@ class TestMiddlewareIntegration:
         """Test that middleware properly times requests."""
         from app import create_app
         from app.config import TestConfig
-        
+
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             start_time = time.time()
             response = client.get("/health")
             end_time = time.time()
-            
+
             assert response.status_code == 200
             # Request should complete within reasonable time
             assert end_time - start_time < 1.0
@@ -464,19 +469,20 @@ class TestMiddlewareIntegration:
         """Test middleware works with different HTTP methods."""
         from app import create_app
         from app.config import TestConfig
-        
+
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             # Test GET
             response = client.get("/")
             assert response.status_code == 200
-            
+
             # Test POST
-            response = client.post("/transform", 
-                                 json={"text": "test", "transformation": "alternate_case"})
+            response = client.post(
+                "/transform", json={"text": "test", "transformation": "alternate_case"}
+            )
             assert response.status_code == 200
-            
+
             # Test HEAD
             response = client.head("/health")
             assert response.status_code == 200
@@ -486,13 +492,13 @@ class TestMiddlewareIntegration:
         """Test that middleware preserves Flask request context."""
         from app import create_app
         from app.config import TestConfig
-        
+
         app = create_app(TestConfig)
-        
+
         with app.test_client() as client:
             response = client.get("/health?test=value")
             assert response.status_code == 200
-            
+
             # Request context should be properly maintained
             data = response.get_json()
             assert "status" in data
