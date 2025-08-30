@@ -234,7 +234,8 @@ class TestMakefileIntegration:
 
         # Check that install command uses proper groups
         assert "--group dev --group test --group security" in content
-        assert "uv sync" in content
+        # Check for uv sync command (uses variable $(UV))
+        assert "$(UV) sync" in content
 
     @pytest.mark.unit
     def test_readme_references_makefile_docs(self):

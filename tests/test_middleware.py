@@ -37,16 +37,12 @@ class TestMiddlewareSetup:
         assert 500 in app.error_handler_spec[None]
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_middleware_logger_initialization(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_middleware_logger_initialization(self, mock_logger):
         """Test that middleware properly initializes logger."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
-
         app = Flask(__name__)
         setup_request_logging(app)
 
-        mock_get_logger.assert_called_with("app.middleware")
         mock_logger.info.assert_called_with("Request logging middleware initialized")
 
 
@@ -256,12 +252,9 @@ class TestResponseLogging:
             assert log_method.called
 
     @pytest.mark.unit
-    @patch("app.middleware.get_logger")
-    def test_log_request_end_response_details_in_debug(self, mock_get_logger):
+    @patch("app.middleware.logger")
+    def test_log_request_end_response_details_in_debug(self, mock_logger):
         """Test that response details are logged in debug mode."""
-        mock_logger = Mock()
-        mock_get_logger.return_value = mock_logger
-
         app = Flask(__name__)
         app.debug = True
         setup_request_logging(app)
