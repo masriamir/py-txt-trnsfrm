@@ -123,12 +123,38 @@ class TestTransformationEnginePerformance:
 
     @pytest.mark.load
     def test_all_transformations_performance(self, transformer):
-        """Test performance of all available transformations."""
+        """Test performance of transformations categorized by complexity."""
         text = "Performance testing all transformation types for speed comparison."
         transformations = transformer.get_available_transformations()
 
-        performance_results = {}
+        # Categorize transformations by algorithmic complexity
+        complexity_categories = {
+            "simple": [
+                "backwards",      # text[::-1] - single operation
+                "alternate_case", # simple character iteration
+                "rot13"          # character substitution with math
+            ],
+            "medium": [
+                "l33t_speak",     # dictionary-based replacement
+                "morse_code",     # dictionary lookup per character  
+                "binary",         # character to binary conversion
+                "upside_down",    # dictionary mapping + reversal
+                "stutter",        # character duplication logic
+                "spongebob_case", # random case alternation
+                "wave_text",      # positioning with sine calculations
+                "reverse_words",  # word-level operations
+                "zalgo"          # light diacritical mark addition
+            ],
+            "complex": [
+                "shizzle",        # ~120 lines: regex, plural detection, vowel analysis
+                "rainbow_html"    # HTML generation with color calculations
+            ]
+        }
 
+        performance_results = {}
+        category_results = {category: {} for category in complexity_categories}
+
+        # Test all transformations and categorize results
         for transformation in transformations:
             start_time = time.perf_counter()
 
@@ -143,17 +169,36 @@ class TestTransformationEnginePerformance:
                 assert duration < 0.1, f"{transformation} took {duration:.4f}s"
                 assert isinstance(result, str)
 
+                # Categorize the result
+                for category, transforms in complexity_categories.items():
+                    if transformation in transforms:
+                        category_results[category][transformation] = duration
+                        break
+
             except Exception as e:
                 pytest.fail(f"Transformation {transformation} failed: {e}")
 
-        # All transformations should have similar performance characteristics
-        max_time = max(performance_results.values())
-        min_time = min(performance_results.values())
-
-        # No transformation should be more than 100x slower than the fastest
-        # This accounts for complexity differences between simple transformations 
-        # (like backwards: text[::-1]) and complex ones (like shizzle with regex and plural handling)
-        assert max_time / min_time < 100, "Transformation performance varies too much"
+        # Test performance within each complexity category
+        for category, results in category_results.items():
+            if not results:  # Skip empty categories
+                continue
+                
+            max_time = max(results.values())
+            min_time = min(results.values())
+            
+            # Within each category, performance should be reasonably similar
+            # Simple transformations: 5x ratio (should be very similar)
+            # Medium transformations: 10x ratio (some variation expected)  
+            # Complex transformations: 20x ratio (algorithmic differences)
+            max_ratios = {"simple": 5, "medium": 10, "complex": 20}
+            max_ratio = max_ratios[category]
+            
+            actual_ratio = max_time / min_time if min_time > 0 else 1
+            assert actual_ratio < max_ratio, (
+                f"{category.title()} transformation performance varies too much: "
+                f"{actual_ratio:.1f}x ratio exceeds {max_ratio}x limit. "
+                f"Results: {results}"
+            )
 
 
 @pytest.mark.load
