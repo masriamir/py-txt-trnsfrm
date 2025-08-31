@@ -66,7 +66,7 @@ SEMGREP_PATH="${SEMGREP_PATH:-semgrep}"
 start_time=$(date +%s)
 
 # Change to project root for scans
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT" || exit 1
 
 # Run Trivy filesystem scan for dependencies and config
 echo "📊 Running Trivy filesystem scan..."
@@ -106,7 +106,8 @@ if [ -f "$HOME/.semgrep/settings.yml" ]; then
         SEMGREP_LOGGED_IN=true
         # Export token from settings file for semgrep ci
         if [ -z "$SEMGREP_APP_TOKEN" ]; then
-            export SEMGREP_APP_TOKEN=$(grep "api_token:" "$HOME/.semgrep/settings.yml" | cut -d'"' -f2 2>/dev/null || true)
+            SEMGREP_APP_TOKEN=$(grep "api_token:" "$HOME/.semgrep/settings.yml" | cut -d'"' -f2 2>/dev/null || true)
+            export SEMGREP_APP_TOKEN
         fi
     fi
 fi
@@ -194,29 +195,35 @@ end_time=$(date +%s)
 total_duration=$((end_time - start_time))
 
 # Generate POC summary report
-echo "📋 POC Security Analysis Summary:" > "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "=================================" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Generated on: $(date)" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Tools: Trivy + Semgrep CI" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Project root: $PROJECT_ROOT" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Semgrep config: $SEMGREP_CONFIG" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Community rulesets: ${#SEMGREP_COMMUNITY_RULESETS[@]} total" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Authentication: $( [ "$SEMGREP_LOGGED_IN" = true ] && echo "✅ Authenticated" || echo "⚠️ Not authenticated" )" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Scan type: $( [ "$DIFF_AWARE_AVAILABLE" = true ] && echo "📊 Diff-aware available" || echo "📊 Full repository scan" )" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "Semgrep CI: $( [ "$SEMGREP_CI_SUCCESS" = true ] && echo "✅ Used semgrep ci" || echo "⚠️ Fallback to regular semgrep" )" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "🔍 Semgrep Community Rulesets Used:" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-for ruleset in "${SEMGREP_COMMUNITY_RULESETS[@]}"; do
-    echo "  - $ruleset" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-done
-echo "" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+{
+    echo "📋 POC Security Analysis Summary:"
+    echo "================================="
+    echo "Generated on: $(date)"
+    echo "Tools: Trivy + Semgrep CI"
+    echo "Project root: $PROJECT_ROOT"
+    echo "Semgrep config: $SEMGREP_CONFIG"
+    echo "Community rulesets: ${#SEMGREP_COMMUNITY_RULESETS[@]} total"
+    echo "Authentication: $( [ "$SEMGREP_LOGGED_IN" = true ] && echo "✅ Authenticated" || echo "⚠️ Not authenticated" )"
+    echo "Scan type: $( [ "$DIFF_AWARE_AVAILABLE" = true ] && echo "📊 Diff-aware available" || echo "📊 Full repository scan" )"
+    echo "Semgrep CI: $( [ "$SEMGREP_CI_SUCCESS" = true ] && echo "✅ Used semgrep ci" || echo "⚠️ Fallback to regular semgrep" )"
+    echo ""
+} > "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+{
+    echo "🔍 Semgrep Community Rulesets Used:"
+    for ruleset in "${SEMGREP_COMMUNITY_RULESETS[@]}"; do
+        echo "  - $ruleset"
+    done
+    echo ""
+} >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 
 # Performance metrics
-echo "⏱️  Performance Metrics:" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  Trivy scan time: ${trivy_duration}s" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  Semgrep scan time: ${semgrep_duration}s" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  Total scan time: ${total_duration}s" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+{
+    echo "⏱️  Performance Metrics:"
+    echo "  Trivy scan time: ${trivy_duration}s"
+    echo "  Semgrep scan time: ${semgrep_duration}s"
+    echo "  Total scan time: ${total_duration}s"
+    echo ""
+} >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 
 # Count issues from JSON reports
 if [ -f "$PROJECT_ROOT/reports/security/poc/trivy_fs.json" ]; then
@@ -232,13 +239,15 @@ if [ -f "$PROJECT_ROOT/reports/security/poc/semgrep.json" ]; then
     echo "🔍 Semgrep Issues Found: $SEMGREP_ISSUES" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 fi
 
-echo "" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "📁 POC Report Structure:" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  reports/security/poc/trivy_*.json    - Trivy scan results (JSON)" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  reports/security/poc/trivy.sarif     - Trivy SARIF for GitHub Security" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  reports/security/poc/semgrep.json    - Semgrep scan results (JSON)" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  reports/security/poc/semgrep.sarif   - Semgrep SARIF for GitHub Security" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
-echo "  reports/security/poc/poc_summary.txt - This summary file" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+{
+    echo ""
+    echo "📁 POC Report Structure:"
+    echo "  reports/security/poc/trivy_*.json    - Trivy scan results (JSON)"
+    echo "  reports/security/poc/trivy.sarif     - Trivy SARIF for GitHub Security"
+    echo "  reports/security/poc/semgrep.json    - Semgrep scan results (JSON)"
+    echo "  reports/security/poc/semgrep.sarif   - Semgrep SARIF for GitHub Security"
+    echo "  reports/security/poc/poc_summary.txt - This summary file"
+} >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 
 echo ""
 echo "✅ POC security analysis completed!"
