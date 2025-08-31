@@ -1,5 +1,5 @@
 rules:
-  # Flask Security Rules
+  # === FLASK SECURITY RULES (p/flask) ===
   - id: flask-debug-enabled
     pattern: app.run(debug=True)
     message: Flask debug mode should not be enabled in production
@@ -37,7 +37,7 @@ rules:
       category: security
       technology: [flask]
 
-  # Python Security Rules
+  # === PYTHON SECURITY RULES (p/python, p/bandit) ===
   - id: eval-usage
     pattern: eval(...)
     message: Use of eval() is dangerous and should be avoided
@@ -84,7 +84,96 @@ rules:
       category: security
       cwe: "CWE-89: SQL Injection"
 
-  # Logging and Information Disclosure
+  # === SECRETS DETECTION (p/secrets) ===
+  - id: hardcoded-password
+    patterns:
+      - pattern: password = "..."
+      - pattern: PASSWORD = "..."
+      - pattern: pwd = "..."
+    message: Hardcoded password detected
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+
+  - id: api-key-hardcoded
+    patterns:
+      - pattern: api_key = "..."
+      - pattern: API_KEY = "..."
+      - pattern: apikey = "..."
+    message: Hardcoded API key detected
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+
+  # === XSS PREVENTION (p/xss) ===
+  - id: unsafe-html-rendering
+    patterns:
+      - pattern: |
+          return "..." + $VAR + "..."
+      - pattern: |
+          render_template_string($TEMPLATE, ...)
+    message: Potential XSS vulnerability - sanitize user input
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      owasp: A7
+      cwe: "CWE-79: Cross-site Scripting"
+
+  # === COMMAND INJECTION (p/command-injection) ===
+  - id: command-injection-subprocess
+    patterns:
+      - pattern: subprocess.call($CMD, shell=True)
+      - pattern: subprocess.run($CMD, shell=True)
+      - pattern: subprocess.Popen($CMD, shell=True)
+    message: Command injection vulnerability - avoid shell=True with user input
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+
+  - id: command-injection-os
+    patterns:
+      - pattern: os.system($CMD)
+      - pattern: os.popen($CMD)
+    message: Command injection vulnerability via os module
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+
+  # === INSECURE TRANSPORT (p/insecure-transport) ===
+  - id: http-request-without-ssl
+    patterns:
+      - pattern: requests.get("http://...")
+      - pattern: requests.post("http://...")
+      - pattern: urllib.request.urlopen("http://...")
+    message: HTTP request without SSL/TLS - use HTTPS
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-319: Cleartext Transmission of Sensitive Information"
+
+  - id: ssl-verification-disabled
+    patterns:
+      - pattern: requests.get(..., verify=False)
+      - pattern: requests.post(..., verify=False)
+      - pattern: ssl._create_unverified_context()
+    message: SSL certificate verification disabled
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-295: Improper Certificate Validation"
+
+  # === LOGGING AND INFORMATION DISCLOSURE ===
   - id: print-sensitive-data
     patterns:
       - pattern: print(..., password, ...)
@@ -109,7 +198,7 @@ rules:
     metadata:
       category: security
 
-  # Cryptography
+  # === CRYPTOGRAPHY (p/secure-defaults) ===
   - id: weak-random
     patterns:
       - pattern: random.random()
@@ -132,3 +221,145 @@ rules:
     metadata:
       category: security
       cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+
+  - id: sha1-usage
+    patterns:
+      - pattern: hashlib.sha1(...)
+      - pattern: hashlib.new("sha1", ...)
+    message: SHA-1 is cryptographically weak - use SHA-256 or stronger
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+
+  # === DOCKER SECURITY (p/docker) ===
+  - id: dockerfile-user-root
+    pattern: USER root
+    paths:
+      include:
+        - "Dockerfile*"
+    message: Running as root user in Docker is insecure
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-250: Execution with Unnecessary Privileges"
+
+  - id: dockerfile-add-remote
+    pattern: ADD http://...
+    paths:
+      include:
+        - "Dockerfile*"
+    message: Using ADD with remote URLs is insecure - use COPY or RUN curl
+    languages: [dockerfile]
+    severity: WARNING
+    metadata:
+      category: security
+
+  # === JAVASCRIPT SECURITY (p/javascript) ===
+  - id: javascript-eval
+    pattern: eval(...)
+    message: Use of eval() is dangerous
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+
+  # === GITHUB ACTIONS SECURITY (p/github-actions) ===
+  - id: github-actions-injection
+    patterns:
+      - pattern: 'run: echo "${{ github.event.pull_request.title }}"'
+      - pattern: 'run: echo "${{ github.event.issue.title }}"'
+    paths:
+      include:
+        - "**/.github/workflows/*.yml"
+        - "**/.github/workflows/*.yaml"
+    message: Potential script injection in GitHub Actions
+    languages: [yaml]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+
+  # === OWASP TOP TEN PATTERNS (p/owasp-top-ten) ===
+  - id: path-traversal
+    patterns:
+      - pattern: open("../" + $VAR)
+      - pattern: open($VAR + "/../")
+      - pattern: Path("../" + $VAR)
+    message: Potential path traversal vulnerability
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      owasp: A1
+      cwe: "CWE-22: Path Traversal"
+
+  - id: unsafe-deserialization
+    patterns:
+      - pattern: pickle.loads(...)
+      - pattern: pickle.load(...)
+      - pattern: yaml.load(...)
+    message: Unsafe deserialization can lead to code execution
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      owasp: A8
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+
+  # === SECURITY HEADERS (p/security-headers) ===
+  - id: missing-security-headers
+    patterns:
+      - pattern: |
+          @app.route(...)
+          def $FUNC(...):
+            ...
+            return $RESPONSE
+      - pattern-not: |
+          @app.route(...)
+          def $FUNC(...):
+            ...
+            $RESPONSE.headers[...] = ...
+            return $RESPONSE
+    message: Consider adding security headers to Flask responses
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: security
+      technology: [flask]
+
+  # === COMMUNITY RULESETS REFERENCE ===
+  # This configuration provides local fallback rules that mirror the capabilities
+  # of the following community rulesets when they are unavailable:
+  #
+  # Primary rulesets:
+  # - p/flask: Flask-specific security patterns
+  # - p/python: Python security best practices  
+  # - p/bandit: Static analysis security testing
+  # - p/secrets: Credential and secret detection
+  # - p/xss: Cross-site scripting prevention
+  # - p/command-injection: Command injection detection
+  # - p/insecure-transport: Insecure transport detection
+  # - p/owasp-top-ten: OWASP Top 10 vulnerability patterns
+  # - p/security-audit: General security audit rules
+  # - p/secure-defaults: Secure coding defaults
+  # - p/security-headers: HTTP security headers
+  # - p/r2c-security-audit: Additional security audit patterns
+  # - p/r2c-best-practices: Security best practices
+  # - p/r2c-bug-scan: Bug detection patterns
+  #
+  # Infrastructure rulesets:
+  # - p/docker: Docker security patterns
+  # - p/docker-compose: Docker Compose security
+  # - p/nginx: Nginx configuration security
+  # - p/github-actions: GitHub Actions security
+  #
+  # Additional rulesets:
+  # - p/javascript: JavaScript security patterns  
+  # - p/comment: Code comment analysis
+  # - p/semgrep-rule-ci: CI/CD security patterns
+  # - p/semgrep-rule-lints: Rule quality checks
+  # - p/semgrep-misconfigurations: Configuration issues

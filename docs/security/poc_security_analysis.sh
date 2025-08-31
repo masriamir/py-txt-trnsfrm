@@ -15,6 +15,33 @@ mkdir -p "$PROJECT_ROOT/reports/security/poc"
 # Semgrep configuration file path
 SEMGREP_CONFIG="$SCRIPT_DIR/semgrep-rules.yaml"
 
+# Community rulesets to use (from https://semgrep.dev/r)
+SEMGREP_COMMUNITY_RULESETS=(
+    "p/flask"
+    "p/nginx" 
+    "p/xss"
+    "p/python"
+    "p/bandit"
+    "p/docker"
+    "p/secrets"
+    "p/comment"
+    "p/javascript"
+    "p/r2c-bug-scan"
+    "p/owasp-top-ten"
+    "p/github-actions"
+    "p/security-audit"
+    "p/docker-compose"
+    "p/semgrep-rule-ci"
+    "p/secure-defaults"
+    "p/security-headers"
+    "p/command-injection"
+    "p/insecure-transport"
+    "p/r2c-best-practices"
+    "p/r2c-security-audit"
+    "p/semgrep-rule-lints"
+    "p/semgrep-misconfigurations"
+)
+
 # Tool paths (adjust based on installation)
 TRIVY_PATH="${TRIVY_PATH:-trivy}"
 SEMGREP_PATH="${SEMGREP_PATH:-semgrep}"
@@ -51,8 +78,28 @@ if [ ! -f "$SEMGREP_CONFIG" ]; then
     exit 1
 fi
 
+# Check if Semgrep is logged in for community rules access
+echo "🔐 Checking Semgrep authentication status..."
+if ! $SEMGREP_PATH --config=p/python --dry-run . --disable-version-check >/dev/null 2>&1; then
+    echo "⚠️  Semgrep not logged in - some community rules may be limited"
+    echo "💡 To login: semgrep login (for full access to community rules)"
+fi
+
+# Build community rulesets configuration
+COMMUNITY_CONFIG=""
+for ruleset in "${SEMGREP_COMMUNITY_RULESETS[@]}"; do
+    if [ -z "$COMMUNITY_CONFIG" ]; then
+        COMMUNITY_CONFIG="$ruleset"
+    else
+        COMMUNITY_CONFIG="$COMMUNITY_CONFIG,$ruleset"
+    fi
+done
+
+echo "🔍 Using community rulesets: $COMMUNITY_CONFIG"
+echo "📋 Total rulesets: ${#SEMGREP_COMMUNITY_RULESETS[@]}"
+
 # Try community rules first, fallback to local rules
-$SEMGREP_PATH --config=p/security-audit --json --output="$PROJECT_ROOT/reports/security/poc/semgrep.json" . --disable-version-check 2>/dev/null || {
+$SEMGREP_PATH --config="$COMMUNITY_CONFIG" --json --output="$PROJECT_ROOT/reports/security/poc/semgrep.json" . --disable-version-check 2>/dev/null || {
     echo "⚠️  Community rules failed, using local rules..."
     $SEMGREP_PATH --config="$SEMGREP_CONFIG" --json --output="$PROJECT_ROOT/reports/security/poc/semgrep.json" . --disable-version-check
 }
@@ -61,8 +108,11 @@ semgrep_duration=$((semgrep_end - semgrep_start))
 
 # Run Semgrep with SARIF output for GitHub Security integration
 echo "🔍 Generating Semgrep SARIF output..."
-$SEMGREP_PATH --config="$SEMGREP_CONFIG" --sarif --output="$PROJECT_ROOT/reports/security/poc/semgrep.sarif" . --disable-version-check 2>/dev/null || {
-    echo "⚠️  Semgrep SARIF generation failed"
+$SEMGREP_PATH --config="$COMMUNITY_CONFIG" --sarif --output="$PROJECT_ROOT/reports/security/poc/semgrep.sarif" . --disable-version-check 2>/dev/null || {
+    echo "⚠️  Community rules SARIF failed, trying local rules..."
+    $SEMGREP_PATH --config="$SEMGREP_CONFIG" --sarif --output="$PROJECT_ROOT/reports/security/poc/semgrep.sarif" . --disable-version-check 2>/dev/null || {
+        echo "⚠️  Semgrep SARIF generation failed"
+    }
 }
 
 # End timing
@@ -76,6 +126,12 @@ echo "Generated on: $(date)" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.
 echo "Tools: Trivy + Semgrep" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 echo "Project root: $PROJECT_ROOT" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 echo "Semgrep config: $SEMGREP_CONFIG" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+echo "Community rulesets: ${#SEMGREP_COMMUNITY_RULESETS[@]} total" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+echo "" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+echo "🔍 Semgrep Community Rulesets Used:" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+for ruleset in "${SEMGREP_COMMUNITY_RULESETS[@]}"; do
+    echo "  - $ruleset" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
+done
 echo "" >> "$PROJECT_ROOT/reports/security/poc/poc_summary.txt"
 
 # Performance metrics

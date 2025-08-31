@@ -64,10 +64,11 @@ jobs:
         exit-code: '0'
 
     # Semgrep Security Scanner  
-    - name: Run Semgrep
+    - name: Run Semgrep with Community Rulesets
       uses: semgrep/semgrep-action@v1
       with:
-        config: p/security-audit
+        config: >
+          p/flask,p/nginx,p/xss,p/python,p/bandit,p/docker,p/secrets,p/comment,p/javascript,p/r2c-bug-scan,p/owasp-top-ten,p/github-actions,p/security-audit,p/docker-compose,p/semgrep-rule-ci,p/secure-defaults,p/security-headers,p/command-injection,p/insecure-transport,p/r2c-best-practices,p/r2c-security-audit,p/semgrep-rule-lints,p/semgrep-misconfigurations
         generateSarif: "1"
         publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
       env:
@@ -77,9 +78,24 @@ jobs:
     - name: Run Semgrep (fallback local rules)
       if: failure() # Run if previous step failed
       run: |
-        # Use the permanent Semgrep configuration from the repository
-        semgrep --config=docs/security/semgrep-rules.yaml --json --output=reports/security/poc/semgrep-results.json .
-        semgrep --config=docs/security/semgrep-rules.yaml --sarif --output=reports/security/poc/semgrep-results.sarif .
+        # Install semgrep if not available
+        if ! command -v semgrep &> /dev/null; then
+          pip install semgrep
+        fi
+        
+        # Try community rulesets first, then fallback to local rules
+        echo "Attempting community rulesets..."
+        if ! semgrep --config=p/flask,p/nginx,p/xss,p/python,p/bandit,p/docker,p/secrets,p/comment,p/javascript,p/r2c-bug-scan,p/owasp-top-ten,p/github-actions,p/security-audit,p/docker-compose,p/semgrep-rule-ci,p/secure-defaults,p/security-headers,p/command-injection,p/insecure-transport,p/r2c-best-practices,p/r2c-security-audit,p/semgrep-rule-lints,p/semgrep-misconfigurations --json --output=reports/security/poc/semgrep-results.json . 2>/dev/null; then
+          echo "Community rulesets failed, using local rules..."
+          # Use the permanent Semgrep configuration from the repository
+          semgrep --config=docs/security/semgrep-rules.yaml --json --output=reports/security/poc/semgrep-results.json .
+        fi
+        
+        # Generate SARIF output
+        if ! semgrep --config=p/flask,p/nginx,p/xss,p/python,p/bandit,p/docker,p/secrets,p/comment,p/javascript,p/r2c-bug-scan,p/owasp-top-ten,p/github-actions,p/security-audit,p/docker-compose,p/semgrep-rule-ci,p/secure-defaults,p/security-headers,p/command-injection,p/insecure-transport,p/r2c-best-practices,p/r2c-security-audit,p/semgrep-rule-lints,p/semgrep-misconfigurations --sarif --output=reports/security/poc/semgrep-results.sarif . 2>/dev/null; then
+          echo "Community rulesets SARIF failed, using local rules..."
+          semgrep --config=docs/security/semgrep-rules.yaml --sarif --output=reports/security/poc/semgrep-results.sarif . || echo "SARIF generation failed"
+        fi
 
     # Upload SARIF results to GitHub Security tab
     - name: Upload Trivy SARIF to GitHub Security tab
