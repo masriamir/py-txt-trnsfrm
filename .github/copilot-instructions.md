@@ -17,36 +17,11 @@ Always reference these instructions first and fallback to search or bash command
 - ❌ Manually fix formatting
 - ❌ Commit without running tests
 
-## 1. Sprint Management and Issue Creation
-
-When creating or managing issues for sprint planning:
-
-#### Issue Creation Standards
-- **Title Format**: "Action verb + description - context" (e.g., "Fix all ruff linting errors - code quality foundation")
-- **Required Metadata**:
-  - **Project**: Always assign to "Retro Text Transformer" project
-  - **Epic**: Categorize appropriately (Code Quality Foundation, Logging Infrastructure, Developer Productivity, etc.)
-  - **Story Points**: Use Fibonacci sequence (1, 2, 3, 5, 8)
-  - **Time Estimate**: Provide realistic hours estimate
-  - **Risk Level**: Low/Medium/High
-  - **Priority Labels**: P0 (Critical), P1 (High), P2 (Medium), P3 (Low), P4 (Enhancement)
-  - **Version Tags**: v1.0, v1.1, etc.
-  - **Sprint Assignment**: Maximum 8 points per one-week sprint
-
-#### Sprint Capacity
-- **Sprint Duration**: 1 week
-- **Max Capacity**: 8 story points per sprint
-- **Velocity Tracking**: Monitor completed points vs planned
-
-#### Dependencies
-- **Always document blocking relationships** between issues
-- **Use checkboxes** for prerequisites and blocked work
-- **Update issue status** when dependencies are resolved
-
-## 2. Technology Stack and Dependencies
+## 1. Project Overview
 
 **py-txt-trnsfrm** is a Flask web application that provides creative text transformations inspired by early 90s internet culture. This is a Python 3.13+ project using modern tools and practices.
-### Core Stack
+
+### Technology Stack
 - **Python**: 3.13+ (specified in .python-version)
 - **Backend Framework**: Flask `3.1.1+` with Gunicorn for production deployment
 - **Frontend**: Bootstrap 5 with vanilla JavaScript, Jinja2 templates for server-side rendering
@@ -71,7 +46,34 @@ When creating or managing issues for sprint planning:
 - **Encoding**: morse_code, binary, rot13
 - **Directional**: backwards, upside_down
 
-## 3. Development with Makefile
+### Repository Structure
+
+#### Key Directories
+- **app/**: Main Flask application package
+  - **main/**: Blueprint with routes and main endpoints  
+  - **utils/**: Text transformation utilities
+  - **static/**: CSS and JavaScript assets
+  - **templates/**: Jinja2 HTML templates
+- **tests/**: Comprehensive test suite with performance, security, and functional tests
+- **.github/workflows/**: CI/CD pipelines (ci.yml, security-nightly.yml, release.yml)
+- **docs/**: Documentation including CI/CD pipeline details and UV troubleshooting
+
+#### Important Files
+- **pyproject.toml**: Project configuration and dependencies (uses uv for package management)
+- **uv.lock**: Dependency lock file (always commit changes, URLs are prefixed with `pkgs.safetycli.com/` which is correct and should NOT be changed to `pypi.org` or `files.pythonhosted.org`)
+- **pytest.ini**: Test configuration with markers and coverage settings
+- **gunicorn.conf.py**: Production server configuration
+- **deploy.sh**: Deployment script with multiple modes
+- **run_security_analysis.sh**: Security analysis automation
+
+## 2. Development Setup
+
+### Bootstrap and Dependencies
+- **Install uv**: `curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="$HOME/.local/bin:$PATH"`
+- **Install all dependencies**: `uv sync --group dev --group test --group security` -- takes 3-4 minutes. NEVER CANCEL. Set timeout to 10+ minutes.
+- **Verify installation**: `uv run python -c "import app; print('✅ Application imports successfully')"`
+
+### Development with Makefile
 
 The project includes a comprehensive `Makefile` for streamlined workflows:
 
@@ -91,7 +93,53 @@ The project includes a comprehensive `Makefile` for streamlined workflows:
 
 See `docs/MAKEFILE.md` for complete documentation.
 
-## 4. Code Formatting Standards (MANDATORY)
+### Environment Configuration
+
+The application uses a centralized configuration system located in `app/env_config.py` that provides a single source of truth for environment variable handling across all entry points (`app.py`, `wsgi.py`, `app/__init__.py`).
+
+#### Key Functions
+- `get_logging_config()`: Returns validated logging configuration with `log_level` and `debug_mode`
+- `get_flask_env()`: Gets Flask environment with development default
+- `get_flask_env_for_wsgi()`: Gets Flask environment with production default for WSGI contexts
+- `is_heroku_environment()`: Detects Heroku deployment via DYNO environment variable
+- `get_port()`: Gets port number with integer conversion
+- `get_host_for_environment()`: Returns appropriate host binding based on environment
+
+#### Log Level Processing
+- **ALWAYS use `.upper()`** on log level environment variables for consistency
+- Compare against uppercase values: `log_level == "DEBUG"`
+- Pass uppercase values to setup functions: `setup_logging(debug=debug_mode, log_level=log_level)`
+
+#### Usage Examples
+```python
+from app.env_config import get_logging_config, is_heroku_environment
+
+# Get logging configuration
+config = get_logging_config()
+setup_logging(debug=config.debug_mode, log_level=config.log_level)
+
+# Check deployment environment
+if is_heroku_environment():
+    # Heroku-specific configuration
+    pass
+```
+
+#### Benefits
+- **Single source of truth**: All environment variable logic centralized
+- **Consistent behavior**: Same configuration across all entry points
+- **Validation**: Automatic validation and fallbacks for invalid values
+- **Type safety**: Structured configuration with proper typing
+
+### Dependency Management with Safety Registry
+- **Adding new dependencies**: When adding dependencies to `pyproject.toml`, always sync with the safety registry to preserve URLs
+- **Correct sync command**: `uv sync --default-index https://pkgs.safetycli.com/repository/akm-circuits-llc/pypi/simple/ --group dev --group test --group security`
+- **CRITICAL**: The `uv.lock` file URLs must always use `pkgs.safetycli.com/` - never change them to `pypi.org` or `files.pythonhosted.org`
+- **When uv.lock changes**: Only commit changes that add the specific new dependency and its direct dependencies - all other entries should preserve safety URLs
+- **Verification**: After adding dependencies, confirm safety URLs with `grep "pkgs.safetycli.com" uv.lock | head -3`
+
+## 3. Code Quality Standards
+
+### Formatting Standards (MANDATORY)
 
 **CRITICAL**: These formatting standards are enforced by CI and must be followed:
 
@@ -110,20 +158,6 @@ See `docs/MAKEFILE.md` for complete documentation.
 4. **String Quotes**: Use double quotes consistently (enforced by `black`)
 5. **Trailing Commas**: Add trailing commas in multi-line structures
 
-## Working Effectively
-
-### Bootstrap and Dependencies
-- **Install uv**: `curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="$HOME/.local/bin:$PATH"`
-- **Install all dependencies**: `uv sync --group dev --group test --group security` -- takes 3-4 minutes. NEVER CANCEL. Set timeout to 10+ minutes.
-- **Verify installation**: `uv run python -c "import app; print('✅ Application imports successfully')"`
-
-### Dependency Management with Safety Registry
-- **Adding new dependencies**: When adding dependencies to `pyproject.toml`, always sync with the safety registry to preserve URLs
-- **Correct sync command**: `uv sync --default-index https://pkgs.safetycli.com/repository/akm-circuits-llc/pypi/simple/ --group dev --group test --group security`
-- **CRITICAL**: The `uv.lock` file URLs must always use `pkgs.safetycli.com/` - never change them to `pypi.org` or `files.pythonhosted.org`
-- **When uv.lock changes**: Only commit changes that add the specific new dependency and its direct dependencies - all other entries should preserve safety URLs
-- **Verification**: After adding dependencies, confirm safety URLs with `grep "pkgs.safetycli.com" uv.lock | head -3`
-
 ### Code Quality Tools
 - **Linting (Fix)**: `uv run ruff check --fix .` -- automatically fixes all auto-fixable issues
 - **Linting (Verify)**: `uv run ruff check .` -- must pass with zero errors
@@ -131,7 +165,31 @@ See `docs/MAKEFILE.md` for complete documentation.
 - **Formatting (Verify)**: `uv run black --check .` -- must pass with zero changes needed
 - **Type checking**: `uv run mypy .` -- takes 7-8 seconds. Currently has 99 errors, mostly missing type annotations.
 
-### Testing
+### Common Mistakes to Avoid
+
+1. **URL Modifications in uv.lock**
+   - ❌ NEVER change `pkgs.safetycli.com` URLs to `pypi.org` or `files.pythonhosted.org`
+   - ✅ Always preserve safety registry URLs when running `uv sync`
+
+2. **Logging Configuration**
+   - ❌ Don't use basic logging setup: `logging.basicConfig(...)`
+   - ✅ Use centralized logging: `from app.logging_config import get_logger, setup_logging`
+
+3. **Code Formatting**
+   - ❌ Don't manually fix formatting issues
+   - ✅ Always use `uv run black .` and `uv run ruff check --fix .`
+
+4. **Test Execution**
+   - ❌ Don't use `-n 0` for regular tests (disables parallel execution)
+   - ✅ Only use `-n 0` with `--benchmark-only` for performance tests
+
+5. **Environment Variables**
+   - ❌ Don't use `.lower()` then `.upper()` on the same variable
+   - ✅ Call `.upper()` once when retrieving: `os.environ.get("LOG_LEVEL", "info").upper()`
+
+## 4. Testing Framework
+
+### Testing Overview and Execution
 - **Run all tests (excluding performance)**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- takes 1-2 seconds with parallel execution. Currently 47 passed, 1 failed (expected).
 - **Run specific test categories (with parallel execution)**: 
   - `uv run pytest -m unit --benchmark-disable` -- Unit tests only
@@ -141,12 +199,6 @@ See `docs/MAKEFILE.md` for complete documentation.
 - **Run with coverage**: Tests include coverage reporting to `reports/coverage/`
 - **Performance tests**: `BASE_URL=http://localhost:5000 uv run pytest tests/performance/test_api_performance.py --benchmark-only -n 0` (requires running Flask app first)
 - **NOTE**: Use `--benchmark-disable` for regular tests to maintain xdist parallel execution. Use `-n 0` flag **only** when running benchmark tests with `--benchmark-only` to disable xdist parallel execution which conflicts with pytest-benchmark.
-
-### Security Analysis
-- **Run comprehensive security scan**: `./run_security_analysis.sh` -- may take 5+ minutes or timeout on safety scan. NEVER CANCEL. Set timeout to 10+ minutes.
-- **Individual security tools**:
-  - `uv run bandit -r app/` -- Code security analysis (currently 4 low-severity issues) takes <1 second
-  - `uv run safety scan` -- Dependency vulnerability scan (may timeout, that's expected)
 
 ### Test Creation and Maintenance Guidelines
 
@@ -241,7 +293,7 @@ class TestSomeClass:
 - **Run performance tests separately** with `-n 0 --benchmark-only` when measuring performance
 - **Keep test execution time reasonable** - mark slow tests with `@pytest.mark.slow`
 
-#### Coverage Verification and Quality Assurance
+### Coverage Verification and Quality Assurance
 
 **Coverage Verification Steps:**
 1. **Before making changes**: Run `uv run pytest --cov=app --cov-report=term-missing` to establish baseline
@@ -273,6 +325,123 @@ class TestSomeClass:
 - **Verify coverage**: Ensure coverage requirements are met
 - **Check test categorization**: Confirm proper pytest markers are applied
 - **Validate test quality**: Ensure tests have clear assertions and proper structure
+
+## 5. Development Workflow
+
+### Running the Application
+
+#### Development Mode
+- **Start development server**: `FLASK_ENV=development uv run python app.py` -- starts on port 5000
+- **Health check**: `curl http://localhost:5000/health` -- returns JSON health status
+- **Test transformation**: `curl -X POST http://localhost:5000/transform -H "Content-Type: application/json" -d '{"text": "Hello World", "transformation": "alternate_case"}'`
+
+#### Production Mode (with Gunicorn)
+- **Production deployment requires SECRET_KEY environment variable**
+- **Start with deploy script**: `SECRET_KEY=your-secret-key ./deploy.sh start` 
+- **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
+- **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
+
+### Security Analysis
+- **Run comprehensive security scan**: `./run_security_analysis.sh` -- may take 5+ minutes or timeout on safety scan. NEVER CANCEL. Set timeout to 10+ minutes.
+- **Individual security tools**:
+  - `uv run bandit -r app/` -- Code security analysis (currently 4 low-severity issues) takes <1 second
+  - `uv run safety scan` -- Dependency vulnerability scan (may timeout, that's expected)
+
+### Pre-Commit Workflow (MANDATORY)
+
+**CRITICAL**: The following steps are **mandatory** for all pull request submissions. PRs that fail these requirements will be rejected.
+
+#### Code Quality Requirements (MANDATORY)
+1. **All linting issues MUST be fixed** (not just identified):
+   - Run: `uv run ruff check --fix .` to automatically fix issues
+   - Verify: `uv run ruff check .` must pass with zero errors
+2. **All formatting issues MUST be fixed** (not just identified):
+   - Run: `uv run black .` to fix all formatting issues  
+   - Verify: `uv run black --check .` must pass with zero changes needed
+3. **Test Requirements MUST be met** (MANDATORY):
+   - All new functionality must have corresponding tests with proper pytest markers
+   - Coverage must meet or exceed 80% threshold: `uv run pytest --cov=app --cov-fail-under=80`
+   - All tests must pass: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable`
+   - New functions must have unit tests with `@pytest.mark.unit`
+   - New endpoints must have API tests with `@pytest.mark.api`
+   - Complex workflows must have integration tests with `@pytest.mark.integration`
+4. **Verification commands MUST pass** before PR submission
+5. **Issue closing keywords MUST be included** in PR description (MANDATORY):
+   - Use proper GitHub closing syntax: `Closes #123`, `Fixes #456`, `Resolves #789`
+   - Reference all related issues that the PR addresses
+   - Ensure issue numbers exist and are related to the PR content
+6. **This is a mandatory requirement**, not a suggestion
+
+#### Test Creation Requirements (MANDATORY)
+- **Unit Tests**: Every new function/method must have dedicated unit tests
+- **API Tests**: Every new Flask endpoint must have API tests  
+- **Integration Tests**: Multi-component features must have integration tests
+- **Security Tests**: Authentication/authorization features must have security tests
+- **Performance Tests**: Performance-critical code must have performance tests
+- **Regression Tests**: Bug fixes must include tests preventing regression
+- **Proper Markers**: All tests must use appropriate pytest markers for categorization
+
+#### Mandatory Workflow Steps
+The required workflow is: **implement → test → fix → verify → close → commit**
+- **Step 1**: Implement functionality with corresponding tests
+- **Step 2**: Apply proper pytest markers and ensure coverage
+- **Step 3**: Fix all linting and formatting issues using the fix commands
+- **Step 4**: Verify all fixes and test requirements using the verification commands  
+- **Step 5**: Add proper issue closing keywords to PR description (Closes #123, Fixes #456, Resolves #789)
+- **Step 6**: Only then proceed with commit and PR submission
+
+**Note**: PRs with linting, formatting, or test coverage failures will be automatically rejected.
+
+#### Acceptance Criteria Verification
+- **When working on issues with Acceptance Criteria, ALWAYS verify each criterion before considering work complete**:
+  1. **Review Original Issue**: Confirm you understand all Acceptance Criteria
+  2. **Check Off Completed Items**: Mark each verified criterion as complete in the GitHub issue
+  3. **Document Verification**: Add comments or evidence showing how each criterion was verified
+  4. **Final Validation**: Ensure all criteria are checked off before submitting PR
+
+#### Manual Testing Requirements
+- **ALWAYS** test the application after making changes:
+  1. Run `uv run python -c "import app; print('✅ Import test passed')"`
+  2. Start the development server: `FLASK_ENV=development uv run python app.py`
+  3. Test health endpoint: `curl http://localhost:5000/health`
+  4. Test at least one transformation: `curl -X POST http://localhost:5000/transform -H "Content-Type: application/json" -d '{"text": "test", "transformation": "alternate_case"}'`
+  5. Stop the server with Ctrl+C
+
+#### Pre-commit Validation Checklist
+- [ ] Ran `make fix` to fix all formatting/linting issues
+- [ ] Ran `make test` and all tests pass
+- [ ] Updated tests for any new functionality
+- [ ] Verified uv.lock URLs still use pkgs.safetycli.com
+- [ ] Checked PR includes closing keywords
+- [ ] Copied all metadata from related issues
+
+## 6. Project Management
+
+### Sprint Management and Issue Creation
+
+When creating or managing issues for sprint planning:
+
+#### Issue Creation Standards
+- **Title Format**: "Action verb + description - context" (e.g., "Fix all ruff linting errors - code quality foundation")
+- **Required Metadata**:
+  - **Project**: Always assign to "Retro Text Transformer" project
+  - **Epic**: Categorize appropriately (Code Quality Foundation, Logging Infrastructure, Developer Productivity, etc.)
+  - **Story Points**: Use Fibonacci sequence (1, 2, 3, 5, 8)
+  - **Time Estimate**: Provide realistic hours estimate
+  - **Risk Level**: Low/Medium/High
+  - **Priority Labels**: P0 (Critical), P1 (High), P2 (Medium), P3 (Low), P4 (Enhancement)
+  - **Version Tags**: v1.0, v1.1, etc.
+  - **Sprint Assignment**: Maximum 8 points per one-week sprint
+
+#### Sprint Capacity
+- **Sprint Duration**: 1 week
+- **Max Capacity**: 8 story points per sprint
+- **Velocity Tracking**: Monitor completed points vs planned
+
+#### Dependencies
+- **Always document blocking relationships** between issues
+- **Use checkboxes** for prerequisites and blocked work
+- **Update issue status** when dependencies are resolved
 
 ### GitHub Issue Management
 
@@ -387,79 +556,7 @@ Closes #23, #34, #45
 
 **Note**: This is a mandatory requirement for all PRs. PRs without proper issue closing keywords will be rejected during review.
 
-### Running the Application
-
-#### Development Mode
-- **Start development server**: `FLASK_ENV=development uv run python app.py` -- starts on port 5000
-- **Health check**: `curl http://localhost:5000/health` -- returns JSON health status
-- **Test transformation**: `curl -X POST http://localhost:5000/transform -H "Content-Type: application/json" -d '{"text": "Hello World", "transformation": "alternate_case"}'`
-
-#### Production Mode (with Gunicorn)
-- **Production deployment requires SECRET_KEY environment variable**
-- **Start with deploy script**: `SECRET_KEY=your-secret-key ./deploy.sh start` 
-- **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
-- **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
-
-## 5. Centralized Environment Configuration
-
-The application uses a centralized configuration system located in `app/env_config.py` that provides a single source of truth for environment variable handling across all entry points (`app.py`, `wsgi.py`, `app/__init__.py`).
-
-#### Key Functions
-- `get_logging_config()`: Returns validated logging configuration with `log_level` and `debug_mode`
-- `get_flask_env()`: Gets Flask environment with development default
-- `get_flask_env_for_wsgi()`: Gets Flask environment with production default for WSGI contexts
-- `is_heroku_environment()`: Detects Heroku deployment via DYNO environment variable
-- `get_port()`: Gets port number with integer conversion
-- `get_host_for_environment()`: Returns appropriate host binding based on environment
-
-#### Log Level Processing
-- **ALWAYS use `.upper()`** on log level environment variables for consistency
-- Compare against uppercase values: `log_level == "DEBUG"`
-- Pass uppercase values to setup functions: `setup_logging(debug=debug_mode, log_level=log_level)`
-
-#### Usage Examples
-```python
-from app.env_config import get_logging_config, is_heroku_environment
-
-# Get logging configuration
-config = get_logging_config()
-setup_logging(debug=config.debug_mode, log_level=config.log_level)
-
-# Check deployment environment
-if is_heroku_environment():
-    # Heroku-specific configuration
-    pass
-```
-
-#### Benefits
-- **Single source of truth**: All environment variable logic centralized
-- **Consistent behavior**: Same configuration across all entry points
-- **Validation**: Automatic validation and fallbacks for invalid values
-- **Type safety**: Structured configuration with proper typing
-
-## 6. Common Mistakes to Avoid
-
-1. **URL Modifications in uv.lock**
-   - ❌ NEVER change `pkgs.safetycli.com` URLs to `pypi.org` or `files.pythonhosted.org`
-   - ✅ Always preserve safety registry URLs when running `uv sync`
-
-2. **Logging Configuration**
-   - ❌ Don't use basic logging setup: `logging.basicConfig(...)`
-   - ✅ Use centralized logging: `from app.logging_config import get_logger, setup_logging`
-
-3. **Code Formatting**
-   - ❌ Don't manually fix formatting issues
-   - ✅ Always use `uv run black .` and `uv run ruff check --fix .`
-
-4. **Test Execution**
-   - ❌ Don't use `-n 0` for regular tests (disables parallel execution)
-   - ✅ Only use `-n 0` with `--benchmark-only` for performance tests
-
-5. **Environment Variables**
-   - ❌ Don't use `.lower()` then `.upper()` on the same variable
-   - ✅ Call `.upper()` once when retrieving: `os.environ.get("LOG_LEVEL", "info").upper()`
-
-## 7. Pull Request Standards
+#### Pull Request Standards
 
 When creating pull requests:
 
@@ -495,183 +592,9 @@ This PR implements centralized logging configuration for `app.py` and fixes `wsg
 Closes #11
 ```
 
-## 8. Performance Expectations and Timeouts
+## 7. Reference Materials
 
-**Set appropriate timeouts for long-running operations:**
-- `uv sync`: 3-4 minutes → Set timeout to 10+ minutes
-- `./run_security_analysis.sh`: 5+ minutes → Set timeout to 10+ minutes  
-- `./deploy.sh test`: 2+ minutes → Set timeout to 5+ minutes
-- `make ci`: 2-3 minutes → Set timeout to 5+ minutes
-
-**When running commands programmatically:**
-```python
-# Set appropriate timeout
-result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
-```
-
-## 9. Pre-Commit Checklist (MANDATORY)
-
-- [ ] Ran `make fix` to fix all formatting/linting issues
-- [ ] Ran `make test` and all tests pass
-- [ ] Updated tests for any new functionality
-- [ ] Verified uv.lock URLs still use pkgs.safetycli.com
-- [ ] Checked PR includes closing keywords
-- [ ] Copied all metadata from related issues
-
-## 10. Copy-Paste Commands
-
-```bash
-# Before any commit
-make fix && make test && make check
-
-# Verify safety URLs
-grep -c "pkgs.safetycli.com" uv.lock
-
-# Check formatting without fixing
-uv run black --check . && uv run ruff check .
-```
-
-## Validation
-### Acceptance Criteria Verification
-- **When working on issues with Acceptance Criteria, ALWAYS verify each criterion before considering work complete**:
-  1. **Review Original Issue**: Confirm you understand all Acceptance Criteria
-  3. **Check Off Completed Items**: Mark each verified criterion as complete in the GitHub issue
-  4. **Document Verification**: Add comments or evidence showing how each criterion was verified
-  5. **Final Validation**: Ensure all criteria are checked off before submitting PR
-
-### Manual Testing Requirements
-- **ALWAYS** test the application after making changes:
-  1. Run `uv run python -c "import app; print('✅ Import test passed')"`
-  2. Start the development server: `FLASK_ENV=development uv run python app.py`
-  3. Test health endpoint: `curl http://localhost:5000/health`
-  4. Test at least one transformation: `curl -X POST http://localhost:5000/transform -H "Content-Type: application/json" -d '{"text": "test", "transformation": "alternate_case"}'`
-  5. Stop the server with Ctrl+C
-
-### Pre-commit Validation
-- **ALWAYS run before committing** (MANDATORY):
-  1. **Fix all linting issues**: `uv run ruff check --fix .`
-  2. **Verify linting passes**: `uv run ruff check .` -- must pass cleanly
-  3. **Fix all formatting issues**: `uv run black .`
-  4. **Verify formatting passes**: `uv run black --check .` -- must pass cleanly
-  5. **Test Creation Verification** (MANDATORY for code changes):
-     - Confirm new/updated tests exist for all functionality changes
-     - Verify proper pytest markers are applied: `uv run pytest --collect-only | grep -E "@pytest.mark.(unit|api|integration)"`
-     - Validate test coverage meets requirements: `uv run pytest --cov=app --cov-report=term-missing`
-     - Ensure coverage is maintained or improved (80% minimum threshold)
-  6. **Run full test suite**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- should have minimal failures (with parallel execution)
-  7. **Manual application test** as described above
-  8. **Acceptance Criteria Verification** (when working on issues):
-     - Verify all completed Acceptance Criteria are checked off in the GitHub issue
-     - Ensure any evidence or verification steps are documented in issue comments
-     - Confirm the pull request references the issue for proper tracking
-     - Validate that tests exist for each Acceptance Criterion
-  9. **Metadata Inheritance Verification** (when working on issues):
-     - Verify the PR has inherited all relevant metadata from the originating issue
-     - Confirm labels (priority, story points, version tags) are copied to the PR
-     - Ensure milestone and project assignments match the originating issue
-     - Validate any custom field values from the project board are inherited
-  10. **Issue Closing Keywords Verification** (MANDATORY for all PRs):
-     - Ensure PR description includes proper GitHub closing keywords (Closes #123, Fixes #456, Resolves #789)
-     - Verify all referenced issue numbers exist and are related to the PR content
-     - Confirm closing keywords use correct syntax with `#` prefix for issue numbers
-     - Validate that multiple issues use proper syntax (separate lines or comma-separated)
-
-## Mandatory Pre-Pull Request Requirements
-
-**CRITICAL**: The following steps are **mandatory** for all pull request submissions. PRs that fail these requirements will be rejected.
-
-### Code Quality Requirements (MANDATORY)
-1. **All linting issues MUST be fixed** (not just identified):
-   - Run: `uv run ruff check --fix .` to automatically fix issues
-   - Verify: `uv run ruff check .` must pass with zero errors
-2. **All formatting issues MUST be fixed** (not just identified):
-   - Run: `uv run black .` to fix all formatting issues  
-   - Verify: `uv run black --check .` must pass with zero changes needed
-3. **Test Requirements MUST be met** (MANDATORY):
-   - All new functionality must have corresponding tests with proper pytest markers
-   - Coverage must meet or exceed 80% threshold: `uv run pytest --cov=app --cov-fail-under=80`
-   - All tests must pass: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable`
-   - New functions must have unit tests with `@pytest.mark.unit`
-   - New endpoints must have API tests with `@pytest.mark.api`
-   - Complex workflows must have integration tests with `@pytest.mark.integration`
-4. **Verification commands MUST pass** before PR submission
-5. **Issue closing keywords MUST be included** in PR description (MANDATORY):
-   - Use proper GitHub closing syntax: `Closes #123`, `Fixes #456`, `Resolves #789`
-   - Reference all related issues that the PR addresses
-   - Ensure issue numbers exist and are related to the PR content
-6. **This is a mandatory requirement**, not a suggestion
-
-### Test Creation Requirements (MANDATORY)
-- **Unit Tests**: Every new function/method must have dedicated unit tests
-- **API Tests**: Every new Flask endpoint must have API tests  
-- **Integration Tests**: Multi-component features must have integration tests
-- **Security Tests**: Authentication/authorization features must have security tests
-- **Performance Tests**: Performance-critical code must have performance tests
-- **Regression Tests**: Bug fixes must include tests preventing regression
-- **Proper Markers**: All tests must use appropriate pytest markers for categorization
-
-### Mandatory Workflow
-The required workflow is: **implement → test → fix → verify → close → commit**
-- **Step 1**: Implement functionality with corresponding tests
-- **Step 2**: Apply proper pytest markers and ensure coverage
-- **Step 3**: Fix all linting and formatting issues using the fix commands
-- **Step 4**: Verify all fixes and test requirements using the verification commands  
-- **Step 5**: Add proper issue closing keywords to PR description (Closes #123, Fixes #456, Resolves #789)
-- **Step 6**: Only then proceed with commit and PR submission
-
-**Note**: PRs with linting, formatting, or test coverage failures will be automatically rejected.
-
-## Known Issues and Limitations
-
-### Test Suite Issues
-- **Performance tests**: Require `concurrent` and `load` markers in pytest.ini (already added)
-- **Benchmark vs parallel execution**: pytest-benchmark conflicts with xdist parallel execution, so use `--benchmark-disable` for regular tests and `-n 0` only when running `--benchmark-only` performance tests
-- **Property-based test**: `test_transform_property_based` fails due to Hypothesis function-scoped fixture health check
-- **Security test**: `test_json_input_validation` fails because app doesn't sanitize HTML in transformations (by design)
-
-### Code Quality Issues  
-- **Type annotations**: 99 mypy errors due to missing type annotations in tests and some application files
-- **Black formatting**: 7 files need reformatting
-- **Security**: 4 low-severity Bandit warnings (all acceptable - test secrets and non-cryptographic random usage)
-
-### Deployment Issues
-- **Production mode**: Requires SECRET_KEY environment variable
-- **Gunicorn config**: Has AttributeError in on_starting hook (server.version doesn't exist)
-- **Docker**: Available but not tested in validation
-
-### Timing Expectations
-- **NEVER CANCEL** these operations:
-  - `uv sync` -- 3-4 minutes 
-  - `./run_security_analysis.sh` -- up to 5 minutes (safety scan may timeout)
-  - `./deploy.sh test` -- 2+ minutes
-- **Fast operations** (<10 seconds):
-  - Linting with ruff
-  - Running tests
-  - Security scan with bandit
-  - Application startup
-
-## Repository Structure
-
-### Key Projects
-- **app/**: Main Flask application package
-  - **main/**: Blueprint with routes and main endpoints  
-  - **utils/**: Text transformation utilities
-  - **static/**: CSS and JavaScript assets
-  - **templates/**: Jinja2 HTML templates
-- **tests/**: Comprehensive test suite with performance, security, and functional tests
-- **.github/workflows/**: CI/CD pipelines (ci.yml, security-nightly.yml, release.yml)
-- **docs/**: Documentation including CI/CD pipeline details and UV troubleshooting
-
-### Important Files
-- **pyproject.toml**: Project configuration and dependencies (uses uv for package management)
-- **uv.lock**: Dependency lock file (always commit changes, URLs are prefixed with `pkgs.safetycli.com/` which is correct and should NOT be changed to `pypi.org` or `files.pythonhosted.org`)
-- **pytest.ini**: Test configuration with markers and coverage settings
-- **gunicorn.conf.py**: Production server configuration
-- **deploy.sh**: Deployment script with multiple modes
-- **run_security_analysis.sh**: Security analysis automation
-
-
-## Common Commands Reference
+### Common Commands Reference
 
 ```bash
 # Complete setup from fresh clone
@@ -715,11 +638,63 @@ uv run bandit -r app/  # Individual tool - fast and reliable
 # Testing transformations
 curl -X POST http://localhost:5000/transform -H "Content-Type: application/json" \
   -d '{"text": "Hello World", "transformation": "alternate_case"}'
+
+# Quick quality check before commit
+make fix && make test && make check
+
+# Verify safety URLs
+grep -c "pkgs.safetycli.com" uv.lock
+
+# Check formatting without fixing
+uv run black --check . && uv run ruff check .
 ```
 
-## Maintaining These Instructions
+### Performance Expectations and Timeouts
 
-### Keeping Instructions Current
+**Set appropriate timeouts for long-running operations:**
+- `uv sync`: 3-4 minutes → Set timeout to 10+ minutes
+- `./run_security_analysis.sh`: 5+ minutes → Set timeout to 10+ minutes  
+- `./deploy.sh test`: 2+ minutes → Set timeout to 5+ minutes
+- `make ci`: 2-3 minutes → Set timeout to 5+ minutes
+
+**When running commands programmatically:**
+```python
+# Set appropriate timeout
+result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
+```
+
+### Known Issues and Limitations
+
+#### Test Suite Issues
+- **Performance tests**: Require `concurrent` and `load` markers in pytest.ini (already added)
+- **Benchmark vs parallel execution**: pytest-benchmark conflicts with xdist parallel execution, so use `--benchmark-disable` for regular tests and `-n 0` only when running `--benchmark-only` performance tests
+- **Property-based test**: `test_transform_property_based` fails due to Hypothesis function-scoped fixture health check
+- **Security test**: `test_json_input_validation` fails because app doesn't sanitize HTML in transformations (by design)
+
+#### Code Quality Issues  
+- **Type annotations**: 99 mypy errors due to missing type annotations in tests and some application files
+- **Black formatting**: 7 files need reformatting
+- **Security**: 4 low-severity Bandit warnings (all acceptable - test secrets and non-cryptographic random usage)
+
+#### Deployment Issues
+- **Production mode**: Requires SECRET_KEY environment variable
+- **Gunicorn config**: Has AttributeError in on_starting hook (server.version doesn't exist)
+- **Docker**: Available but not tested in validation
+
+#### Timing Expectations
+- **NEVER CANCEL** these operations:
+  - `uv sync` -- 3-4 minutes 
+  - `./run_security_analysis.sh` -- up to 5 minutes (safety scan may timeout)
+  - `./deploy.sh test` -- 2+ minutes
+- **Fast operations** (<10 seconds):
+  - Linting with ruff
+  - Running tests
+  - Security scan with bandit
+  - Application startup
+
+### Maintaining These Instructions
+
+#### Keeping Instructions Current
 - **ALWAYS update** `.github/copilot-instructions.md` when implementing new features, tools, or changing development workflows
 - **Cross-reference changes** with existing information in this file to ensure consistency
 - **Add new commands** with validated timings and proper `uv run` prefixes
@@ -729,7 +704,7 @@ curl -X POST http://localhost:5000/transform -H "Content-Type: application/json"
 - **Update test guidelines** when adding new pytest markers, test types, or coverage requirements
 - **Maintain test command accuracy** when modifying test execution workflows or adding new test categories
 
-### Contributing Guidelines for Issues
+#### Contributing Guidelines for Issues
 When creating new issues, follow the structured format established in issues #7 and #8:
 - **Use descriptive titles** following pattern: "Action description - brief context"
 - **Include project metadata**: Epic, Story Points, Time Estimate, Risk Level
@@ -740,4 +715,4 @@ When creating new issues, follow the structured format established in issues #7 
 - **Use appropriate labels**: P0/P1/P2 priority, story points (1-8), version tags
 - **Assign to appropriate milestone** with sprint context
 
-For detailed workflow on working with issues that have Acceptance Criteria, see the **GitHub Issue Management** section under "Working Effectively".
+For detailed workflow on working with issues that have Acceptance Criteria, see the **GitHub Issue Management** section under "Project Management".
