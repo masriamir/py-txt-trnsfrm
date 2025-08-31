@@ -1,4 +1,4 @@
-name: POC Security Analysis - Trivy + Semgrep
+name: POC Security Analysis - Trivy + Semgrep CI
 
 on:
   workflow_dispatch: # Manual trigger for testing
@@ -10,6 +10,14 @@ on:
       - 'requirements.txt'
       - 'pyproject.toml'
       - 'uv.lock'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'app/**'
+      - 'Dockerfile' 
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'uv.lock'
 
 env:
   PYTHON_VERSION: "3.13"
@@ -17,17 +25,18 @@ env:
 
 jobs:
   poc-security-scan:
-    name: POC Security Analysis (Trivy + Semgrep)
+    name: POC Security Analysis (Trivy + Semgrep CI)
     runs-on: ubuntu-latest
     permissions:
       security-events: write  # For uploading SARIF results
       contents: read
+      pull-requests: write   # For PR comments
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
       with:
-        fetch-depth: 0
+        fetch-depth: 0  # Full history for diff-aware scanning
 
     - name: Install uv
       uses: astral-sh/setup-uv@v6
@@ -63,17 +72,21 @@ jobs:
         output: 'reports/security/poc/trivy-results.json'
         exit-code: '0'
 
-    # Semgrep Security Scanner  
-    - name: Run Semgrep with Community Rulesets
+    # Semgrep Security Scanner with official action
+    - name: Run Semgrep CI
       uses: semgrep/semgrep-action@v1
       with:
-        config: >
+        config: >-
           p/flask,p/nginx,p/xss,p/python,p/bandit,p/docker,p/secrets,p/comment,p/javascript,p/r2c-bug-scan,p/owasp-top-ten,p/github-actions,p/security-audit,p/docker-compose,p/semgrep-rule-ci,p/secure-defaults,p/security-headers,p/command-injection,p/insecure-transport,p/r2c-best-practices,p/r2c-security-audit,p/semgrep-rule-lints,p/semgrep-misconfigurations
         generateSarif: "1"
+        auditOn: push
         publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
+        publishDeployment: ${{ secrets.SEMGREP_DEPLOYMENT_ID }}
       env:
         SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
-      continue-on-error: true  # Don't fail if token not available
+        # Enable diff-aware scanning for PRs
+        SEMGREP_BASELINE_REF: ${{ github.event.pull_request.base.sha || 'main' }}
+      continue-on-error: true  # Don't fail CI on security findings
 
     - name: Run Semgrep (fallback local rules)
       if: failure() # Run if previous step failed
@@ -83,31 +96,27 @@ jobs:
           pip install semgrep
         fi
         
-        # Try community rulesets first, then fallback to local rules
-        echo "Attempting community rulesets..."
-        if ! semgrep --config=p/flask,p/nginx,p/xss,p/python,p/bandit,p/docker,p/secrets,p/comment,p/javascript,p/r2c-bug-scan,p/owasp-top-ten,p/github-actions,p/security-audit,p/docker-compose,p/semgrep-rule-ci,p/secure-defaults,p/security-headers,p/command-injection,p/insecure-transport,p/r2c-best-practices,p/r2c-security-audit,p/semgrep-rule-lints,p/semgrep-misconfigurations --json --output=reports/security/poc/semgrep-results.json . 2>/dev/null; then
-          echo "Community rulesets failed, using local rules..."
-          # Use the permanent Semgrep configuration from the repository
-          semgrep --config=docs/security/semgrep-rules.yaml --json --output=reports/security/poc/semgrep-results.json .
-        fi
+        echo "Running fallback Semgrep with local rules..."
+        # Create reports directory
+        mkdir -p reports/security/poc
         
-        # Generate SARIF output
-        if ! semgrep --config=p/flask,p/nginx,p/xss,p/python,p/bandit,p/docker,p/secrets,p/comment,p/javascript,p/r2c-bug-scan,p/owasp-top-ten,p/github-actions,p/security-audit,p/docker-compose,p/semgrep-rule-ci,p/secure-defaults,p/security-headers,p/command-injection,p/insecure-transport,p/r2c-best-practices,p/r2c-security-audit,p/semgrep-rule-lints,p/semgrep-misconfigurations --sarif --output=reports/security/poc/semgrep-results.sarif . 2>/dev/null; then
-          echo "Community rulesets SARIF failed, using local rules..."
-          semgrep --config=docs/security/semgrep-rules.yaml --sarif --output=reports/security/poc/semgrep-results.sarif . || echo "SARIF generation failed"
-        fi
+        # Use the permanent Semgrep configuration from the repository
+        semgrep --config=docs/security/semgrep-rules.yaml --json --output=reports/security/poc/semgrep-results.json . --disable-version-check
+        
+        # Generate SARIF output for GitHub Security tab
+        semgrep --config=docs/security/semgrep-rules.yaml --sarif --output=reports/security/poc/semgrep-results.sarif . --disable-version-check || echo "SARIF generation failed"
 
     # Upload SARIF results to GitHub Security tab
     - name: Upload Trivy SARIF to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'reports/security/poc/trivy-results.sarif'
         category: 'trivy'
 
     - name: Upload Semgrep SARIF to GitHub Security tab  
-      uses: github/codeql-action/upload-sarif@v2
-      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      if: always() && hashFiles('reports/security/poc/semgrep-results.sarif') != ''
       with:
         sarif_file: 'reports/security/poc/semgrep-results.sarif'
         category: 'semgrep'
@@ -115,26 +124,49 @@ jobs:
     # Performance analysis and reporting
     - name: Analyze scan performance
       run: |
-        echo "## POC Security Scan Results" > reports/security/poc/github_summary.md
+        echo "## 🔒 POC Security Scan Results" > reports/security/poc/github_summary.md
+        echo "" >> reports/security/poc/github_summary.md
+        
+        # Add authentication status
+        if [ -n "${{ secrets.SEMGREP_APP_TOKEN }}" ]; then
+          echo "- **Semgrep Authentication:** ✅ Authenticated (enhanced community rules)" >> reports/security/poc/github_summary.md
+        else
+          echo "- **Semgrep Authentication:** ⚠️ Not authenticated (local rules used)" >> reports/security/poc/github_summary.md
+        fi
+        
+        # Add scan type for PRs
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          echo "- **Scan Type:** 📊 Diff-aware (analyzing changed files only)" >> reports/security/poc/github_summary.md
+        else
+          echo "- **Scan Type:** 📊 Full repository scan" >> reports/security/poc/github_summary.md
+        fi
+        
         echo "" >> reports/security/poc/github_summary.md
         
         # Count findings
         if [ -f "reports/security/poc/trivy-results.json" ]; then
           TRIVY_FINDINGS=$(jq '[.Results[]?.Vulnerabilities // empty] | length' reports/security/poc/trivy-results.json 2>/dev/null || echo "0")
-          echo "- **Trivy findings:** $TRIVY_FINDINGS" >> reports/security/poc/github_summary.md
+          echo "- **Trivy findings:** $TRIVY_FINDINGS vulnerabilities" >> reports/security/poc/github_summary.md
         fi
         
         if [ -f "reports/security/poc/semgrep-results.json" ]; then
           SEMGREP_FINDINGS=$(jq '.results | length' reports/security/poc/semgrep-results.json 2>/dev/null || echo "0") 
-          echo "- **Semgrep findings:** $SEMGREP_FINDINGS" >> reports/security/poc/github_summary.md
+          echo "- **Semgrep findings:** $SEMGREP_FINDINGS code security issues" >> reports/security/poc/github_summary.md
         fi
         
         echo "" >> reports/security/poc/github_summary.md
-        echo "### Tool Information" >> reports/security/poc/github_summary.md
+        echo "### 🔧 Tool Information" >> reports/security/poc/github_summary.md
         echo "- **Trivy**: $(trivy --version 2>/dev/null | head -1 || echo 'Installed via GitHub Action')" >> reports/security/poc/github_summary.md
-        echo "- **Semgrep**: $(semgrep --version 2>/dev/null || echo 'Installed via GitHub Action')" >> reports/security/poc/github_summary.md
+        echo "- **Semgrep**: Enhanced CI integration with 23 community rulesets" >> reports/security/poc/github_summary.md
         echo "" >> reports/security/poc/github_summary.md
-        echo "SARIF reports uploaded to GitHub Security tab for detailed analysis." >> reports/security/poc/github_summary.md
+        echo "📊 SARIF reports uploaded to GitHub Security tab for detailed analysis." >> reports/security/poc/github_summary.md
+        
+        # Add environment info
+        echo "" >> reports/security/poc/github_summary.md
+        echo "### 🌐 Environment" >> reports/security/poc/github_summary.md
+        echo "- **Workflow:** ${{ github.workflow }}" >> reports/security/poc/github_summary.md
+        echo "- **Run ID:** ${{ github.run_id }}" >> reports/security/poc/github_summary.md
+        echo "- **Event:** ${{ github.event_name }}" >> reports/security/poc/github_summary.md
 
     - name: Upload POC reports
       uses: actions/upload-artifact@v4
@@ -151,12 +183,43 @@ jobs:
       with:
         script: |
           const fs = require('fs');
+          
+          // Read the summary file
+          let summary = "## 🔒 Security Analysis Results\n\nSecurity scan completed successfully!\n";
+          
           if (fs.existsSync('reports/security/poc/github_summary.md')) {
-            const summary = fs.readFileSync('reports/security/poc/github_summary.md', 'utf8');
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            summary = fs.readFileSync('reports/security/poc/github_summary.md', 'utf8');
+          }
+          
+          // Add footer with links
+          summary += `\n\n---\n📥 **Download detailed reports:** [Workflow artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 **View in GitHub Security:** [Security tab](https://github.com/${{ github.repository }}/security)`;
+          
+          // Check for existing bot comments
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('Security Analysis Results')
+          );
+          
+          if (botComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: summary
+            });
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
               body: summary
             });
           }
@@ -164,20 +227,28 @@ jobs:
     # Comparison with current tools (if available)
     - name: Run current security tools for comparison
       run: |
-        echo "## Comparison with Current Tools" > reports/security/poc/comparison.md
+        echo "## 📊 Comparison with Current Tools" > reports/security/poc/comparison.md
         echo "" >> reports/security/poc/comparison.md
         
         # Run current Bandit
         if command -v bandit &> /dev/null; then
-          echo "### Bandit Results" >> reports/security/poc/comparison.md
+          echo "### Bandit Results (Current Tool)" >> reports/security/poc/comparison.md
           uv run bandit -r app/ -f json -o reports/security/poc/bandit_comparison.json || true
           BANDIT_ISSUES=$(jq '.results | length' reports/security/poc/bandit_comparison.json 2>/dev/null || echo "0")
-          echo "- **Bandit findings:** $BANDIT_ISSUES" >> reports/security/poc/comparison.md
+          echo "- **Bandit findings:** $BANDIT_ISSUES issues" >> reports/security/poc/comparison.md
         fi
         
         # Run current Safety  
         if command -v safety &> /dev/null; then
-          echo "### Safety Results" >> reports/security/poc/comparison.md
+          echo "### Safety Results (Current Tool)" >> reports/security/poc/comparison.md
           uv run safety scan --json --output reports/security/poc/safety_comparison.json || true
-          echo "- **Safety scan:** Attempted (results may vary due to auth requirements)" >> reports/security/poc/comparison.md
+          echo "- **Safety scan:** Dependency vulnerability scan attempted" >> reports/security/poc/comparison.md
         fi
+        
+        # Add comparison summary
+        echo "" >> reports/security/poc/comparison.md
+        echo "### 🔄 Migration Benefits" >> reports/security/poc/comparison.md
+        echo "- **Coverage:** 23 community rulesets vs limited local rules" >> reports/security/poc/comparison.md
+        echo "- **Integration:** Native GitHub Security tab integration" >> reports/security/poc/comparison.md
+        echo "- **Performance:** Diff-aware scanning for faster PR checks" >> reports/security/poc/comparison.md
+        echo "- **Authentication:** Optional token-based enhanced capabilities" >> reports/security/poc/comparison.md
