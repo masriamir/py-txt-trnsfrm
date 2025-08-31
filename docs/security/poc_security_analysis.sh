@@ -80,7 +80,18 @@ fi
 
 # Check if Semgrep is logged in for community rules access
 echo "🔐 Checking Semgrep authentication status..."
-if ! $SEMGREP_PATH --config=p/python --dry-run . --disable-version-check >/dev/null 2>&1; then
+SEMGREP_LOGGED_IN=false
+
+# Check for Semgrep settings file which indicates authentication
+if [ -f "$HOME/.semgrep/settings.yml" ]; then
+    # Verify the settings file contains authentication token
+    if grep -q "api_token" "$HOME/.semgrep/settings.yml" 2>/dev/null; then
+        echo "✅ Semgrep authenticated - using community rulesets"
+        SEMGREP_LOGGED_IN=true
+    fi
+fi
+
+if [ "$SEMGREP_LOGGED_IN" = false ]; then
     echo "⚠️  Semgrep not logged in - some community rules may be limited"
     echo "💡 To login: semgrep login (for full access to community rules)"
 fi
