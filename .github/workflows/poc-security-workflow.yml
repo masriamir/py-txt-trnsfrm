@@ -77,31 +77,9 @@ jobs:
     - name: Run Semgrep (fallback local rules)
       if: failure() # Run if previous step failed
       run: |
-        # Create basic security rules
-        cat > semgrep-rules.yaml << 'EOF'
-        rules:
-          - id: hardcoded-secret-key
-            pattern: SECRET_KEY = "..."
-            message: Hardcoded secret key detected
-            languages: [python]
-            severity: WARNING
-            
-          - id: flask-debug-mode
-            pattern: app.run(debug=True)
-            message: Flask debug mode enabled in production
-            languages: [python]
-            severity: ERROR
-            
-          - id: unsafe-yaml-load
-            pattern: yaml.load(...)
-            message: Unsafe YAML loading method
-            languages: [python]
-            severity: ERROR
-        EOF
-        
-        # Run with local rules
-        semgrep --config=semgrep-rules.yaml --json --output=reports/security/poc/semgrep-results.json .
-        semgrep --config=semgrep-rules.yaml --sarif --output=reports/security/poc/semgrep-results.sarif .
+        # Use the permanent Semgrep configuration from the repository
+        semgrep --config=docs/security/semgrep-rules.yaml --json --output=reports/security/poc/semgrep-results.json .
+        semgrep --config=docs/security/semgrep-rules.yaml --sarif --output=reports/security/poc/semgrep-results.sarif .
 
     # Upload SARIF results to GitHub Security tab
     - name: Upload Trivy SARIF to GitHub Security tab

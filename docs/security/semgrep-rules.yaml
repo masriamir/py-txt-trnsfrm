@@ -1,0 +1,134 @@
+rules:
+  # Flask Security Rules
+  - id: flask-debug-enabled
+    pattern: app.run(debug=True)
+    message: Flask debug mode should not be enabled in production
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      technology: [flask]
+      owasp: A6
+      cwe: "CWE-489: Active Debug Code"
+
+  - id: flask-secret-key-hardcoded
+    patterns:
+      - pattern: SECRET_KEY = "..."
+      - pattern: app.config["SECRET_KEY"] = "..."
+      - pattern: app.secret_key = "..."
+    message: Hardcoded secret key found - use environment variables instead
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      technology: [flask]
+      owasp: A3
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+
+  - id: flask-unsafe-request-data
+    patterns:
+      - pattern: request.args.get(..., unsafe=True)
+      - pattern: request.form.get(..., unsafe=True)
+      - pattern: request.json.get(..., unsafe=True)
+    message: Unsafe request data access detected
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      technology: [flask]
+
+  # Python Security Rules
+  - id: eval-usage
+    pattern: eval(...)
+    message: Use of eval() is dangerous and should be avoided
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+
+  - id: exec-usage
+    pattern: exec(...)
+    message: Use of exec() is dangerous and should be avoided
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+
+  - id: shell-injection
+    patterns:
+      - pattern: os.system(...)
+      - pattern: subprocess.call(..., shell=True)
+      - pattern: subprocess.run(..., shell=True)
+      - pattern: subprocess.Popen(..., shell=True)
+    message: Potential shell injection vulnerability - avoid shell=True
+    languages: [python]
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: "CWE-78: OS Command Injection"
+
+  - id: sql-injection-format
+    patterns:
+      - pattern: "... % ..."
+      - pattern: "... + ..."
+      - pattern: "... .format(...)"
+    paths:
+      include:
+        - "*.py"
+    message: Potential SQL injection through string formatting
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-89: SQL Injection"
+
+  # Logging and Information Disclosure
+  - id: print-sensitive-data
+    patterns:
+      - pattern: print(..., password, ...)
+      - pattern: print(..., secret, ...)
+      - pattern: print(..., token, ...)
+      - pattern: print(..., key, ...)
+    message: Potentially sensitive data in print statement
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: security
+
+  - id: logging-sensitive-data
+    patterns:
+      - pattern: logging.info(..., password, ...)
+      - pattern: logging.debug(..., password, ...)
+      - pattern: logging.warning(..., secret, ...)
+      - pattern: logging.error(..., token, ...)
+    message: Potentially sensitive data in logging
+    languages: [python]
+    severity: INFO
+    metadata:
+      category: security
+
+  # Cryptography
+  - id: weak-random
+    patterns:
+      - pattern: random.random()
+      - pattern: random.randint(...)
+      - pattern: random.choice(...)
+    message: Use secrets module for cryptographic randomness
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-338: Use of Cryptographically Weak Pseudo-Random Number Generator"
+
+  - id: md5-usage
+    patterns:
+      - pattern: hashlib.md5(...)
+      - pattern: hashlib.new("md5", ...)
+    message: MD5 is cryptographically weak - use SHA-256 or stronger
+    languages: [python]
+    severity: WARNING
+    metadata:
+      category: security
+      cwe: "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
