@@ -18,10 +18,10 @@
 set -euo pipefail
 
 # Global constants
-declare -r SCRIPT_DIR
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-declare -r PROJECT_ROOT
+declare -r SCRIPT_DIR
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+declare -r PROJECT_ROOT
 declare -r SEMGREP_CONFIG="${SCRIPT_DIR}/semgrep-rules.yaml"
 declare -r POC_REPORTS_DIR="${PROJECT_ROOT}/reports/security/poc"
 
@@ -98,6 +98,7 @@ initialize_environment() {
   fi
 
   # Setup environment variables for Semgrep CI
+  # Note: These variables must be exported (not local) for semgrep to access them
   export SEMGREP_REPO_NAME="${SEMGREP_REPO_NAME:-py-txt-trnsfrm}"
   export SEMGREP_BRANCH="${SEMGREP_BRANCH:-main}"
   export SEMGREP_JOB_URL="${SEMGREP_JOB_URL:-local}"
@@ -106,6 +107,7 @@ initialize_environment() {
 
   # Check if we're in a git repository for diff-aware scanning
   if git rev-parse --git-dir > /dev/null 2>&1; then
+    # Note: SEMGREP_BASELINE_REF must be exported for diff-aware scanning
     export SEMGREP_BASELINE_REF="${SEMGREP_BASELINE_REF:-main}"
     diff_aware_available=true
   else
@@ -143,6 +145,7 @@ check_semgrep_authentication() {
         local token
         token=$(grep "api_token:" "${HOME}/.semgrep/settings.yml" | cut -d'"' -f2 2>/dev/null || true)
         if [[ -n "${token}" ]]; then
+          # Note: SEMGREP_APP_TOKEN must be exported for semgrep authentication
           export SEMGREP_APP_TOKEN="${token}"
         fi
       fi
