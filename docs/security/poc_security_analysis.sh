@@ -330,11 +330,12 @@ generate_semgrep_sarif() {
 # Arguments:
 #   None
 # Outputs:
-#   Issue counts to summary file
+#   Issue counts to summary files
 #######################################
 count_security_issues() {
   local trivy_issues=0
   local trivy_failures=0
+  local semgrep_issues=0
 
   # Count Trivy issues
   if [[ -f "${POC_REPORTS_DIR}/trivy_fs.json" ]]; then
@@ -353,12 +354,28 @@ count_security_issues() {
 
   # Count Semgrep issues
   if [[ -f "${POC_REPORTS_DIR}/semgrep.json" ]]; then
-    local semgrep_issues
     semgrep_issues=$(jq '.results | length' \
       "${POC_REPORTS_DIR}/semgrep.json" 2>/dev/null || echo "0")
     echo "🔍 Semgrep Issues Found: ${semgrep_issues}" >> \
       "${POC_REPORTS_DIR}/poc_summary.txt"
   fi
+
+  # Add findings to GitHub summary
+  {
+    if [[ -f "${POC_REPORTS_DIR}/trivy_fs.json" ]] || [[ -f "${POC_REPORTS_DIR}/trivy_config.json" ]]; then
+      local trivy_total=$((trivy_issues + trivy_failures))
+      echo "- **Trivy findings:** ${trivy_total} vulnerabilities"
+    fi
+    if [[ -f "${POC_REPORTS_DIR}/semgrep.json" ]]; then
+      echo "- **Semgrep findings:** ${semgrep_issues} code security issues"
+    fi
+    echo ""
+    echo "### 🔧 Tool Information"
+    echo "- **Trivy**: Vulnerability and misconfiguration scanner"
+    echo "- **Semgrep**: Enhanced CI integration with ${#SEMGREP_COMMUNITY_RULESETS[@]} community rulesets"
+    echo ""
+    echo "📊 SARIF reports uploaded to GitHub Security tab for detailed analysis."
+  } >> "${POC_REPORTS_DIR}/github_summary.md"
 }
 
 #######################################
@@ -377,7 +394,7 @@ generate_summary_report() {
   end_time=$(date +%s)
   total_duration=$((end_time - start_time))
 
-  # Generate main POC summary report header
+  # Generate comprehensive summary report header
   {
     echo "📋 POC Security Analysis Summary:"
     echo "================================="
@@ -400,6 +417,22 @@ generate_summary_report() {
     )"
     echo ""
   } > "${POC_REPORTS_DIR}/poc_summary.txt"
+
+  # Generate GitHub-compatible summary for PR comments
+  {
+    echo "## 🔒 POC Security Scan Results"
+    echo ""
+    echo "- **Semgrep Authentication:** $(
+      [[ "${semgrep_logged_in}" == true ]] && 
+      echo "✅ Authenticated (enhanced community rules)" || 
+      echo "⚠️ Not authenticated (local rules used)"
+    )"
+    echo "- **Scan Type:** $(
+      [[ "${diff_aware_available}" == true ]] && 
+      echo "📊 Diff-aware scanning available" || echo "📊 Full repository scan"
+    )"
+    echo ""
+  } > "${POC_REPORTS_DIR}/github_summary.md"
 
   # Add community rulesets used
   {
@@ -427,11 +460,12 @@ generate_summary_report() {
   {
     echo ""
     echo "📁 POC Report Structure:"
-    echo "  reports/security/poc/trivy_*.json    - Trivy scan results (JSON)"
-    echo "  reports/security/poc/trivy.sarif     - Trivy SARIF for GitHub Security"
-    echo "  reports/security/poc/semgrep.json    - Semgrep scan results (JSON)"
-    echo "  reports/security/poc/semgrep.sarif   - Semgrep SARIF for GitHub Security"
-    echo "  reports/security/poc/poc_summary.txt - This summary file"
+    echo "  reports/security/poc/trivy_*.json      - Trivy scan results (JSON)"
+    echo "  reports/security/poc/trivy.sarif       - Trivy SARIF for GitHub Security"
+    echo "  reports/security/poc/semgrep.json      - Semgrep scan results (JSON)"
+    echo "  reports/security/poc/semgrep.sarif     - Semgrep SARIF for GitHub Security"
+    echo "  reports/security/poc/github_summary.md - GitHub-compatible summary for PR comments"
+    echo "  reports/security/poc/poc_summary.txt   - This comprehensive summary file"
   } >> "${POC_REPORTS_DIR}/poc_summary.txt"
 
   # Print final status
