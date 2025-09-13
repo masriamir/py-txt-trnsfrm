@@ -7,16 +7,23 @@ and environment validation.
 """
 
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flask import Flask
 
 try:
-    from app.config import ProductionConfig
+    from app.config import ProductionConfig as BaseProductionConfig
+    
+    _has_production_config = True
 except ImportError as e:
     import logging
 
     logging.warning(f"Could not import ProductionConfig: {e}")
+    _has_production_config = False
 
     # Fallback base config
-    class ProductionConfig:
+    class _FallbackBaseConfig:
         """Fallback configuration class if main config cannot be imported."""
 
         DEBUG = False
@@ -24,16 +31,18 @@ except ImportError as e:
         SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 
         @classmethod
-        def init_app(cls, app):
+        def init_app(cls, app: "Flask") -> None:
             """Initialize fallback configuration.
 
             Args:
                 app: Flask application instance.
             """
             pass
+    
+    BaseProductionConfig = _FallbackBaseConfig  # type: ignore[misc, assignment]
 
 
-class HerokuConfig(ProductionConfig):
+class HerokuConfig(BaseProductionConfig):
     """Configuration class optimized for Heroku deployment.
 
     This configuration extends ProductionConfig with Heroku-specific
@@ -56,7 +65,7 @@ class HerokuConfig(ProductionConfig):
     PROXY_FIX = True
 
     @classmethod
-    def init_app(cls, app):
+    def init_app(cls, app: "Flask") -> None:
         """Initialize Heroku-specific application settings.
 
         Configures the Flask application for Heroku deployment including
@@ -79,10 +88,10 @@ class HerokuConfig(ProductionConfig):
             logger = logging.getLogger("heroku_config")
 
         try:
-            ProductionConfig.init_app(app)
+            super().init_app(app)
             logger.info("Base ProductionConfig initialized")
         except Exception as e:
-            logger.warning(f"ProductionConfig.init_app failed: {e}")
+            logger.warning(f"Base config init_app failed: {e}")
 
         # Validate SECRET_KEY
         secret_key = os.environ.get("SECRET_KEY")
@@ -97,7 +106,7 @@ class HerokuConfig(ProductionConfig):
         try:
             from werkzeug.middleware.proxy_fix import ProxyFix
 
-            app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+            app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # type: ignore[method-assign]
             logger.info("ProxyFix middleware applied for Heroku")
         except ImportError as e:
             logger.warning(f"Could not apply ProxyFix: {e}")

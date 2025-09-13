@@ -49,7 +49,7 @@ logger.info("🚀 Starting py-txt-trnsfrm Flask Application")
 logger.info("=" * 60)
 
 # Detect environment and select appropriate configuration
-config_name = get_flask_env_for_wsgi()
+config_name: str | FlaskEnvironment = get_flask_env_for_wsgi()
 
 # Log configuration details
 logger.info("📋 Configuration Details:")
