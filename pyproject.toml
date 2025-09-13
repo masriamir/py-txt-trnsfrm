@@ -30,7 +30,6 @@ dependencies = [
 [dependency-groups]
 # Development tools for code formatting, linting, and type checking
 dev = [
-    "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
     "pydocstyle>=6.3.0",
@@ -76,10 +75,6 @@ packages = ["app"]
 "app" = "app"
 "app.py" = "app.py"
 
-[tool.black]
-line-length = 88
-target-version = ['py313']
-
 [tool.ruff]
 line-length = 88
 target-version = "py313"
@@ -121,7 +116,7 @@ select = [
     "UP",  # pyupgrade
 #    "RUF"  # Ruff-specific rules
 ]
-ignore = ["E501"]  # Line too long (handled by black)
+ignore = ["E501"]  # Line too long
 
 [tool.ruff.format]
 quote-style = "double"

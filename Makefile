@@ -164,9 +164,7 @@ fresh: clean setup ## Complete reset - clean everything and setup from scratch
 # Code Quality Commands
 # =============================================================================
 
-format: uv-check ## Fix all formatting issues (black + ruff format)
-	$(call progress,Formatting code with black...)
-	$(UV) run black .
+format: uv-check ## Fix all formatting issues (ruff format)
 	$(call progress,Formatting code with ruff...)
 	$(UV) run ruff format .
 	$(call success,Code formatting complete!)
@@ -176,16 +174,13 @@ lint: uv-check ## Run lint checks (ruff)
 	$(UV) run ruff check .
 	$(call success,Linting complete!)
 
-fix: uv-check ## Fix all auto-fixable issues (ruff + black)
+fix: uv-check ## Fix all auto-fixable issues (ruff)
 	$(call progress,Fixing auto-fixable issues...)
 	$(UV) run ruff check --fix .
-	$(UV) run black .
 	$(call success,Auto-fixes applied!)
 
 check: uv-check ## Run all quality checks (lint + format check + types + docstrings)
 	$(call progress,Running comprehensive quality checks...)
-	$(call progress,Checking code formatting...)
-	$(UV) run black --check .
 	$(call progress,Running lint checks...)
 	$(UV) run ruff check .
 	$(call progress,Checking docstring compliance (Google style)...)

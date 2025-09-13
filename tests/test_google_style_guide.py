@@ -58,16 +58,16 @@ class TestGoogleStyleGuideCompliance:
         assert result.returncode == 0, f"Ruff linting errors in app/: {result.stdout}"
 
     @pytest.mark.unit
-    def test_black_formatting_compliance(self):
-        """Test that all files pass black formatting checks."""
+    def test_ruff_formatting_compliance(self):
+        """Test that all files pass ruff formatting checks."""
         result = subprocess.run(
-            ["uv", "run", "black", "--check", "."],
+            ["uv", "run", "ruff", "format", "--check", "."],
             capture_output=True,
             text=True,
             cwd=Path(__file__).parent.parent,
         )
 
-        assert result.returncode == 0, f"Black formatting issues: {result.stdout}"
+        assert result.returncode == 0, f"Ruff formatting issues: {result.stdout}"
 
 
 class TestGoogleStyleAutomation:

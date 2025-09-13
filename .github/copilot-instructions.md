@@ -5,7 +5,7 @@ Always reference these instructions first and fallback to search or bash command
 ## Quick Reference Card
 
 **Every PR Must Have:**
-- ✅ Zero ruff/black errors (`make fix`)
+- ✅ Zero ruff errors (`make fix`)
 - ✅ All tests passing (`make test`)
 - ✅ Closing keywords (Closes #XX)
 - ✅ All issue metadata copied
@@ -27,7 +27,7 @@ Always reference these instructions first and fallback to search or bash command
 - **Frontend**: Bootstrap 5 with vanilla JavaScript, Jinja2 templates for server-side rendering
 - **Package Management**: uv (modern, fast Python package management replacement for pip/pipenv)
 - **Security**: Bandit for static analysis, Safety for dependency vulnerability scanning
-- **Code Quality**: ruff (linting) + black (formatting) + mypy (type checking)
+- **Code Quality**: ruff (linting, and formatting) + mypy (type checking)
 - **Testing**: pytest with comprehensive plugins (coverage, xdist for parallel execution, hypothesis for property-based testing, benchmark for performance testing)
 - **Deployment**: Docker-ready with Heroku deployment support, Nginx configuration available
 
@@ -143,7 +143,7 @@ if is_heroku_environment():
 
 **CRITICAL**: These formatting standards are enforced by CI and must be followed:
 
-1. **Line Length**: Maximum 88 characters (`black`/`ruff` standard)
+1. **Line Length**: Maximum 88 characters (`ruff` standard)
 2. **Multi-line Formatting**: When breaking long lines:
    ```python
    # CORRECT - Parentheses on separate lines for multi-line
@@ -155,14 +155,14 @@ if is_heroku_environment():
    assert (some_long_condition_here), "Error message"
    ```
 3. **Import Organization**: Let `ruff` handle import sorting - never manually reorder
-4. **String Quotes**: Use double quotes consistently (enforced by `black`)
+4. **String Quotes**: Use double quotes consistently (enforced by `ruff`)
 5. **Trailing Commas**: Add trailing commas in multi-line structures
 
 ### Code Quality Tools
 - **Linting (Fix)**: `uv run ruff check --fix .` -- automatically fixes all auto-fixable issues
 - **Linting (Verify)**: `uv run ruff check .` -- must pass with zero errors
-- **Formatting (Fix)**: `uv run black .` -- fixes all formatting issues
-- **Formatting (Verify)**: `uv run black --check .` -- must pass with zero changes needed
+- **Formatting (Fix)**: `uv run ruff format .` -- fixes all formatting issues
+- **Formatting (Verify)**: `uv run ruff format --check .` -- must pass with zero changes needed
 - **Type checking**: `uv run mypy .` -- takes 7-8 seconds. Currently has 99 errors, mostly missing type annotations.
 
 ### Common Mistakes to Avoid
@@ -177,7 +177,7 @@ if is_heroku_environment():
 
 3. **Code Formatting**
    - ❌ Don't manually fix formatting issues
-   - ✅ Always use `uv run black .` and `uv run ruff check --fix .`
+   - ✅ Always use `uv run ruff format --check .` and `uv run ruff format .`
 
 4. **Test Execution**
    - ❌ Don't use `-n 0` for regular tests (disables parallel execution)
@@ -356,8 +356,8 @@ class TestSomeClass:
    - Run: `uv run ruff check --fix .` to automatically fix issues
    - Verify: `uv run ruff check .` must pass with zero errors
 2. **All formatting issues MUST be fixed** (not just identified):
-   - Run: `uv run black .` to fix all formatting issues  
-   - Verify: `uv run black --check .` must pass with zero changes needed
+   - Run: `uv run ruff format .` to fix all formatting issues  
+   - Verify: `uv run ruff format --check .` must pass with zero changes needed
 3. **Test Requirements MUST be met** (MANDATORY):
    - All new functionality must have corresponding tests with proper pytest markers
    - Coverage must meet or exceed 80% threshold: `uv run pytest --cov=app --cov-fail-under=80`
@@ -580,7 +580,7 @@ This PR implements centralized logging configuration for `app.py` and fixes `wsg
 
 ## Testing
 - ✅ `uv run ruff check .` - passes cleanly
-- ✅ `uv run black --check .` - no formatting issues
+- ✅ `uv run ruff format --check .` - no formatting issues
 - ✅ `uv run pytest` - all tests pass
 - ✅ Manual testing with `FLASK_ENV=development uv run python app.py`
 
@@ -610,11 +610,11 @@ uv run pytest --collect-only | grep "@pytest.mark"  # Verify markers
 
 # Step 3: Fix all issues
 uv run ruff check --fix .       # Fix linting issues
-uv run black .                  # Fix formatting issues
+uv run ruff format .            # Fix formatting issues
 
 # Step 4: Verify all issues are resolved
 uv run ruff check .             # Must pass with zero errors
-uv run black --check .          # Must pass with zero changes needed
+uv run ruff format --check .          # Must pass with zero changes needed
 uv run pytest --cov=app --cov-fail-under=80  # Must meet coverage threshold
 
 # Step 5: Run tests and commit (only after verification passes)
@@ -646,7 +646,7 @@ make fix && make test && make check
 grep -c "pkgs.safetycli.com" uv.lock
 
 # Check formatting without fixing
-uv run black --check . && uv run ruff check .
+uv run ruff format --check . && uv run ruff check .
 ```
 
 ### Performance Expectations and Timeouts
@@ -673,7 +673,7 @@ result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
 
 #### Code Quality Issues  
 - **Type annotations**: 99 mypy errors due to missing type annotations in tests and some application files
-- **Black formatting**: 7 files need reformatting
+- **Ruff formatting**: 7 files need reformatting
 - **Security**: 4 low-severity Bandit warnings (all acceptable - test secrets and non-cryptographic random usage)
 
 #### Deployment Issues

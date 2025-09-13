@@ -38,7 +38,6 @@ def test_uv_sync_development_groups():
 
     # Check dev dependencies are available (since we ran full sync earlier)
     output = result.stdout.lower()
-    assert "black" in output, "Black should be available"
     assert "ruff" in output, "Ruff should be available"
     assert "mypy" in output, "MyPy should be available"
 

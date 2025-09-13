@@ -71,12 +71,6 @@ jobs:
         uv run ruff format --check .
         echo "::endgroup::"
 
-    - name: Run black formatting check
-      run: |
-        echo "::group::Black Format Check"
-        uv run black --check --diff .
-        echo "::endgroup::"
-
     - name: Run mypy type checking
       run: |
         echo "::group::MyPy Type Checking"

@@ -14,7 +14,6 @@
 <!-- Development Tools -->
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![Black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat)](https://github.com/psf/black)
 [![MyPy](https://img.shields.io/badge/mypy-checked-blue?style=flat)](https://mypy-lang.org/)
 
 <!-- Code Quality & Testing Badges -->
@@ -103,7 +102,7 @@ See [`docs/MAKEFILE.md`](docs/MAKEFILE.md) for complete documentation.
 - **Automated Security Scanning**: Nightly security analysis with automatic issue creation
 - **Release Automation**: Git-based Heroku deployment with version validation
 - **Performance Testing**: Standalone performance test suite for load and benchmark testing
-- **Code Quality Gates**: Zero-tolerance linting with ruff, black, and mypy
+- **Code Quality Gates**: Zero-tolerance linting with ruff, and mypy
 - **Latest GitHub Actions**: Uses checkout@v5 and setup-uv@v6 for optimal performance
 
 ### 🔒 Security Features
@@ -131,7 +130,7 @@ The project features a comprehensive CI/CD pipeline with three main workflows:
 
 #### 🔄 CI Pipeline (`.github/workflows/ci.yml`)
 Comprehensive continuous integration with parallel execution:
-- **Code Quality**: Fast-fail linting with ruff, black, and mypy
+- **Code Quality**: Fast-fail linting with ruff, and mypy
 - **Testing Matrix**: Parallel test execution by type (unit, integration, api, smoke)
 - **Security Analysis**: Integrated bandit and safety scanning
 - **Coverage Reporting**: Automatic Codecov integration
@@ -193,7 +192,7 @@ uv sync
 uv sync --group dev --group test --group security
 
 # Or install specific groups
-uv sync --group dev          # Development tools (black, ruff, mypy)
+uv sync --group dev          # Development tools (ruff, mypy)
 uv sync --group test         # Testing framework (pytest, coverage, etc.)
 uv sync --group security     # Security analysis tools (bandit, safety)
 ```
@@ -341,7 +340,7 @@ The project includes an `.editorconfig` file that provides consistent editor set
 - **Atom**: Install "editorconfig" package
 
 #### Configuration Details
-- **Python files (*.py)**: 4 spaces, UTF-8, 88 character line length (matches Black/Ruff)
+- **Python files (*.py)**: 4 spaces, UTF-8, 88 character line length (matches Ruff)
 - **Web files (*.css, *.js, *.html)**: 2 spaces, UTF-8 
 - **Configuration files (*.yml, *.json)**: 2 spaces, UTF-8
 - **Markdown files (*.md)**: 2 spaces, UTF-8, preserve trailing whitespace
@@ -391,11 +390,10 @@ uv run safety scan             # Dependency vulnerability scan
 ### Code Quality
 ```bash
 # Format code
-uv run black .
+uv run ruff format .
 
 # Lint code
 uv run ruff check .
-uv run ruff format .
 
 # Type checking
 uv run mypy app/
@@ -423,8 +421,7 @@ dependencies = [
 ### Development Tools (`--group dev`)
 ```toml
 dev = [
-    "black>=23.0.0",    # Code formatting
-    "ruff>=0.1.0",      # Linting and code analysis
+    "ruff>=0.1.0",      # Linting and code formatting
     "mypy>=1.5.0",      # Type checking
 ]
 ```
@@ -554,7 +551,6 @@ py-txt-trnsfrm/
 - **Report Generation**: HTML, XML, and terminal formats
 
 ### Code Quality Standards
-- **Black**: Code formatting with 88-character line length
 - **Ruff**: Fast Python linter with comprehensive rule set
 - **MyPy**: Static type checking for Python 3.13
 - **Bandit**: Security-focused static analysis
@@ -567,7 +563,7 @@ py-txt-trnsfrm/
 4. Make your changes
 5. Run tests (`uv run pytest`)
 6. Run security analysis (`./run_security_analysis.sh`)
-7. Format code (`uv run black .` and `uv run ruff format .`)
+7. Format code (`uv run ruff format .`)
 8. Commit your changes (`git commit -m 'Add amazing feature'`)
 9. Push to the branch (`git push origin feature/amazing-feature`)
 10. Open a Pull Request

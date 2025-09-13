@@ -71,9 +71,8 @@ These commands ensure code quality and consistency:
 
 #### `make format`
 - **Purpose**: Automatically fix code formatting
-- **Actions**: 
-  - Runs `black .` for Python formatting
-  - Runs `ruff format .` for additional formatting
+- **Actions**:
+  - Runs `ruff format .` for Python formatting
 - **Example**: `make format`
 
 #### `make lint`
@@ -86,13 +85,11 @@ These commands ensure code quality and consistency:
 - **Purpose**: Automatically fix auto-fixable linting issues
 - **Actions**: 
   - Runs `ruff check --fix .`
-  - Runs `black .`
 - **Example**: `make fix`
 
 #### `make check`
 - **Purpose**: Run comprehensive quality checks
-- **Actions**: 
-  - Checks code formatting with black
+- **Actions**:
   - Runs lint checks with ruff
   - Runs type checking with mypy
 - **Note**: Type checking currently shows expected issues

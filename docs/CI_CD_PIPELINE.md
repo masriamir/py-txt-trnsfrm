@@ -64,7 +64,7 @@ This file provides comprehensive performance testing capabilities including benc
 ## Workflow Details
 
 ### CI Pipeline (`ci.yml`)
-1. **Code Quality**: Fast-fail linting (ruff, black, mypy)
+1. **Code Quality**: Fast-fail linting (ruff, mypy)
 2. **Testing Matrix**: Parallel test execution by type
 3. **Security Analysis**: Integrated bandit/safety scanning
 4. **Aggregate Results**: Final status determination
