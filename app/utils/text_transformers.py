@@ -31,7 +31,7 @@ class TextTransformer:
         >>> print(result)  # "H3110 W0r1d"
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the TextTransformer with available transformations.
 
         Sets up the internal dictionary of available transformations and
@@ -578,7 +578,7 @@ class TextTransformer:
         if not text or text.isspace():
             return text
 
-        def transform_word(word):
+        def transform_word(word: str) -> str:
             # Extract leading non-alphabetic, alphabetic part, and trailing non-alphabetic
             match = re.match(r"^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$", word)
             if match:
@@ -593,7 +593,7 @@ class TextTransformer:
                 # If no alphabetic characters found, return unchanged
                 return word
 
-        def apply_izzle_rules(word):  # noqa: C901  # Complex transformation rules
+        def apply_izzle_rules(word: str) -> str:  # noqa: C901  # Complex transformation rules
             """Apply sophisticated izzle transformation rules."""
             if len(word) <= 1:
                 return word + "izzle"

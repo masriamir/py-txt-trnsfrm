@@ -14,16 +14,18 @@ except ImportError:
     # python-dotenv not available, skip loading
     pass
 
+from typing import Type
+
 from flask import Flask
 
-from app.config import config
+from app.config import Config, config
 from app.env_config import FlaskEnvironment, get_flask_env, get_logging_config
 from app.logging_config import get_logger, setup_logging
 from app.main import bp as main_bp
 from app.middleware import setup_request_logging
 
 
-def create_app(config_class=None):
+def create_app(config_class: Type[Config] | None = None) -> Flask:
     """Create and configure Flask application instance.
 
     This function implements the application factory pattern, creating a Flask

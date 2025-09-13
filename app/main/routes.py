@@ -4,7 +4,9 @@ This module contains the primary Flask routes for the text transformation web
 application, including the main page and the text transformation API endpoint.
 """
 
-from flask import jsonify, render_template, request
+from typing import Any
+
+from flask import Response, jsonify, render_template, request
 
 from app.logging_config import get_logger
 from app.main import bp
@@ -15,7 +17,7 @@ logger = get_logger(__name__)
 
 
 @bp.route("/")
-def index():
+def index() -> str:
     """Render the main application page.
 
     Serves the main HTML page containing the text transformation interface.
@@ -29,7 +31,7 @@ def index():
 
 
 @bp.route("/health")
-def health_check():
+def health_check() -> tuple[Response, int]:
     """Health check endpoint for load balancers and monitoring.
 
     Returns basic application health status for Docker health checks,
@@ -56,7 +58,7 @@ def health_check():
 
 
 @bp.route("/transform", methods=["POST"])
-def transform_text():
+def transform_text() -> Response | tuple[Response, int]:
     """Handle text transformation requests via JSON API.
 
     Processes POST requests containing text and transformation type,
