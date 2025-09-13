@@ -86,9 +86,9 @@ class TestTransformationEnginePerformance:
 
         # Performance should scale reasonably with text size
         expected_max_time = size / 10000  # 1s per 10k characters
-        assert (
-            duration < expected_max_time
-        ), f"Large text ({size} chars) took {duration:.4f}s"
+        assert duration < expected_max_time, (
+            f"Large text ({size} chars) took {duration:.4f}s"
+        )
         assert len(result) == size
 
     @pytest.mark.load
@@ -117,9 +117,9 @@ class TestTransformationEnginePerformance:
         memory_increase = memory_after - memory_before
 
         # Memory increase should be reasonable (less than 10MB for 1000 operations)
-        assert (
-            memory_increase < 10 * 1024 * 1024
-        ), f"Memory increased by {memory_increase} bytes"
+        assert memory_increase < 10 * 1024 * 1024, (
+            f"Memory increased by {memory_increase} bytes"
+        )
 
     @pytest.mark.load
     def test_all_transformations_performance(self, transformer):
@@ -376,9 +376,9 @@ class TestConcurrentLoadPerformance:
         expected_sequential_time = total_requests * 0.05  # 50ms per request
 
         # Concurrent execution should be faster than sequential
-        assert (
-            total_duration < expected_sequential_time
-        ), f"Concurrent execution ({total_duration:.4f}s) not faster than expected sequential ({expected_sequential_time:.4f}s)"
+        assert total_duration < expected_sequential_time, (
+            f"Concurrent execution ({total_duration:.4f}s) not faster than expected sequential ({expected_sequential_time:.4f}s)"
+        )
 
     @pytest.mark.load
     @pytest.mark.concurrent
@@ -447,14 +447,14 @@ class TestConcurrentLoadPerformance:
 
         # Mixed concurrent requests should complete efficiently
         total_requests = len(all_results)
-        assert (
-            total_duration < 5.0
-        ), f"Mixed concurrent requests took {total_duration:.4f}s"
+        assert total_duration < 5.0, (
+            f"Mixed concurrent requests took {total_duration:.4f}s"
+        )
 
         avg_duration = total_duration / total_requests
-        assert (
-            avg_duration < 0.2
-        ), f"Average concurrent request time {avg_duration:.4f}s"
+        assert avg_duration < 0.2, (
+            f"Average concurrent request time {avg_duration:.4f}s"
+        )
 
     @pytest.mark.load
     @pytest.mark.concurrent
@@ -546,9 +546,9 @@ class TestMemoryAndResourcePerformance:
         memory_increase = memory_after - memory_before
 
         # Memory increase should be reasonable
-        assert (
-            memory_increase < 50 * 1024 * 1024
-        ), f"Memory increased by {memory_increase} bytes"
+        assert memory_increase < 50 * 1024 * 1024, (
+            f"Memory increased by {memory_increase} bytes"
+        )
 
     @pytest.mark.load
     def test_transformation_cache_efficiency(self):
@@ -572,9 +572,9 @@ class TestMemoryAndResourcePerformance:
         second_duration = time.perf_counter() - start_time
 
         # Performance should be consistent
-        assert (
-            second_duration < baseline_duration * 1.5
-        ), f"Second run ({second_duration:.4f}s) much slower than first ({baseline_duration:.4f}s)"
+        assert second_duration < baseline_duration * 1.5, (
+            f"Second run ({second_duration:.4f}s) much slower than first ({baseline_duration:.4f}s)"
+        )
 
     @pytest.mark.load
     def test_garbage_collection_efficiency(self):

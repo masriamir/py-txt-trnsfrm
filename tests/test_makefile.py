@@ -119,9 +119,9 @@ class TestMakefileCommands:
         ]
 
         for target in required_targets:
-            assert (
-                target in content
-            ), f"Required target '{target}' not found in Makefile"
+            assert target in content, (
+                f"Required target '{target}' not found in Makefile"
+            )
 
     @pytest.mark.unit
     def test_makefile_has_proper_structure(self):
@@ -200,9 +200,9 @@ class TestMakefileCommands:
                 cwd=Path(__file__).parent.parent,
             )
 
-            assert (
-                result.returncode == 0
-            ), f"Critical command 'make {command}' failed: {result.stderr}"
+            assert result.returncode == 0, (
+                f"Critical command 'make {command}' failed: {result.stderr}"
+            )
 
 
 class TestMakefileIntegration:
@@ -217,12 +217,12 @@ class TestMakefileIntegration:
         deploy_script = project_root / "deploy.sh"
         security_script = project_root / "run_security_analysis.sh"
 
-        assert (
-            deploy_script.exists()
-        ), "deploy.sh should exist for deployment integration"
-        assert (
-            security_script.exists()
-        ), "run_security_analysis.sh should exist for security integration"
+        assert deploy_script.exists(), (
+            "deploy.sh should exist for deployment integration"
+        )
+        assert security_script.exists(), (
+            "run_security_analysis.sh should exist for security integration"
+        )
 
     @pytest.mark.integration
     def test_makefile_respects_uv_dependency_groups(self):
@@ -246,9 +246,9 @@ class TestMakefileIntegration:
             content = f.read()
 
         # Check for reference to Makefile documentation
-        assert (
-            "docs/MAKEFILE.md" in content or "MAKEFILE.md" in content
-        ), "README should reference Makefile documentation"
+        assert "docs/MAKEFILE.md" in content or "MAKEFILE.md" in content, (
+            "README should reference Makefile documentation"
+        )
 
 
 class TestMakefileEnvIntegration:
@@ -341,9 +341,9 @@ DOCKER_TAG=test-tag
             env=env,
         )
 
-        assert (
-            result.returncode == 0
-        ), f"make version failed with env override: {result.stderr}"
+        assert result.returncode == 0, (
+            f"make version failed with env override: {result.stderr}"
+        )
 
     @pytest.mark.integration
     def test_command_line_argument_precedence(self, temp_env_file, project_root):
@@ -366,9 +366,9 @@ DOCKER_TAG=test-tag
             env=env,
         )
 
-        assert (
-            result.returncode == 0
-        ), f"make help with PORT override failed: {result.stderr}"
+        assert result.returncode == 0, (
+            f"make help with PORT override failed: {result.stderr}"
+        )
 
     @pytest.mark.unit
     def test_makefile_has_env_loading_logic(self, project_root):
@@ -379,9 +379,9 @@ DOCKER_TAG=test-tag
             content = f.read()
 
         # Check for .env loading logic
-        assert (
-            "ifneq (,$(wildcard .env))" in content
-        ), "Makefile should check for .env file existence"
+        assert "ifneq (,$(wildcard .env))" in content, (
+            "Makefile should check for .env file existence"
+        )
         assert "include .env" in content, "Makefile should include .env file"
         assert "export" in content, "Makefile should export .env variables"
 
@@ -449,9 +449,9 @@ DOCKER_TAG=test-tag
         active_port_lines = [
             occ for occ in port_occurrences if not occ[1].startswith("#")
         ]
-        assert (
-            len(active_port_lines) == 1
-        ), f"Should have exactly one active PORT definition, found: {active_port_lines}"
+        assert len(active_port_lines) == 1, (
+            f"Should have exactly one active PORT definition, found: {active_port_lines}"
+        )
 
         # Check that the PORT line mentions Makefile usage
         port_line_num, port_line = active_port_lines[0]
@@ -462,6 +462,6 @@ DOCKER_TAG=test-tag
         context_lines = lines[context_start:context_end]
         context_text = "".join(context_lines).lower()
 
-        assert (
-            "makefile" in context_text
-        ), f"PORT definition should mention Makefile usage in context around line {port_line_num}"
+        assert "makefile" in context_text, (
+            f"PORT definition should mention Makefile usage in context around line {port_line_num}"
+        )

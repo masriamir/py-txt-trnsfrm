@@ -40,9 +40,9 @@ class TestGoogleStyleGuideCompliance:
                 cwd=project_root,
             )
 
-            assert (
-                result.returncode == 0
-            ), f"Docstring issues in {filename}: {result.stdout}"
+            assert result.returncode == 0, (
+                f"Docstring issues in {filename}: {result.stdout}"
+            )
 
     @pytest.mark.unit
     def test_ruff_linting_passes(self):
@@ -95,9 +95,9 @@ class TestGoogleStyleAutomation:
             makefile_content = f.read()
 
         assert "pydocstyle" in makefile_content, "Makefile should include pydocstyle"
-        assert (
-            "docstrings:" in makefile_content
-        ), "Makefile should have docstrings target"
+        assert "docstrings:" in makefile_content, (
+            "Makefile should have docstrings target"
+        )
 
     @pytest.mark.unit
     def test_quality_check_includes_docstrings(self):
@@ -119,9 +119,9 @@ class TestGoogleStyleAutomation:
             elif in_check_target and not line.startswith("\t"):
                 break
 
-        assert (
-            "pydocstyle" in check_section
-        ), "Quality check should include docstring validation"
+        assert "pydocstyle" in check_section, (
+            "Quality check should include docstring validation"
+        )
 
 
 class TestNamingConventions:

@@ -97,9 +97,7 @@ class TestGunicornPidfileConfiguration:
         namespace = exec_gunicorn_config()
 
         # Ensure result doesn't contain /tmp
-        assert (
-            "/tmp" not in namespace["pidfile"]
-        )
+        assert "/tmp" not in namespace["pidfile"]
 
     def test_gunicorn_config_imports_successfully(self):
         """Test that gunicorn.conf.py imports without errors."""
@@ -156,7 +154,7 @@ class TestGunicornPidfileConfiguration:
         )
 
         # Should not have S108 (insecure temp file usage) warnings
-        assert (
-            "S108" not in result.stdout
-        ), f"Security warning S108 still present: {result.stdout}"
+        assert "S108" not in result.stdout, (
+            f"Security warning S108 still present: {result.stdout}"
+        )
         assert result.returncode == 0, f"Ruff check failed: {result.stdout}"

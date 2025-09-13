@@ -32,9 +32,7 @@ class TestHostBinding:
     def test_production_environment_binds_to_all_interfaces(self):
         """Test that production environment binds to 0.0.0.0."""
         host = get_host_for_environment("production")
-        assert (
-            host == "0.0.0.0"
-        ), "Production should bind to all interfaces"
+        assert host == "0.0.0.0", "Production should bind to all interfaces"
 
     @pytest.mark.unit
     def test_heroku_environment_binds_to_all_interfaces(self):
@@ -61,9 +59,7 @@ class TestHostBinding:
 
         # Test production enum
         host = get_host_for_environment(FlaskEnvironment.PRODUCTION)
-        assert (
-            host == "0.0.0.0"
-        ), "Production enum should bind to all interfaces"
+        assert host == "0.0.0.0", "Production enum should bind to all interfaces"
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "web.1"})
@@ -71,18 +67,16 @@ class TestHostBinding:
         """Test that environments with DYNO set bind to 0.0.0.0."""
         # Should return 0.0.0.0 regardless of config_name when DYNO is set
         host = get_host_for_environment("development")
-        assert (
-            host == "0.0.0.0"
-        ), "Heroku DYNO environment should bind to all interfaces"
+        assert host == "0.0.0.0", (
+            "Heroku DYNO environment should bind to all interfaces"
+        )
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "worker.1"})
     def test_heroku_worker_dyno_binds_to_all_interfaces(self):
         """Test that worker dynos also bind to 0.0.0.0."""
         host = get_host_for_environment("testing")
-        assert (
-            host == "0.0.0.0"
-        ), "Heroku worker dyno should bind to all interfaces"
+        assert host == "0.0.0.0", "Heroku worker dyno should bind to all interfaces"
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "web.1"})
@@ -90,9 +84,9 @@ class TestHostBinding:
         """Test that DYNO environment works with enum values."""
         # Should return 0.0.0.0 regardless of enum value when DYNO is set
         host = get_host_for_environment(FlaskEnvironment.DEVELOPMENT)
-        assert (
-            host == "0.0.0.0"
-        ), "Heroku DYNO environment should bind to all interfaces with enum"
+        assert host == "0.0.0.0", (
+            "Heroku DYNO environment should bind to all interfaces with enum"
+        )
 
     @pytest.mark.unit
     @patch.dict(os.environ, {}, clear=True)
@@ -137,9 +131,7 @@ class TestHostBindingIntegration:
 
         # Test with enum values
         assert get_host_for_environment(FlaskEnvironment.DEVELOPMENT) == "127.0.0.1"
-        assert (
-            get_host_for_environment(FlaskEnvironment.PRODUCTION) == "0.0.0.0"
-        )
+        assert get_host_for_environment(FlaskEnvironment.PRODUCTION) == "0.0.0.0"
 
     @pytest.mark.integration
     def test_host_binding_function_import_in_modules(self):
@@ -164,12 +156,12 @@ class TestSecurityDocumentation:
         docstring = get_host_for_environment.__doc__
         assert docstring is not None, "Function should have documentation"
         assert "security" in docstring.lower(), "Documentation should mention security"
-        assert (
-            "production" in docstring.lower()
-        ), "Documentation should explain production behavior"
-        assert (
-            "development" in docstring.lower()
-        ), "Documentation should explain development behavior"
+        assert "production" in docstring.lower(), (
+            "Documentation should explain production behavior"
+        )
+        assert "development" in docstring.lower(), (
+            "Documentation should explain development behavior"
+        )
 
     @pytest.mark.unit
     def test_function_signature_has_type_hints(self):
@@ -183,9 +175,9 @@ class TestSecurityDocumentation:
         # Check parameter type hint
         config_name_param = signature.parameters["config_name"]
         # The annotation should be Union[str, FlaskEnvironment]
-        assert (
-            config_name_param.annotation is not None
-        ), "Parameter should have type hint"
+        assert config_name_param.annotation is not None, (
+            "Parameter should have type hint"
+        )
 
         # Check return type hint
         assert signature.return_annotation is str, "Return should have str type hint"
