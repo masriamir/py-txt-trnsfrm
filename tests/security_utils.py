@@ -4,9 +4,10 @@ import json
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 
-def run_bandit_security_scan():
+def run_bandit_security_scan() -> dict[str, Any] | None:
     """Run Bandit security scanner and return results."""
     try:
         result = subprocess.run(
@@ -17,7 +18,7 @@ def run_bandit_security_scan():
         )
 
         if result.stdout:
-            return json.loads(result.stdout)
+            return json.loads(result.stdout)  # type: ignore[no-any-return]
         return {"results": [], "metrics": {}}
     except (
         subprocess.CalledProcessError,
@@ -28,7 +29,7 @@ def run_bandit_security_scan():
         return None
 
 
-def run_safety_check():
+def run_safety_check() -> list[Any] | dict[str, Any] | None:
     """Run Safety scan for known vulnerabilities in dependencies."""
     try:
         # Use the modern safety scan command
@@ -41,7 +42,7 @@ def run_safety_check():
 
         if result.stdout.strip():
             try:
-                return json.loads(result.stdout)
+                return json.loads(result.stdout)  # type: ignore[no-any-return]
             except json.JSONDecodeError:
                 # If JSON parsing fails, return empty list (no vulnerabilities found)
                 return []
@@ -51,7 +52,7 @@ def run_safety_check():
         return None
 
 
-def generate_security_report():
+def generate_security_report() -> dict[str, Any]:
     """Generate comprehensive security report."""
     print("Running security analysis...")
 
