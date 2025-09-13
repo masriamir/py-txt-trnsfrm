@@ -22,8 +22,8 @@ class TestSecurityMeasures:
             # SECRET_KEY should not be a simple string
             if hasattr(config, "SECRET_KEY") and config.SECRET_KEY:
                 assert (
-                    config.SECRET_KEY != "dev"  # noqa: S105
-                ), "SECRET_KEY should not be 'dev' in production"  # noqa: S105
+                    config.SECRET_KEY != "dev"
+                ), "SECRET_KEY should not be 'dev' in production"
                 assert (
                     len(config.SECRET_KEY) > 10
                 ), "SECRET_KEY should be sufficiently long"

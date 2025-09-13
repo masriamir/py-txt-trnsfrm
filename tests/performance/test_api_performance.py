@@ -100,11 +100,11 @@ class TestAPIPerformance:
         avg_response_time = statistics.mean(response_times)
         max_response_time = max(response_times)
 
-        print(f"Average response time: {avg_response_time:.3f}s")  # noqa: T201
-        print(f"Max response time: {max_response_time:.3f}s")  # noqa: T201
+        print(f"Average response time: {avg_response_time:.3f}s")
+        print(f"Max response time: {max_response_time:.3f}s")
         print(
             f"95th percentile: {statistics.quantiles(response_times, n=20)[18]:.3f}s"
-        )  # noqa: T201
+        )
 
         # Performance assertions
         assert (
@@ -144,13 +144,13 @@ class TestAPIPerformance:
         total_requests = len(response_times) + errors
         error_rate = errors / total_requests if total_requests > 0 else 0
 
-        print(f"Total requests: {total_requests}")  # noqa: T201
-        print(f"Successful requests: {len(response_times)}")  # noqa: T201
-        print(f"Error rate: {error_rate:.2%}")  # noqa: T201
+        print(f"Total requests: {total_requests}")
+        print(f"Successful requests: {len(response_times)}")
+        print(f"Error rate: {error_rate:.2%}")
 
         if response_times:
             avg_response_time = statistics.mean(response_times)
-            print(f"Average response time: {avg_response_time:.3f}s")  # noqa: T201
+            print(f"Average response time: {avg_response_time:.3f}s")
 
         # Performance assertions
         assert error_rate < 0.05, f"Error rate too high: {error_rate:.2%}"
@@ -159,19 +159,19 @@ class TestAPIPerformance:
 
 if __name__ == "__main__":
     # Allow running this file directly for quick testing
-    print("Running basic performance test...")  # noqa: T201
-    print(f"Target URL: {BASE_URL}")  # noqa: T201
+    print("Running basic performance test...")
+    print(f"Target URL: {BASE_URL}")
 
     try:
         # Quick health check
         response = requests.get(f"{BASE_URL}/health", timeout=5)
         if response.status_code == 200:
-            print("✅ Health check passed")  # noqa: T201
+            print("✅ Health check passed")
         else:
-            print(f"❌ Health check failed: {response.status_code}")  # noqa: T201
+            print(f"❌ Health check failed: {response.status_code}")
     except requests.RequestException as e:
-        print(f"❌ Connection error: {e}")  # noqa: T201
+        print(f"❌ Connection error: {e}")
 
     print(
         "Run 'pytest tests/performance/test_api_performance.py --benchmark-only' for full benchmarks"
-    )  # noqa: T201
+    )

@@ -192,7 +192,7 @@ class TestNamingConventions:
                 # Check for obvious violations: local imports before standard library
                 local_before_stdlib = False
                 found_local = False
-                for i, line in import_section:
+                for _i, line in import_section:
                     if line.startswith("from app.") or line.startswith("import app"):
                         found_local = True
                     elif found_local and any(

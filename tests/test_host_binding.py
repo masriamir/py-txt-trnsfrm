@@ -33,14 +33,14 @@ class TestHostBinding:
         """Test that production environment binds to 0.0.0.0."""
         host = get_host_for_environment("production")
         assert (
-            host == "0.0.0.0"  # noqa: S104
-        ), "Production should bind to all interfaces"  # noqa: S104
+            host == "0.0.0.0"
+        ), "Production should bind to all interfaces"
 
     @pytest.mark.unit
     def test_heroku_environment_binds_to_all_interfaces(self):
         """Test that heroku environment binds to 0.0.0.0."""
         host = get_host_for_environment("heroku")
-        assert host == "0.0.0.0", "Heroku should bind to all interfaces"  # noqa: S104
+        assert host == "0.0.0.0", "Heroku should bind to all interfaces"
 
     @pytest.mark.unit
     def test_unknown_environment_defaults_to_localhost(self):
@@ -63,7 +63,7 @@ class TestHostBinding:
         host = get_host_for_environment(FlaskEnvironment.PRODUCTION)
         assert (
             host == "0.0.0.0"
-        ), "Production enum should bind to all interfaces"  # noqa: S104
+        ), "Production enum should bind to all interfaces"
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "web.1"})
@@ -72,8 +72,8 @@ class TestHostBinding:
         # Should return 0.0.0.0 regardless of config_name when DYNO is set
         host = get_host_for_environment("development")
         assert (
-            host == "0.0.0.0"  # noqa: S104
-        ), "Heroku DYNO environment should bind to all interfaces"  # noqa: S104
+            host == "0.0.0.0"
+        ), "Heroku DYNO environment should bind to all interfaces"
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "worker.1"})
@@ -81,8 +81,8 @@ class TestHostBinding:
         """Test that worker dynos also bind to 0.0.0.0."""
         host = get_host_for_environment("testing")
         assert (
-            host == "0.0.0.0"  # noqa: S104
-        ), "Heroku worker dyno should bind to all interfaces"  # noqa: S104
+            host == "0.0.0.0"
+        ), "Heroku worker dyno should bind to all interfaces"
 
     @pytest.mark.unit
     @patch.dict(os.environ, {"DYNO": "web.1"})
@@ -91,8 +91,8 @@ class TestHostBinding:
         # Should return 0.0.0.0 regardless of enum value when DYNO is set
         host = get_host_for_environment(FlaskEnvironment.DEVELOPMENT)
         assert (
-            host == "0.0.0.0"  # noqa: S104
-        ), "Heroku DYNO environment should bind to all interfaces with enum"  # noqa: S104
+            host == "0.0.0.0"
+        ), "Heroku DYNO environment should bind to all interfaces with enum"
 
     @pytest.mark.unit
     @patch.dict(os.environ, {}, clear=True)
@@ -107,7 +107,7 @@ class TestHostBinding:
 
         # Production should bind to all interfaces
         host = get_host_for_environment("production")
-        assert host == "0.0.0.0"  # noqa: S104
+        assert host == "0.0.0.0"
 
     @pytest.mark.unit
     def test_case_sensitivity_of_config_names(self):
@@ -133,13 +133,13 @@ class TestHostBindingIntegration:
 
         # Test basic functionality with strings
         assert get_host_for_environment("development") == "127.0.0.1"
-        assert get_host_for_environment("production") == "0.0.0.0"  # noqa: S104
+        assert get_host_for_environment("production") == "0.0.0.0"
 
         # Test with enum values
         assert get_host_for_environment(FlaskEnvironment.DEVELOPMENT) == "127.0.0.1"
         assert (
             get_host_for_environment(FlaskEnvironment.PRODUCTION) == "0.0.0.0"
-        )  # noqa: S104
+        )
 
     @pytest.mark.integration
     def test_host_binding_function_import_in_modules(self):

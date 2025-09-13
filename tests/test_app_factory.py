@@ -52,6 +52,9 @@ class TestFlaskApplicationFactory:
 
         app = create_app(TestConfig)
 
+        # Verify app was created successfully
+        assert app is not None
+
         mock_get_logging_config.assert_called_once()
         mock_setup_logging.assert_called_once_with(mock_logging_config)
 
@@ -60,6 +63,9 @@ class TestFlaskApplicationFactory:
     def test_middleware_setup_called(self, mock_setup_request_logging):
         """Test that request logging middleware is properly set up."""
         app = create_app(TestConfig)
+
+        # Verify app was created successfully
+        assert app is not None
 
         mock_setup_request_logging.assert_called_once_with(app)
 
@@ -80,6 +86,9 @@ class TestFlaskApplicationFactory:
         mock_get_logger.return_value = mock_logger
 
         app = create_app(TestConfig)
+
+        # Verify app was created successfully
+        assert app is not None
 
         # Verify logger was called for initialization steps
         mock_get_logger.assert_called()
