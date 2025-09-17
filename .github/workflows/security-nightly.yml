@@ -9,7 +9,7 @@ on:
       deep_scan:
         description: 'Run deep security analysis including slow tests'
         required: false
-        default: 'true'
+        default: true
         type: boolean
 
 env:
@@ -23,6 +23,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      issues: write
 
     steps:
     - name: Checkout code
