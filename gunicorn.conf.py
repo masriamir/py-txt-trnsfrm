@@ -8,6 +8,7 @@ import multiprocessing
 import os
 import traceback
 from pathlib import Path
+from typing import Any
 
 # Server socket configuration
 bind = f"0.0.0.0:{os.environ.get('PORT', '5000')}"
@@ -48,7 +49,7 @@ daemon = False
 
 
 # PID file configuration with secure defaults and fallback strategy
-def get_secure_pidfile_path():
+def get_secure_pidfile_path() -> str:
     """Get secure PID file path with environment variable support and fallback strategy.
 
     Returns:
@@ -112,7 +113,7 @@ max_worker_restarts = 5
 restart_timeout = 30
 
 
-def on_starting(server):
+def on_starting(server: Any) -> None:
     """Called just before the master process is initialized."""
     server.log.info("Starting Gunicorn %s server", server.version)
     server.log.info("Listening at: %s", server.address)
@@ -120,17 +121,17 @@ def on_starting(server):
     server.log.info("Number of workers: %d", server.cfg.workers)
 
 
-def on_reload(server):
+def on_reload(server: Any) -> None:
     """Called to recycle workers during a reload via SIGHUP."""
     server.log.info("Reloading Gunicorn server")
 
 
-def when_ready(server):
+def when_ready(server: Any) -> None:
     """Called just after the server is started."""
     server.log.info("Server is ready. Spawning workers")
 
 
-def worker_int(worker):
+def worker_int(worker: Any) -> None:
     """Called when a worker receives the SIGINT or SIGQUIT signal."""
     worker.log.info("Worker received INT or QUIT signal")
     import sys
@@ -147,56 +148,56 @@ def worker_int(worker):
     worker.log.debug("\n".join(code))
 
 
-def pre_fork(server, worker):
+def pre_fork(server: Any, worker: Any) -> None:
     """Called just before a worker is forked."""
     server.log.debug("Worker spawned (pid: %s)", worker.pid)
 
 
-def post_fork(server, worker):
+def post_fork(server: Any, worker: Any) -> None:
     """Called just after a worker has been forked."""
     server.log.debug("Worker spawned (pid: %s)", worker.pid)
 
 
-def post_worker_init(worker):
+def post_worker_init(worker: Any) -> None:
     """Called just after a worker has initialized the application."""
     worker.log.debug("Worker initialized (pid: %s)", worker.pid)
 
 
-def worker_abort(worker):
+def worker_abort(worker: Any) -> None:
     """Called when a worker receives the SIGABRT signal."""
     worker.log.info("Worker received SIGABRT signal")
 
 
-def pre_exec(server):
+def pre_exec(server: Any) -> None:
     """Called just before a new master process is forked."""
     server.log.info("Forked child, re-executing")
 
 
-def pre_request(worker, req):
+def pre_request(worker: Any, req: Any) -> None:
     """Called just before a worker processes the request."""
     worker.log.debug("%s %s", req.method, req.uri)
 
 
-def post_request(worker, req, environ, resp):
+def post_request(worker: Any, req: Any, environ: Any, resp: Any) -> None:
     """Called after a worker processes the request."""
     pass
 
 
-def child_exit(server, worker):
+def child_exit(server: Any, worker: Any) -> None:
     """Called just after a worker has been exited, in the master process."""
     server.log.info("Worker exited (pid: %s)", worker.pid)
 
 
-def worker_exit(server, worker):
+def worker_exit(server: Any, worker: Any) -> None:
     """Called just after a worker has been exited, in the worker process."""
     worker.log.info("Worker exiting (pid: %s)", worker.pid)
 
 
-def nworkers_changed(server, new_value, old_value):
+def nworkers_changed(server: Any, new_value: Any, old_value: Any) -> None:
     """Called just after num_workers has been changed."""
     server.log.info("Number of workers changed from %s to %s", old_value, new_value)
 
 
-def on_exit(server):
+def on_exit(server: Any) -> None:
     """Called just before exiting."""
     server.log.info("Shutting down Gunicorn server")

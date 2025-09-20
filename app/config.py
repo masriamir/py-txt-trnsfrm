@@ -6,8 +6,12 @@ application settings and environment-specific configurations.
 """
 
 import os
+from typing import TYPE_CHECKING, Type
 
 from app.env_config import FlaskEnvironment
+
+if TYPE_CHECKING:
+    from flask import Flask
 
 
 def get_host_for_environment(config_name: str | FlaskEnvironment) -> str:
@@ -75,7 +79,7 @@ class Config:
     TESTING = False
 
     @classmethod
-    def init_app(cls, app):
+    def init_app(cls, app: "Flask") -> None:
         """Initialize application with this configuration.
 
         Args:
@@ -117,7 +121,8 @@ class ProductionConfig(Config):
     DEBUG = False
 
     @classmethod
-    def init_app(cls, app):
+    @classmethod
+    def init_app(cls, app: "Flask") -> None:
         """Initialize production application and validate required settings.
 
         Validates that all required production settings are properly configured
@@ -144,7 +149,7 @@ class ProductionConfig(Config):
         logger.info("Production configuration initialized successfully")
 
 
-config: dict[str | FlaskEnvironment, type[Config]] = {
+config: dict[str | FlaskEnvironment, Type[Config]] = {
     "development": DevelopmentConfig,
     "testing": TestConfig,
     "production": ProductionConfig,

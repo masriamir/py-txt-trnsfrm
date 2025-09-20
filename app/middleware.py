@@ -6,15 +6,19 @@ requests including timing, client information, headers, and response details.
 """
 
 import time
+from typing import TYPE_CHECKING, Any
 
-from flask import g, request
+from flask import Response, g, request
 
 from app.logging_config import get_logger
+
+if TYPE_CHECKING:
+    from flask import Flask
 
 logger = get_logger(__name__)
 
 
-def setup_request_logging(app):  # noqa: C901  # Complex middleware function
+def setup_request_logging(app: "Flask") -> None:  # noqa: C901  # Complex middleware function
     """Set up comprehensive request logging middleware for the Flask application.
 
     Configures before_request and after_request handlers to log detailed
@@ -26,7 +30,7 @@ def setup_request_logging(app):  # noqa: C901  # Complex middleware function
     """
 
     @app.before_request
-    def log_request_start():
+    def log_request_start() -> None:
         """Log the start of each request with detailed information.
 
         Captures and logs request initiation details including client IP,
@@ -60,7 +64,7 @@ def setup_request_logging(app):  # noqa: C901  # Complex middleware function
             logger.debug(f"Request headers: {dict(safe_headers)}")
 
     @app.after_request
-    def log_request_end(response):
+    def log_request_end(response: Response) -> Response:
         """Log the completion of each request with response details.
 
         Captures and logs request completion information including response
@@ -104,7 +108,7 @@ def setup_request_logging(app):  # noqa: C901  # Complex middleware function
         return response
 
     @app.errorhandler(404)
-    def log_not_found(error):
+    def log_not_found(error: Any) -> tuple[dict[str, str], int]:
         """Log 404 Not Found errors with additional context.
 
         Captures and logs detailed information about 404 errors including
@@ -128,7 +132,7 @@ def setup_request_logging(app):  # noqa: C901  # Complex middleware function
         return {"error": "Not found"}, 404
 
     @app.errorhandler(500)
-    def log_server_error(error):
+    def log_server_error(error: Any) -> tuple[dict[str, str], int]:
         """Log 500 Internal Server errors with additional context.
 
         Captures and logs detailed information about server errors including

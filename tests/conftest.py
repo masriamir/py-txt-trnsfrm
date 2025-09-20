@@ -5,14 +5,21 @@ text transformation application. It includes fixtures for creating test
 application instances, test clients, and test runners.
 """
 
+from collections.abc import Generator
+from typing import TYPE_CHECKING
+
 import pytest
 
 from app import create_app
 from app.config import TestConfig
 
+if TYPE_CHECKING:
+    from flask import Flask
+    from flask.testing import FlaskClient, FlaskCliRunner
+
 
 @pytest.fixture
-def app():
+def app() -> Generator["Flask", None, None]:
     """Create and configure a new Flask app instance for each test.
 
     Creates a Flask application instance using TestConfig for isolated
@@ -28,7 +35,7 @@ def app():
 
 
 @pytest.fixture
-def client(app):
+def client(app: "Flask") -> "FlaskClient":
     """Create a test client for the Flask app.
 
     Provides a test client that can make requests to the application
@@ -44,7 +51,7 @@ def client(app):
 
 
 @pytest.fixture
-def runner(app):
+def runner(app: "Flask") -> "FlaskCliRunner":
     """Create a test runner for the app's CLI commands.
 
     Provides a test runner for testing Flask CLI commands in isolation.

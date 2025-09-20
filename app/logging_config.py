@@ -34,7 +34,7 @@ def setup_logging(logging_config: LoggingConfig) -> None:
     logs_dir = Path("/app/logs") if Path("/app/logs").exists() else Path.cwd()
     log_file_path = logs_dir / "app.log"
 
-    logging_config: dict[str, Any] = {
+    logging_dict_config: dict[str, Any] = {
         "version": 1,
         "disable_existing_loggers": False,
         "formatters": {
@@ -87,7 +87,7 @@ def setup_logging(logging_config: LoggingConfig) -> None:
             and logs_dir.exists()
             and os.access(logs_dir, os.W_OK)
         ):
-            logging_config["handlers"]["file"] = {
+            logging_dict_config["handlers"]["file"] = {
                 "class": "logging.handlers.RotatingFileHandler",
                 "level": log_level,
                 "formatter": "detailed",
@@ -97,7 +97,7 @@ def setup_logging(logging_config: LoggingConfig) -> None:
                 "encoding": "utf8",
             }
             # Add file handler to app logger
-            logging_config["loggers"]["app"]["handlers"].append("file")
+            logging_dict_config["loggers"]["app"]["handlers"].append("file")
     except (OSError, PermissionError):
         # Silently skip file logging if the directory is not accessible
         pass
@@ -106,9 +106,9 @@ def setup_logging(logging_config: LoggingConfig) -> None:
     if os.environ.get("FLASK_CONFIG") == "production" and os.environ.get(
         "CONTAINER_ENV"
     ):
-        logging_config["handlers"]["console"]["formatter"] = "json"
+        logging_dict_config["handlers"]["console"]["formatter"] = "json"
 
-    logging.config.dictConfig(logging_config)
+    logging.config.dictConfig(logging_dict_config)
 
 
 def get_logger(name: str) -> logging.Logger:

@@ -19,7 +19,7 @@ class TestIndexRoute:
     @pytest.mark.unit
     @patch("app.main.routes.render_template")
     @patch("app.main.routes.get_logger")
-    def test_index_route_renders_template(self, mock_get_logger, mock_render_template):
+    def test_index_route_renders_template(self, mock_get_logger, mock_render_template) -> None:
         """Test that index route renders the correct template."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
@@ -33,7 +33,7 @@ class TestIndexRoute:
 
     @pytest.mark.unit
     @patch("app.main.routes.get_logger")
-    def test_index_route_logging(self, mock_get_logger):
+    def test_index_route_logging(self, mock_get_logger) -> None:
         """Test that index route properly logs requests."""
         mock_logger = Mock()
         mock_get_logger.return_value = mock_logger
@@ -51,7 +51,7 @@ class TestHealthCheckRoute:
 
     @pytest.mark.unit
     @patch("app.main.routes.get_application_version")
-    def test_health_check_success(self, mock_get_version):
+    def test_health_check_success(self, mock_get_version) -> None:
         """Test successful health check response."""
         mock_get_version.return_value = "1.0.0"
 
