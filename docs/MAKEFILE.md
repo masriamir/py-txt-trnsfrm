@@ -31,7 +31,7 @@ These commands handle basic project setup and dependency management:
 
 #### `make setup`
 - **Purpose**: Complete initial setup for new development environment
-- **Actions**: 
+- **Actions**:
   - Installs uv if not present
   - Installs all dependency groups (dev, test, security)
   - Verifies application can be imported
@@ -52,7 +52,7 @@ These commands handle basic project setup and dependency management:
 
 #### `make clean`
 - **Purpose**: Remove generated files and caches
-- **Actions**: 
+- **Actions**:
   - Removes pytest cache, mypy cache, ruff cache
   - Cleans __pycache__ directories
   - Removes coverage reports
@@ -83,7 +83,7 @@ These commands ensure code quality and consistency:
 
 #### `make fix`
 - **Purpose**: Automatically fix auto-fixable linting issues
-- **Actions**: 
+- **Actions**:
   - Runs `ruff check --fix .`
 - **Example**: `make fix`
 
@@ -136,7 +136,7 @@ Comprehensive testing support with various test categories:
 
 #### `make coverage`
 - **Purpose**: Generate HTML coverage report
-- **Actions**: 
+- **Actions**:
   - Runs tests with coverage collection
   - Generates HTML report in `reports/coverage/html/`
   - Shows coverage summary in terminal
@@ -186,7 +186,7 @@ Security analysis and vulnerability scanning:
 #### `make security`
 - **Purpose**: Run comprehensive security analysis
 - **Actions**: Delegates to `./run_security_analysis.sh`
-- **Includes**: 
+- **Includes**:
   - Bandit static code analysis
   - Safety dependency vulnerability scanning
   - Report generation in multiple formats
@@ -223,7 +223,7 @@ Container management and operations:
 
 #### `make docker-clean`
 - **Purpose**: Clean up Docker resources
-- **Actions**: 
+- **Actions**:
   - Prunes stopped containers
   - Removes py-txt-trnsfrm images
 - **Example**: `make docker-clean`
@@ -234,7 +234,7 @@ Continuous integration and deployment operations:
 
 #### `make ci`
 - **Purpose**: Run local CI pipeline that mirrors GitHub Actions
-- **Actions**: 
+- **Actions**:
   1. Code quality checks (`make check`)
   2. Test execution (`make test`)
   3. Security analysis (`make security-quick`)
@@ -324,7 +324,7 @@ make test VERBOSE=1
 
 The Makefile provides colored progress indicators:
 - 🔵 Blue: Progress messages
-- 🟢 Green: Success messages  
+- 🟢 Green: Success messages
 - 🟡 Yellow: Warning messages
 - 🔴 Red: Error messages
 
@@ -352,20 +352,20 @@ Each command provides clear feedback:
 
 #### Docker Commands Fail
 **Error**: Docker-related commands fail
-**Solution**: 
+**Solution**:
 1. Ensure Docker is installed: `docker --version`
 2. Ensure Docker daemon is running: `docker ps`
 3. Check Docker permissions
 
 #### Port Already in Use
 **Error**: Port conflicts when running servers
-**Solution**: 
+**Solution**:
 1. Use different port: `make run PORT=8001`
 2. Stop conflicting processes: `lsof -ti:5000 | xargs kill`
 
 #### Security Scan Timeout
 **Error**: Safety scan times out
-**Solution**: 
+**Solution**:
 - Expected behavior for safety scans
 - Check `reports/security/` for available results
 - Use `make security-quick` for faster scans

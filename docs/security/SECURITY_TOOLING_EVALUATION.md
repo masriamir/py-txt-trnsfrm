@@ -6,7 +6,7 @@ This document evaluates the feasibility of replacing Snyk with open-source alter
 
 **Key Findings:**
 - ✅ Trivy + Semgrep can provide equivalent security coverage
-- ✅ No usage limitations or quotas 
+- ✅ No usage limitations or quotas
 - ✅ Strong GitHub Actions integration available
 - ✅ SARIF output compatibility for GitHub Security tab
 - ⚠️ Initial network connectivity requirements for rule/database updates
@@ -21,7 +21,7 @@ This document evaluates the feasibility of replacing Snyk with open-source alter
   - Found: 4 issues (3 medium severity, 1 low severity)
   - Scan time: ~1 second
   - Coverage: 1,268 LOC (updated post-main branch merges)
-- **Safety v3.6.0**: Dependency vulnerability scanning  
+- **Safety v3.6.0**: Dependency vulnerability scanning
   - Status: Timeout/authentication issues in current environment
   - Limited by usage quotas in commercial tiers
 
@@ -48,7 +48,7 @@ This document evaluates the feasibility of replacing Snyk with open-source alter
 
 **Key Features:**
 - Multi-format scanning: filesystem, containers, IaC, dependencies
-- License scanning capabilities  
+- License scanning capabilities
 - SBOM (Software Bill of Materials) generation
 - Integration with GitHub Actions via aquasecurity/trivy-action
 
@@ -159,10 +159,10 @@ This document evaluates the feasibility of replacing Snyk with open-source alter
 
 1. **Network Dependency**: Trivy requires initial DB download
    - **Mitigation**: Cache DB in CI, use offline mode when possible
-   
+
 2. **Rule Maintenance**: Custom Semgrep rules need maintenance
    - **Mitigation**: Start with community rules, gradually add custom rules
-   
+
 3. **Performance Impact**: Slightly longer scan times
    - **Mitigation**: Parallel execution, selective scanning
 
@@ -200,7 +200,7 @@ This document evaluates the feasibility of replacing Snyk with open-source alter
 
 1. **Implementation Phase 1** (Ready for deployment):
    - ✅ POC workflow configurations created
-   - ✅ Parallel execution configurations prepared  
+   - ✅ Parallel execution configurations prepared
    - ✅ Configuration procedures documented
 
 2. **Validation Phase** (Next step):
@@ -220,7 +220,7 @@ This document evaluates the feasibility of replacing Snyk with open-source alter
 
 ---
 
-**Generated:** 2025-08-28  
-**Repository:** masriamir/py-txt-trnsfrm  
-**Evaluation Tools:** Trivy v0.58.1, Semgrep v1.133.0  
+**Generated:** 2025-08-28
+**Repository:** masriamir/py-txt-trnsfrm
+**Evaluation Tools:** Trivy v0.58.1, Semgrep v1.133.0
 **Baseline:** Bandit v1.8.6, Safety v3.6.0

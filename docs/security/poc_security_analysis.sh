@@ -219,7 +219,7 @@ run_trivy_scans() {
 #######################################
 # Run Semgrep analysis with community rulesets and fallback
 # Globals:
-#   POC_REPORTS_DIR, semgrep_path, semgrep_logged_in, semgrep_ci_success, 
+#   POC_REPORTS_DIR, semgrep_path, semgrep_logged_in, semgrep_ci_success,
 #   semgrep_duration, SEMGREP_CONFIG
 # Arguments:
 #   community_config - Comma-separated community ruleset string
@@ -228,7 +228,7 @@ run_trivy_scans() {
 #######################################
 run_semgrep_analysis() {
   local community_config="${1}"
-  
+
   echo "🔍 Running Semgrep code analysis..."
   echo "🔍 Using community rulesets: ${community_config}"
   echo "📋 Total rulesets: ${#SEMGREP_COMMUNITY_RULESETS[@]}"
@@ -245,7 +245,7 @@ run_semgrep_analysis() {
   # Try semgrep ci first (recommended for CI/CD), fallback to regular semgrep
   if [[ "${semgrep_logged_in}" == true ]]; then
     echo "🚀 Running semgrep ci for enhanced integration..."
-    
+
     if semgrep ci --config="${community_config}" --json \
         --output="${POC_REPORTS_DIR}/semgrep.json" \
         --disable-version-check 2>/dev/null; then
@@ -288,7 +288,7 @@ run_semgrep_analysis() {
 #######################################
 generate_semgrep_sarif() {
   local community_config="${1}"
-  
+
   echo "🔍 Generating Semgrep SARIF output..."
 
   if [[ "${semgrep_logged_in}" == true ]]; then
@@ -404,15 +404,15 @@ generate_summary_report() {
     echo "Semgrep config: ${SEMGREP_CONFIG}"
     echo "Community rulesets: ${#SEMGREP_COMMUNITY_RULESETS[@]} total"
     echo "Authentication: $(
-      [[ "${semgrep_logged_in}" == true ]] && 
+      [[ "${semgrep_logged_in}" == true ]] &&
       echo "✅ Authenticated" || echo "⚠️ Not authenticated"
     )"
     echo "Scan type: $(
-      [[ "${diff_aware_available}" == true ]] && 
+      [[ "${diff_aware_available}" == true ]] &&
       echo "📊 Diff-aware available" || echo "📊 Full repository scan"
     )"
     echo "Semgrep CI: $(
-      [[ "${semgrep_ci_success}" == true ]] && 
+      [[ "${semgrep_ci_success}" == true ]] &&
       echo "✅ Used semgrep ci" || echo "⚠️ Fallback to regular semgrep"
     )"
     echo ""
@@ -423,12 +423,12 @@ generate_summary_report() {
     echo "## 🔒 POC Security Scan Results"
     echo ""
     echo "- **Semgrep Authentication:** $(
-      [[ "${semgrep_logged_in}" == true ]] && 
-      echo "✅ Authenticated (enhanced community rules)" || 
+      [[ "${semgrep_logged_in}" == true ]] &&
+      echo "✅ Authenticated (enhanced community rules)" ||
       echo "⚠️ Not authenticated (local rules used)"
     )"
     echo "- **Scan Type:** $(
-      [[ "${diff_aware_available}" == true ]] && 
+      [[ "${diff_aware_available}" == true ]] &&
       echo "📊 Diff-aware scanning available" || echo "📊 Full repository scan"
     )"
     echo ""
@@ -473,11 +473,11 @@ generate_summary_report() {
   echo "✅ POC security analysis completed!"
   echo "📊 Performance: Trivy ${trivy_duration}s + Semgrep ${semgrep_duration}s = Total ${total_duration}s"
   echo "🔧 Semgrep method: $(
-    [[ "${semgrep_ci_success}" == true ]] && 
+    [[ "${semgrep_ci_success}" == true ]] &&
     echo "semgrep ci (enhanced)" || echo "regular semgrep (fallback)"
   )"
   echo "🔐 Authentication: $(
-    [[ "${semgrep_logged_in}" == true ]] && 
+    [[ "${semgrep_logged_in}" == true ]] &&
     echo "authenticated" || echo "not authenticated"
   )"
   echo "📋 See reports/security/poc/poc_summary.txt for detailed results"

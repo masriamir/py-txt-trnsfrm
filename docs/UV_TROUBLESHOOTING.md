@@ -126,7 +126,7 @@ uv pip list  # Should show only production dependencies
 # Development tools only
 uv sync --group dev
 
-# Testing dependencies only  
+# Testing dependencies only
 uv sync --group test
 
 # Security tools only

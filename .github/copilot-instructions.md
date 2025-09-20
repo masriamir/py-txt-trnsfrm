@@ -50,7 +50,7 @@ Always reference these instructions first and fallback to search or bash command
 
 #### Key Directories
 - **app/**: Main Flask application package
-  - **main/**: Blueprint with routes and main endpoints  
+  - **main/**: Blueprint with routes and main endpoints
   - **utils/**: Text transformation utilities
   - **static/**: CSS and JavaScript assets
   - **templates/**: Jinja2 HTML templates
@@ -150,7 +150,7 @@ if is_heroku_environment():
    assert (
        some_long_condition_here
    ), "Error message here"
-   
+
    # INCORRECT - Don't put opening parenthesis on same line as closing
    assert (some_long_condition_here), "Error message"
    ```
@@ -191,7 +191,7 @@ if is_heroku_environment():
 
 ### Testing Overview and Execution
 - **Run all tests (excluding performance)**: `uv run pytest --ignore=tests/performance -k "not test_transform_property_based" --benchmark-disable` -- takes 1-2 seconds with parallel execution. Currently 47 passed, 1 failed (expected).
-- **Run specific test categories (with parallel execution)**: 
+- **Run specific test categories (with parallel execution)**:
   - `uv run pytest -m unit --benchmark-disable` -- Unit tests only
   - `uv run pytest -m integration --benchmark-disable` -- Integration tests
   - `uv run pytest -m api --benchmark-disable` -- API endpoint tests
@@ -229,7 +229,7 @@ if is_heroku_environment():
 
 **Pytest Marker Assignment (MANDATORY):**
 - `@pytest.mark.unit` - Isolated unit tests for individual functions/methods (mandatory for all functions)
-- `@pytest.mark.integration` - Cross-component tests (required for complex workflows spanning multiple modules)  
+- `@pytest.mark.integration` - Cross-component tests (required for complex workflows spanning multiple modules)
 - `@pytest.mark.api` - Flask endpoint tests (mandatory for all routes in `app/main/`)
 - `@pytest.mark.smoke` - Critical functionality tests (for core features affecting user experience)
 - `@pytest.mark.slow` - Tests taking >5 seconds (property-based, large data processing)
@@ -253,20 +253,20 @@ from app.utils.some_module import SomeClass
 @pytest.mark.unit
 class TestSomeClass:
     """Test suite for SomeClass functionality."""
-    
+
     @pytest.fixture
     def instance(self):
         """Fixture providing test instance."""
         return SomeClass()
-    
+
     @pytest.mark.unit
     def test_basic_functionality(self, instance):
         """Test basic functionality with clear assertion."""
         result = instance.some_method("test input")
         assert result == "expected output"
         assert isinstance(result, str)
-    
-    @pytest.mark.unit  
+
+    @pytest.mark.unit
     def test_edge_cases(self, instance):
         """Test edge cases comprehensively."""
         # Test with edge_cases from test_data
@@ -337,7 +337,7 @@ class TestSomeClass:
 
 #### Production Mode (with Gunicorn)
 - **Production deployment requires SECRET_KEY environment variable**
-- **Start with deploy script**: `SECRET_KEY=your-secret-key ./deploy.sh start` 
+- **Start with deploy script**: `SECRET_KEY=your-secret-key ./deploy.sh start`
 - **Test deployment**: `SECRET_KEY=your-secret-key ./deploy.sh test` -- takes 15-20 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
 - **Development deployment**: `FLASK_ENV=development ./deploy.sh dev` (has known gunicorn config issue)
 
@@ -356,7 +356,7 @@ class TestSomeClass:
    - Run: `uv run ruff check --fix .` to automatically fix issues
    - Verify: `uv run ruff check .` must pass with zero errors
 2. **All formatting issues MUST be fixed** (not just identified):
-   - Run: `uv run ruff format .` to fix all formatting issues  
+   - Run: `uv run ruff format .` to fix all formatting issues
    - Verify: `uv run ruff format --check .` must pass with zero changes needed
 3. **Test Requirements MUST be met** (MANDATORY):
    - All new functionality must have corresponding tests with proper pytest markers
@@ -374,7 +374,7 @@ class TestSomeClass:
 
 #### Test Creation Requirements (MANDATORY)
 - **Unit Tests**: Every new function/method must have dedicated unit tests
-- **API Tests**: Every new Flask endpoint must have API tests  
+- **API Tests**: Every new Flask endpoint must have API tests
 - **Integration Tests**: Multi-component features must have integration tests
 - **Security Tests**: Authentication/authorization features must have security tests
 - **Performance Tests**: Performance-critical code must have performance tests
@@ -386,7 +386,7 @@ The required workflow is: **implement → test → fix → verify → close → 
 - **Step 1**: Implement functionality with corresponding tests
 - **Step 2**: Apply proper pytest markers and ensure coverage
 - **Step 3**: Fix all linting and formatting issues using the fix commands
-- **Step 4**: Verify all fixes and test requirements using the verification commands  
+- **Step 4**: Verify all fixes and test requirements using the verification commands
 - **Step 5**: Add proper issue closing keywords to PR description (Closes #123, Fixes #456, Resolves #789)
 - **Step 6**: Only then proceed with commit and PR submission
 
@@ -500,7 +500,7 @@ When creating a PR to address an issue, **all metadata from the originating issu
 
 4. **Copy Custom Field Values**: Inherit any custom field values from the project board:
    - Epic assignments
-   - Sprint assignments  
+   - Sprint assignments
    - Risk level indicators
    - Time estimates
    - Any other custom fields used in project management
@@ -520,7 +520,7 @@ This ensures continuous tracking from issue creation through PR completion and m
 ##### Required Closing Keywords
 Use one of these GitHub closing keywords in your PR description or commit messages:
 - `Closes #123` - Standard closing syntax
-- `Fixes #456` - For bug fixes 
+- `Fixes #456` - For bug fixes
 - `Resolves #789` - For general issue resolution
 - `Closes: #123` - Alternative syntax with colon
 
@@ -541,7 +541,7 @@ git commit -m "Add zalgo text transformation - Fixes #67"
 This PR refactors the transformation engine and fixes several bugs.
 
 Closes #23
-Fixes #34  
+Fixes #34
 Resolves #45
 
 # Alternative syntax:
@@ -653,7 +653,7 @@ uv run ruff format --check . && uv run ruff check .
 
 **Set appropriate timeouts for long-running operations:**
 - `uv sync`: 3-4 minutes → Set timeout to 10+ minutes
-- `./run_security_analysis.sh`: 5+ minutes → Set timeout to 10+ minutes  
+- `./run_security_analysis.sh`: 5+ minutes → Set timeout to 10+ minutes
 - `./deploy.sh test`: 2+ minutes → Set timeout to 5+ minutes
 - `make ci`: 2-3 minutes → Set timeout to 5+ minutes
 
@@ -671,7 +671,7 @@ result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
 - **Property-based test**: `test_transform_property_based` fails due to Hypothesis function-scoped fixture health check
 - **Security test**: `test_json_input_validation` fails because app doesn't sanitize HTML in transformations (by design)
 
-#### Code Quality Issues  
+#### Code Quality Issues
 - **Type annotations**: 99 mypy errors due to missing type annotations in tests and some application files
 - **Ruff formatting**: 7 files need reformatting
 - **Security**: 4 low-severity Bandit warnings (all acceptable - test secrets and non-cryptographic random usage)
@@ -683,7 +683,7 @@ result = subprocess.run(["uv", "sync"], timeout=600)  # 10 minutes
 
 #### Timing Expectations
 - **NEVER CANCEL** these operations:
-  - `uv sync` -- 3-4 minutes 
+  - `uv sync` -- 3-4 minutes
   - `./run_security_analysis.sh` -- up to 5 minutes (safety scan may timeout)
   - `./deploy.sh test` -- 2+ minutes
 - **Fast operations** (<10 seconds):

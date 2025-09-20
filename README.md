@@ -207,7 +207,7 @@ cp .env.example .env
 # Edit .env with your preferred settings
 # Key settings include:
 # - FLASK_ENV=development
-# - SECRET_KEY=your-secret-key  
+# - SECRET_KEY=your-secret-key
 # - LOG_LEVEL=info
 # - PORT=5000
 ```
@@ -255,11 +255,11 @@ The application supports `.env` files for convenient environment configuration. 
    FLASK_ENV=development
    FLASK_DEBUG=true
    SECRET_KEY=your-secret-key-here
-   
+
    # Logging & Server
    LOG_LEVEL=info
    PORT=5000
-   
+
    # Production (when deploying)
    WEB_CONCURRENCY=auto
    DATABASE_URL=your-database-url
@@ -322,7 +322,7 @@ if is_heroku_environment():
 #### Available Functions
 
 - `get_logging_config()`: Returns validated logging configuration
-- `get_flask_env()`: Gets Flask environment for development contexts  
+- `get_flask_env()`: Gets Flask environment for development contexts
 - `get_flask_env_for_wsgi()`: Gets Flask environment for production/WSGI contexts
 - `is_heroku_environment()`: Detects Heroku deployment environment
 - `get_port()`: Gets port number with proper type conversion
@@ -341,7 +341,7 @@ The project includes an `.editorconfig` file that provides consistent editor set
 
 #### Configuration Details
 - **Python files (*.py)**: 4 spaces, UTF-8, 88 character line length (matches Ruff)
-- **Web files (*.css, *.js, *.html)**: 2 spaces, UTF-8 
+- **Web files (*.css, *.js, *.html)**: 2 spaces, UTF-8
 - **Configuration files (*.yml, *.json)**: 2 spaces, UTF-8
 - **Markdown files (*.md)**: 2 spaces, UTF-8, preserve trailing whitespace
 - **All files**: LF line endings, UTF-8 encoding, trim trailing whitespace

@@ -337,7 +337,7 @@ rules:
   #
   # Primary rulesets:
   # - p/flask: Flask-specific security patterns
-  # - p/python: Python security best practices  
+  # - p/python: Python security best practices
   # - p/bandit: Static analysis security testing
   # - p/secrets: Credential and secret detection
   # - p/xss: Cross-site scripting prevention
@@ -358,7 +358,7 @@ rules:
   # - p/github-actions: GitHub Actions security
   #
   # Additional rulesets:
-  # - p/javascript: JavaScript security patterns  
+  # - p/javascript: JavaScript security patterns
   # - p/comment: Code comment analysis
   # - p/semgrep-rule-ci: CI/CD security patterns
   # - p/semgrep-rule-lints: Rule quality checks
